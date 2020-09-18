@@ -539,6 +539,13 @@
         "rank": 1,
         "points": 74,
         "players": 4
+      },
+      {
+        "id": 91,
+        "corporation": "Terralabs Research",
+        "rank": 2,
+        "points": 118,
+        "players": 2
       }
     ],
     "best_games": [
@@ -3434,6 +3441,13 @@
         "rank": 1,
         "points": 149,
         "players": 2
+      },
+      {
+        "id": 91,
+        "corporation": "Inventrix",
+        "rank": 1,
+        "points": 170,
+        "players": 2
       }
     ],
     "best_games": [
@@ -3454,8 +3468,8 @@
       },
       {
         "players": 2,
-        "id": 90,
-        "score": 149
+        "id": 91,
+        "score": 170
       }
     ],
     "fave_corp": {
