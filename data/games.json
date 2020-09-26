@@ -9845,5 +9845,154 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 93,
+    "name": "Andro je prolio pivu po parketu!! (Game 95)",
+    "note": "",
+    "date": "2020-09-27",
+    "mode": [
+      "Base",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Venus"
+    ],
+    "mode_code": "B+CE+Dr+Pr+Ve",
+    "map": "Tharsis",
+    "winner": "Matteo Samsa",
+    "win_corp": "Morning Star INC",
+    "win_score": 72,
+    "players": 5,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Saturn Systems",
+        "tr": 40,
+        "awards": 2,
+        "milestones": 5,
+        "greenery": 4,
+        "cities": 4,
+        "cards": 16,
+        "lead": 0,
+        "total": 71,
+        "rank": 2,
+        "note": "No comment (trebao je igrat gardenera, a ne beam from a thorium asteroid)"
+      },
+      {
+        "player": "Orijan Markić",
+        "corporation": "Robinson Industries",
+        "tr": 31,
+        "awards": 2,
+        "milestones": 5,
+        "greenery": 4,
+        "cities": 4,
+        "cards": 5,
+        "lead": 0,
+        "total": 51,
+        "rank": 5,
+        "note": "Slušaj instinkte"
+      },
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Morning Star INC",
+        "tr": 34,
+        "awards": 7,
+        "milestones": 5,
+        "greenery": 0,
+        "cities": 0,
+        "cards": 26,
+        "lead": 0,
+        "total": 72,
+        "rank": 1,
+        "note": "Izgubio 3 boda na gluposti"
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Manutech",
+        "tr": 39,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 1,
+        "cities": 0,
+        "cards": 11,
+        "lead": 0,
+        "total": 56,
+        "rank": 4,
+        "note": "Dec i pol je jako malo pive"
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Credicor",
+        "tr": 30,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 3,
+        "cards": 21,
+        "lead": 0,
+        "total": 61,
+        "rank": 3,
+        "note": "Slijedeći put ide po drugo mjesto"
+      }
+    ],
+    "milestones": {
+      "Terraformer": "Luka Jenuš",
+      "Mayor": "Orijan Markić",
+      "Hoverlord": "Matteo Samsa"
+    },
+    "awards": {
+      "winners": {
+        "Venuphile": {
+          "first": [
+            "Matteo Samsa"
+          ],
+          "second": [
+            "Orijan Markić"
+          ]
+        },
+        "Scientist": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Matteo Samsa"
+          ]
+        },
+        "Thermalist": {
+          "first": [
+            "Dorian Tokmadžić"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        }
+      },
+      "points": {
+        "Venuphile": {
+          "Luka Jenuš": 1,
+          "Orijan Markić": 4,
+          "Matteo Samsa": 7,
+          "Andro Slavić": 3,
+          "Dorian Tokmadžić": 1
+        },
+        "Scientist": {
+          "Luka Jenuš": 0,
+          "Orijan Markić": 4,
+          "Matteo Samsa": 6,
+          "Andro Slavić": 8,
+          "Dorian Tokmadžić": 0
+        },
+        "Thermalist": {
+          "Luka Jenuš": 27,
+          "Orijan Markić": 14,
+          "Matteo Samsa": 8,
+          "Andro Slavić": 9,
+          "Dorian Tokmadžić": 29
+        }
+      }
+    }
   }
 ]
