@@ -9994,5 +9994,185 @@
         }
       }
     }
+  },
+  {
+    "id": 94,
+    "name": "Tokma obecano drugi (Game 97)",
+    "note": "",
+    "date": "2020-09-28",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Ve",
+    "map": "Tharsis",
+    "winner": "Andro Slavić",
+    "win_corp": "Valley Trust",
+    "win_score": 81,
+    "players": 5,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Vitor",
+        "tr": 45,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 3,
+        "cities": 3,
+        "cards": 17,
+        "lead": 0,
+        "total": 73,
+        "rank": 4,
+        "note": "Premalo kartica s bodovima, fail uplate free nagrade"
+      },
+      {
+        "player": "Mia Čaušević",
+        "corporation": "Factorum",
+        "tr": 39,
+        "awards": 0,
+        "milestones": 5,
+        "greenery": 2,
+        "cities": 5,
+        "cards": 11,
+        "lead": 0,
+        "total": 62,
+        "rank": 5,
+        "note": "\"Katastrofa su mi builderi\""
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Valley Trust",
+        "tr": 25,
+        "awards": 4,
+        "milestones": 5,
+        "greenery": 0,
+        "cities": 6,
+        "cards": 41,
+        "lead": 0,
+        "total": 81,
+        "rank": 1,
+        "note": "Valley trust op"
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Arklight",
+        "tr": 34,
+        "awards": 2,
+        "milestones": 5,
+        "greenery": 11,
+        "cities": 9,
+        "cards": 16,
+        "lead": 0,
+        "total": 77,
+        "rank": 2,
+        "note": "Sljedeći put na prvo mjesto!"
+      },
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Polyphemos",
+        "tr": 34,
+        "awards": 10,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 2,
+        "cards": 26,
+        "lead": 0,
+        "total": 74,
+        "rank": 3,
+        "note": "Dobar game"
+      }
+    ],
+    "milestones": {
+      "Hoverlord": "Mia Čaušević",
+      "Gardener": "Dorian Tokmadžić",
+      "Planer": "Andro Slavić"
+    },
+    "awards": {
+      "winners": {
+        "Scientist": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        },
+        "Thermalist": {
+          "first": [
+            "Matteo Samsa"
+          ],
+          "second": [
+            "Dorian Tokmadžić"
+          ]
+        },
+        "Miner": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        }
+      },
+      "points": {
+        "Scientist": {
+          "Matteo Samsa": 0,
+          "Mia Čaušević": 0,
+          "Andro Slavić": 8,
+          "Dorian Tokmadžić": 0,
+          "Luka Jenuš": 9
+        },
+        "Thermalist": {
+          "Matteo Samsa": 14,
+          "Mia Čaušević": 0,
+          "Andro Slavić": 0,
+          "Dorian Tokmadžić": 8,
+          "Luka Jenuš": 0
+        },
+        "Miner": {
+          "Matteo Samsa": 0,
+          "Mia Čaušević": 0,
+          "Andro Slavić": 7,
+          "Dorian Tokmadžić": 0,
+          "Luka Jenuš": 26
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Ceres",
+        "count": 3
+      },
+      {
+        "name": "Europa",
+        "count": 0
+      },
+      {
+        "name": "Ganymede",
+        "count": 1
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Miranda",
+        "count": 1
+      },
+      {
+        "name": "Titan",
+        "count": 0
+      },
+      {
+        "name": "Pluto",
+        "count": 3
+      }
+    ]
   }
 ]
