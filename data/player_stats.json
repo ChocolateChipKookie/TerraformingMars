@@ -560,6 +560,13 @@
         "rank": 1,
         "points": 72,
         "players": 5
+      },
+      {
+        "id": 94,
+        "corporation": "Vitor",
+        "rank": 4,
+        "points": 73,
+        "players": 5
       }
     ],
     "best_games": [
@@ -2148,6 +2155,13 @@
         "rank": 1,
         "points": 72,
         "players": 5
+      },
+      {
+        "id": 94,
+        "corporation": "Factorum",
+        "rank": 5,
+        "points": 62,
+        "players": 5
       }
     ],
     "best_games": [
@@ -2655,6 +2669,13 @@
         "rank": 4,
         "points": 56,
         "players": 5
+      },
+      {
+        "id": 94,
+        "corporation": "Valley Trust",
+        "rank": 1,
+        "points": 81,
+        "players": 5
       }
     ],
     "best_games": [
@@ -2685,8 +2706,8 @@
       "wins": 1
     },
     "most_wins": {
-      "name": "Teractor",
-      "total": 5,
+      "name": "Valley Trust",
+      "total": 4,
       "wins": 2
     },
     "elo": {
@@ -3514,6 +3535,13 @@
         "corporation": "Saturn Systems",
         "rank": 2,
         "points": 71,
+        "players": 5
+      },
+      {
+        "id": 94,
+        "corporation": "Polyphemos",
+        "rank": 3,
+        "points": 74,
         "players": 5
       }
     ],
@@ -5229,13 +5257,20 @@
         "rank": 3,
         "points": 61,
         "players": 5
+      },
+      {
+        "id": 94,
+        "corporation": "Arklight",
+        "rank": 2,
+        "points": 77,
+        "players": 5
       }
     ],
     "best_games": [
       {
         "players": 5,
-        "id": 93,
-        "score": 61
+        "id": 94,
+        "score": 77
       }
     ],
     "fave_corp": {
