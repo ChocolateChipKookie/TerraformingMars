@@ -2676,6 +2676,13 @@
         "rank": 1,
         "points": 81,
         "players": 5
+      },
+      {
+        "id": 95,
+        "corporation": "Philares",
+        "rank": 4,
+        "points": 59,
+        "players": 4
       }
     ],
     "best_games": [
@@ -3543,6 +3550,13 @@
         "rank": 3,
         "points": 74,
         "players": 5
+      },
+      {
+        "id": 95,
+        "corporation": "Cheung Shing Mars",
+        "rank": 1,
+        "points": 82,
+        "players": 4
       }
     ],
     "best_games": [
@@ -5081,6 +5095,13 @@
         "rank": 4,
         "points": 84,
         "players": 4
+      },
+      {
+        "id": 95,
+        "corporation": "Tharsis Republic",
+        "rank": 3,
+        "points": 64,
+        "players": 4
       }
     ],
     "best_games": [
@@ -5264,6 +5285,13 @@
         "rank": 2,
         "points": 77,
         "players": 5
+      },
+      {
+        "id": 95,
+        "corporation": "Ecoline",
+        "rank": 2,
+        "points": 67,
+        "players": 4
       }
     ],
     "best_games": [
@@ -5271,6 +5299,11 @@
         "players": 5,
         "id": 94,
         "score": 77
+      },
+      {
+        "players": 4,
+        "id": 95,
+        "score": 67
       }
     ],
     "fave_corp": {
