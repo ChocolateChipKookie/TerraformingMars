@@ -10338,5 +10338,163 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 97,
+    "name": "UTOPIA dere",
+    "note": "",
+    "date": "2020-09-30",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Ve",
+    "map": "Tharsis",
+    "winner": "Andro Slavić",
+    "win_corp": "Utopia Invest",
+    "win_score": 91,
+    "players": 4,
+    "generation": 9,
+    "image": "",
+    "scores": [
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Tharsis Republic",
+        "tr": 30,
+        "awards": 10,
+        "milestones": 10,
+        "greenery": 12,
+        "cities": 17,
+        "cards": 6,
+        "lead": 0,
+        "total": 85,
+        "rank": 2,
+        "note": ""
+      },
+      {
+        "player": "Robert Bulaić",
+        "corporation": "Robinson Industries",
+        "tr": 28,
+        "awards": 2,
+        "milestones": 0,
+        "greenery": 5,
+        "cities": 4,
+        "cards": 30,
+        "lead": 0,
+        "total": 69,
+        "rank": 4,
+        "note": ""
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Utopia Invest",
+        "tr": 39,
+        "awards": 7,
+        "milestones": 5,
+        "greenery": 1,
+        "cities": 11,
+        "cards": 28,
+        "lead": 0,
+        "total": 91,
+        "rank": 1,
+        "note": ""
+      },
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Viron",
+        "tr": 46,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 0,
+        "cities": 0,
+        "cards": 28,
+        "lead": 0,
+        "total": 79,
+        "rank": 3,
+        "note": ""
+      }
+    ],
+    "milestones": {
+      "Planer": "Andro Slavić",
+      "Mayor": "Dorian Tokmadžić",
+      "Gardener": "Dorian Tokmadžić"
+    },
+    "awards": {
+      "winners": {
+        "Landlord": {
+          "first": [
+            "Dorian Tokmadžić"
+          ],
+          "second": [
+            "Robert Bulaić"
+          ]
+        },
+        "Miner": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        },
+        "Scientist": {
+          "first": [
+            "Dorian Tokmadžić",
+            "Andro Slavić"
+          ],
+          "second": []
+        }
+      },
+      "points": {
+        "Landlord": {
+          "Dorian Tokmadžić": 2,
+          "Robert Bulaić": 1,
+          "Andro Slavić": 0,
+          "Luka Jenuš": 0
+        },
+        "Miner": {
+          "Dorian Tokmadžić": 0,
+          "Robert Bulaić": 0,
+          "Andro Slavić": 1,
+          "Luka Jenuš": 2
+        },
+        "Scientist": {
+          "Dorian Tokmadžić": 2,
+          "Robert Bulaić": 0,
+          "Andro Slavić": 2,
+          "Luka Jenuš": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Ceres",
+        "count": 0
+      },
+      {
+        "name": "Ganymede",
+        "count": 0
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      },
+      {
+        "name": "Pluto",
+        "count": 0
+      },
+      {
+        "name": "Titan",
+        "count": 0
+      },
+      {
+        "name": "Triton",
+        "count": 0
+      }
+    ]
   }
 ]
