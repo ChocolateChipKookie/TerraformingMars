@@ -2690,6 +2690,13 @@
         "rank": 3,
         "points": 91,
         "players": 4
+      },
+      {
+        "id": 97,
+        "corporation": "Utopia Invest",
+        "rank": 1,
+        "points": 91,
+        "players": 4
       }
     ],
     "best_games": [
@@ -3570,6 +3577,13 @@
         "corporation": "Utopia Invest",
         "rank": 1,
         "points": 98,
+        "players": 4
+      },
+      {
+        "id": 97,
+        "corporation": "Viron",
+        "rank": 3,
+        "points": 79,
         "players": 4
       }
     ],
@@ -5123,6 +5137,13 @@
         "rank": 2,
         "points": 91,
         "players": 4
+      },
+      {
+        "id": 97,
+        "corporation": "Robinson Industries",
+        "rank": 4,
+        "points": 69,
+        "players": 4
       }
     ],
     "best_games": [
@@ -5320,6 +5341,13 @@
         "rank": 4,
         "points": 68,
         "players": 4
+      },
+      {
+        "id": 97,
+        "corporation": "Tharsis Republic",
+        "rank": 2,
+        "points": 85,
+        "players": 4
       }
     ],
     "best_games": [
@@ -5330,8 +5358,8 @@
       },
       {
         "players": 4,
-        "id": 96,
-        "score": 68
+        "id": 97,
+        "score": 85
       }
     ],
     "fave_corp": {
