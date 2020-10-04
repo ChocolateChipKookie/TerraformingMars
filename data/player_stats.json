@@ -567,6 +567,13 @@
         "rank": 4,
         "points": 73,
         "players": 5
+      },
+      {
+        "id": 98,
+        "corporation": "Helion",
+        "rank": 2,
+        "points": 85,
+        "players": 3
       }
     ],
     "best_games": [
@@ -2707,6 +2714,13 @@
         "rank": 1,
         "points": 91,
         "players": 4
+      },
+      {
+        "id": 98,
+        "corporation": "Philares",
+        "rank": 1,
+        "points": 88,
+        "players": 3
       }
     ],
     "best_games": [
@@ -5398,6 +5412,13 @@
         "rank": 2,
         "points": 85,
         "players": 4
+      },
+      {
+        "id": 98,
+        "corporation": "Tharsis Republic",
+        "rank": 3,
+        "points": 82,
+        "players": 3
       }
     ],
     "best_games": [
@@ -5410,16 +5431,21 @@
         "players": 4,
         "id": 97,
         "score": 85
+      },
+      {
+        "players": 3,
+        "id": 98,
+        "score": 82
       }
     ],
     "fave_corp": {
-      "name": "Credicor",
-      "total": 1,
+      "name": "Tharsis Republic",
+      "total": 2,
       "wins": 0
     },
     "best_corp": {
-      "name": "Credicor",
-      "total": 1,
+      "name": "Tharsis Republic",
+      "total": 2,
       "wins": 0
     },
     "most_wins": {
