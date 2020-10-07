@@ -1556,6 +1556,13 @@
         "rank": 2,
         "points": 127,
         "players": 2
+      },
+      {
+        "id": 99,
+        "corporation": "Valley Trust",
+        "rank": 1,
+        "points": 185,
+        "players": 2
       }
     ],
     "best_games": [
@@ -1571,8 +1578,8 @@
       },
       {
         "players": 2,
-        "id": 9,
-        "score": 132
+        "id": 99,
+        "score": 185
       },
       {
         "players": 5,
@@ -1591,8 +1598,8 @@
       "wins": 1
     },
     "most_wins": {
-      "name": "Saturn Systems",
-      "total": 5,
+      "name": "Valley Trust",
+      "total": 4,
       "wins": 2
     },
     "elo": {
@@ -2726,6 +2733,13 @@
         "rank": 1,
         "points": 88,
         "players": 3
+      },
+      {
+        "id": 99,
+        "corporation": "UNMI",
+        "rank": 2,
+        "points": 162,
+        "players": 2
       }
     ],
     "best_games": [
@@ -2743,6 +2757,11 @@
         "players": 3,
         "id": 63,
         "score": 115
+      },
+      {
+        "players": 2,
+        "id": 99,
+        "score": 162
       }
     ],
     "fave_corp": {
