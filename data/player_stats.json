@@ -1563,6 +1563,13 @@
         "rank": 1,
         "points": 185,
         "players": 2
+      },
+      {
+        "id": 100,
+        "corporation": "Mining Guild",
+        "rank": 1,
+        "points": 127,
+        "players": 2
       }
     ],
     "best_games": [
@@ -3663,6 +3670,13 @@
         "rank": 3,
         "points": 79,
         "players": 4
+      },
+      {
+        "id": 100,
+        "corporation": "Phobolog",
+        "rank": 2,
+        "points": 125,
+        "players": 2
       }
     ],
     "best_games": [
