@@ -11336,5 +11336,154 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 104,
+    "name": "zagreb crew",
+    "note": "",
+    "date": "2020-10-18",
+    "mode": [
+      "Base",
+      "Corporate Era"
+    ],
+    "mode_code": "B+CE",
+    "map": "Elysium",
+    "winner": "Andro Slavić",
+    "win_corp": "Teractor",
+    "win_score": 96,
+    "players": 5,
+    "generation": 9,
+    "image": "",
+    "scores": [
+      {
+        "player": "Matej Šare",
+        "corporation": "Ecoline",
+        "tr": 28,
+        "awards": 7,
+        "milestones": 0,
+        "greenery": 14,
+        "cities": 20,
+        "cards": 18,
+        "lead": 0,
+        "total": 87,
+        "rank": 2,
+        "note": ""
+      },
+      {
+        "player": "Tonko Pavičević",
+        "corporation": "UNMI",
+        "tr": 33,
+        "awards": 2,
+        "milestones": 0,
+        "greenery": 0,
+        "cities": 0,
+        "cards": 21,
+        "lead": 0,
+        "total": 56,
+        "rank": 5,
+        "note": ""
+      },
+      {
+        "player": "Marijan Vukelić",
+        "corporation": "Thorgate",
+        "tr": 33,
+        "awards": 9,
+        "milestones": 0,
+        "greenery": 3,
+        "cities": 8,
+        "cards": 6,
+        "lead": 0,
+        "total": 59,
+        "rank": 4,
+        "note": ""
+      },
+      {
+        "player": "Matea Korda",
+        "corporation": "Helion",
+        "tr": 41,
+        "awards": 7,
+        "milestones": 5,
+        "greenery": 3,
+        "cities": 5,
+        "cards": 4,
+        "lead": 0,
+        "total": 65,
+        "rank": 3,
+        "note": ""
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Teractor",
+        "tr": 29,
+        "awards": 2,
+        "milestones": 10,
+        "greenery": 1,
+        "cities": 8,
+        "cards": 46,
+        "lead": 0,
+        "total": 96,
+        "rank": 1,
+        "note": ""
+      }
+    ],
+    "milestones": {
+      "Specialist": "Andro Slavić",
+      "Tycoon": "Andro Slavić",
+      "Legend": "Matea Korda"
+    },
+    "awards": {
+      "winners": {
+        "Industrialist": {
+          "first": [
+            "Marijan Vukelić"
+          ],
+          "second": [
+            "Matej Šare",
+            "Matea Korda",
+            "Andro Slavić"
+          ]
+        },
+        "Desert Settler": {
+          "first": [
+            "Matej Šare"
+          ],
+          "second": [
+            "Marijan Vukelić"
+          ]
+        },
+        "Benefactor": {
+          "first": [
+            "Matea Korda"
+          ],
+          "second": [
+            "Tonko Pavičević",
+            "Marijan Vukelić"
+          ]
+        }
+      },
+      "points": {
+        "Industrialist": {
+          "Matej Šare": 4,
+          "Tonko Pavičević": 0,
+          "Marijan Vukelić": 19,
+          "Matea Korda": 4,
+          "Andro Slavić": 4
+        },
+        "Desert Settler": {
+          "Matej Šare": 8,
+          "Tonko Pavičević": 0,
+          "Marijan Vukelić": 5,
+          "Matea Korda": 0,
+          "Andro Slavić": 0
+        },
+        "Benefactor": {
+          "Matej Šare": 0,
+          "Tonko Pavičević": 33,
+          "Marijan Vukelić": 33,
+          "Matea Korda": 41,
+          "Andro Slavić": 0
+        }
+      }
+    }
   }
 ]
