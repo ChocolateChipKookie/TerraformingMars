@@ -588,6 +588,13 @@
         "rank": 1,
         "points": 85,
         "players": 3
+      },
+      {
+        "id": 105,
+        "corporation": "Inventrix",
+        "rank": 3,
+        "points": 71,
+        "players": 4
       }
     ],
     "best_games": [
@@ -2258,6 +2265,13 @@
         "rank": 3,
         "points": 74,
         "players": 4
+      },
+      {
+        "id": 105,
+        "corporation": "Saturn Systems",
+        "rank": 2,
+        "points": 78,
+        "players": 4
       }
     ],
     "best_games": [
@@ -3792,6 +3806,13 @@
         "rank": 1,
         "points": 91,
         "players": 4
+      },
+      {
+        "id": 105,
+        "corporation": "Ecoline",
+        "rank": 1,
+        "points": 82,
+        "players": 4
       }
     ],
     "best_games": [
@@ -3819,7 +3840,7 @@
     "fave_corp": {
       "name": "Phobolog",
       "total": 8,
-      "wins": 2
+      "wins": 3
     },
     "best_corp": {
       "name": "Utopia Invest",
@@ -5637,6 +5658,13 @@
         "corporation": "Aphrodite",
         "rank": 2,
         "points": 89,
+        "players": 4
+      },
+      {
+        "id": 105,
+        "corporation": "Splice",
+        "rank": 4,
+        "points": 68,
         "players": 4
       }
     ],
