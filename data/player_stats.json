@@ -602,6 +602,13 @@
         "rank": 1,
         "points": 73,
         "players": 5
+      },
+      {
+        "id": 107,
+        "corporation": "Celestic",
+        "rank": 1,
+        "points": 70,
+        "players": 5
       }
     ],
     "best_games": [
@@ -1639,6 +1646,13 @@
         "rank": 5,
         "points": 45,
         "players": 5
+      },
+      {
+        "id": 107,
+        "corporation": "Poseidon",
+        "rank": 5,
+        "points": 59,
+        "players": 5
       }
     ],
     "best_games": [
@@ -2308,6 +2322,13 @@
         "rank": 4,
         "points": 58,
         "players": 5
+      },
+      {
+        "id": 107,
+        "corporation": "Teractor",
+        "rank": 3,
+        "points": 64,
+        "players": 5
       }
     ],
     "best_games": [
@@ -2333,12 +2354,12 @@
       "wins": 1
     },
     "best_corp": {
-      "name": "Teractor",
+      "name": "Arcadian Communities",
       "total": 1,
       "wins": 1
     },
     "most_wins": {
-      "name": "Teractor",
+      "name": "Arcadian Communities",
       "total": 1,
       "wins": 1
     },
@@ -3866,6 +3887,13 @@
         "rank": 3,
         "points": 58,
         "players": 5
+      },
+      {
+        "id": 107,
+        "corporation": "Manutech",
+        "rank": 4,
+        "points": 59,
+        "players": 5
       }
     ],
     "best_games": [
@@ -3902,7 +3930,7 @@
     },
     "most_wins": {
       "name": "Manutech",
-      "total": 5,
+      "total": 6,
       "wins": 4
     },
     "elo": {
@@ -5735,6 +5763,13 @@
         "corporation": "Ecoline",
         "rank": 2,
         "points": 70,
+        "players": 5
+      },
+      {
+        "id": 107,
+        "corporation": "Valley Trust",
+        "rank": 2,
+        "points": 69,
         "players": 5
       }
     ],
