@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Jena propao(istrian tragedy 2.0)</title>
+    <link href="../css/meta.css" rel="stylesheet" type="text/css">    
+    <link href="../css/game.css" rel="stylesheet" type="text/css">    
+    <link href="../css/table.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="container page-title">
+        Jena propao(istrian tragedy 2.0)
+    </div>
+
+    <div class="container">
+        <div class="container-banner">
+            Game outcome
+        </div>
+        <div class="sub-container">
+            <div class="sub-container--element">
+                <label for="name-input">Name:</label>
+                <input type="text" class="option-input" id="name-input" disabled value="Jena propao(istrian tragedy 2.0)">
+            </div>
+            <div class="sub-container--element">
+                <label for="date-input">Date:</label>
+                <input type="text" class="option-input" id="date-input" disabled value="25/10/2020" required="required">
+            </div>
+            <div class="sub-container--element">
+                <label for="mode-input">Mode:</label>
+                <input type="text" class="option-input" id="mode-input" disabled value="B+Col+CE+Dr+Pr+Ve">
+            </div>
+            <div class="sub-container--element">
+                <label for="map-input">Map:</label>
+                <input type="text" class="option-input" id="map-input" disabled value="Tharsis">
+            </div>
+            <div class="sub-container--element">
+                <label for="players-input">Players:</label>
+                <input type="text" class="option-input" id="players-input" disabled value="5">
+            </div>
+            <div class="sub-container--element">
+                <label for="generations-input">Generations:</label>
+                <input type="text" class="option-input" id="generations-input" disabled value="8">
+            </div>
+            <div class="sub-container--element">
+                <label for="winner-input">Winner:</label>
+                <input type="text" class="option-input" id="winner-input" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;" disabled value="Matteo Samsa">
+            </div>
+            <div class="sub-container--element">
+                <label for="win-corp-input">Winner corporation:</label>
+                <input type="text" class="option-input" id="win-corp-input" disabled value="Celestic">
+            </div>
+            <div class="sub-container--element">
+                <label for="win-score-input">Winner points:</label>
+                <input type="text" class="option-input" id="win-score-input" disabled value="70">
+            </div>
+        </div>
+
+        <div class="container-banner">
+            Points
+        </div>
+        <div class="sub-container sub-container--element" id="points-table-div">
+            <table class="table" id="points-table">
+                <tr id="player-names">                    
+                    <td class="table-cell">Name</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Matteo Samsa</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Dorian Tokmadžić</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Mia Čaušević</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Luka Jenuš</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Jan Mastrović</td>
+                </tr>
+                <tr id="player-corporations">                    
+                    <td class="table-cell">Corporation</td>
+                    <td class="table-cell">Celestic</td>
+                    <td class="table-cell">Valley Trust</td>
+                    <td class="table-cell">Teractor</td>
+                    <td class="table-cell">Manutech</td>
+                    <td class="table-cell">Poseidon</td>
+                </tr>
+                <tr id="tr-points">
+                    <td class="table-cell">TR</td>
+                    <td class="table-cell">36</td>
+                    <td class="table-cell">30</td>
+                    <td class="table-cell">39</td>
+                    <td class="table-cell">32</td>
+                    <td class="table-cell">35</td>
+                </tr>
+                <tr id="award-points">
+                    <td class="table-cell">Awards</td>
+                    <td class="table-cell">10</td>
+                    <td class="table-cell">4</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">5</td>
+                    <td class="table-cell">2</td>
+                </tr>
+                <tr id="milestone-points">
+                    <td class="table-cell">Milestones</td>
+                    <td class="table-cell">5</td>
+                    <td class="table-cell">10</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">0</td>
+                </tr>
+                <tr id="greenery-points">
+                    <td class="table-cell">Greenery</td>
+                    <td class="table-cell">2</td>
+                    <td class="table-cell">3</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">4</td>
+                    <td class="table-cell">2</td>
+                </tr>
+                <tr id="city-points">
+                    <td class="table-cell">Cities</td>
+                    <td class="table-cell">6</td>
+                    <td class="table-cell">5</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">6</td>
+                    <td class="table-cell">4</td>
+                </tr>
+                <tr id="card-points">
+                    <td class="table-cell">Cards</td>
+                    <td class="table-cell">11</td>
+                    <td class="table-cell">17</td>
+                    <td class="table-cell">25</td>
+                    <td class="table-cell">12</td>
+                    <td class="table-cell">16</td>
+                </tr>
+
+                <tr id="total-points">
+                    <td class="table-cell">Total</td>
+                    <td class="table-cell">70</td>
+                    <td class="table-cell">69</td>
+                    <td class="table-cell">64</td>
+                    <td class="table-cell">59</td>
+                    <td class="table-cell">59</td>
+                </tr>
+
+                <tr id="gold-lead">
+                    <td class="table-cell">Gold lead</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">0</td>
+                    <td class="table-cell">1</td>
+                    <td class="table-cell">0</td>
+                </tr>
+        
+                <tr id="ranks">
+                    <td class="table-cell">Rank</td>
+                    <td class="table-cell">1</td>
+                    <td class="table-cell">2</td>
+                    <td class="table-cell">3</td>
+                    <td class="table-cell">4</td>
+                    <td class="table-cell">5</td>
+                </tr>
+                <tr id="player-note">
+                    <td class="table-cell">Notes</td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;">doc cu opet u istru igrat... </td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;"></td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;"></td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;"></td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="link-button-wrapper">
+        <button class="link-button-half" onclick="window.location='/games/106.html';">Previous</button>
+        <button class="link-button-half" onclick="window.location='/games/108.html';">Next</button>
+    </div>
+    <div class="link-button-wrapper">
+        <button class="link-button" onclick="window.location='../index.html';">Main page</button>
+    </div>
+</body>
+<footer>
+</footer>
