@@ -11826,5 +11826,185 @@
         "count": 2
       }
     ]
+  },
+  {
+    "id": 107,
+    "name": "Jena propao(istrian tragedy 2.0)",
+    "note": "drugi los gejm u danu...iako imamo sat vremena vise za igrat :) ",
+    "date": "2020-10-25",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Ve",
+    "map": "Tharsis",
+    "winner": "Matteo Samsa",
+    "win_corp": "Celestic",
+    "win_score": 70,
+    "players": 5,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Celestic",
+        "tr": 36,
+        "awards": 10,
+        "milestones": 5,
+        "greenery": 2,
+        "cities": 6,
+        "cards": 11,
+        "lead": 0,
+        "total": 70,
+        "rank": 1,
+        "note": "doc cu opet u istru igrat... "
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Valley Trust",
+        "tr": 30,
+        "awards": 4,
+        "milestones": 10,
+        "greenery": 3,
+        "cities": 5,
+        "cards": 17,
+        "lead": 0,
+        "total": 69,
+        "rank": 2,
+        "note": ""
+      },
+      {
+        "player": "Mia Čaušević",
+        "corporation": "Teractor",
+        "tr": 39,
+        "awards": 0,
+        "milestones": 0,
+        "greenery": 0,
+        "cities": 0,
+        "cards": 25,
+        "lead": 0,
+        "total": 64,
+        "rank": 3,
+        "note": ""
+      },
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Manutech",
+        "tr": 32,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 4,
+        "cities": 6,
+        "cards": 12,
+        "lead": 1,
+        "total": 59,
+        "rank": 4,
+        "note": ""
+      },
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Poseidon",
+        "tr": 35,
+        "awards": 2,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 4,
+        "cards": 16,
+        "lead": 0,
+        "total": 59,
+        "rank": 5,
+        "note": ""
+      }
+    ],
+    "milestones": {
+      "Mayor": "Dorian Tokmadžić",
+      "Gardener": "Dorian Tokmadžić",
+      "Hoverlord": "Matteo Samsa"
+    },
+    "awards": {
+      "winners": {
+        "Banker": {
+          "first": [
+            "Matteo Samsa"
+          ],
+          "second": [
+            "Jan Mastrović"
+          ]
+        },
+        "Venuphile": {
+          "first": [
+            "Matteo Samsa"
+          ],
+          "second": [
+            "Dorian Tokmadžić"
+          ]
+        },
+        "Miner": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Dorian Tokmadžić"
+          ]
+        }
+      },
+      "points": {
+        "Banker": {
+          "Matteo Samsa": 25,
+          "Dorian Tokmadžić": 0,
+          "Mia Čaušević": 0,
+          "Luka Jenuš": 0,
+          "Jan Mastrović": 17
+        },
+        "Venuphile": {
+          "Matteo Samsa": 7,
+          "Dorian Tokmadžić": 2,
+          "Mia Čaušević": 0,
+          "Luka Jenuš": 0,
+          "Jan Mastrović": 0
+        },
+        "Miner": {
+          "Matteo Samsa": 0,
+          "Dorian Tokmadžić": 10,
+          "Mia Čaušević": 0,
+          "Luka Jenuš": 12,
+          "Jan Mastrović": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Callisto",
+        "count": 1
+      },
+      {
+        "name": "Ceres",
+        "count": 0
+      },
+      {
+        "name": "Enceladus",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Luna",
+        "count": 3
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      },
+      {
+        "name": "Triton",
+        "count": 2
+      }
+    ]
   }
 ]
