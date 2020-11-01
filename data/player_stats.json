@@ -616,6 +616,13 @@
         "rank": 3,
         "points": 66,
         "players": 5
+      },
+      {
+        "id": 109,
+        "corporation": "Lakefront Resorts",
+        "rank": 2,
+        "points": 84,
+        "players": 3
       }
     ],
     "best_games": [
@@ -1670,6 +1677,13 @@
         "rank": 5,
         "points": 59,
         "players": 5
+      },
+      {
+        "id": 109,
+        "corporation": "Philares",
+        "rank": 3,
+        "points": 82,
+        "players": 3
       }
     ],
     "best_games": [
@@ -3928,6 +3942,13 @@
         "rank": 2,
         "points": 69,
         "players": 5
+      },
+      {
+        "id": 109,
+        "corporation": "Phobolog",
+        "rank": 1,
+        "points": 100,
+        "players": 3
       }
     ],
     "best_games": [
@@ -3954,7 +3975,7 @@
     ],
     "fave_corp": {
       "name": "Phobolog",
-      "total": 8,
+      "total": 9,
       "wins": 3
     },
     "best_corp": {
