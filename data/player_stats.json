@@ -1689,6 +1689,13 @@
         "rank": 3,
         "points": 82,
         "players": 3
+      },
+      {
+        "id": 110,
+        "corporation": "Point Luna",
+        "rank": 2,
+        "points": 97,
+        "players": 3
       }
     ],
     "best_games": [
@@ -1714,9 +1721,9 @@
       }
     ],
     "fave_corp": {
-      "name": "Tharsis Republic",
+      "name": "Point Luna",
       "total": 7,
-      "wins": 1
+      "wins": 2
     },
     "best_corp": {
       "name": "Arklight",
@@ -3959,6 +3966,13 @@
         "rank": 1,
         "points": 100,
         "players": 3
+      },
+      {
+        "id": 110,
+        "corporation": "Manutech",
+        "rank": 1,
+        "points": 101,
+        "players": 3
       }
     ],
     "best_games": [
@@ -3986,7 +4000,7 @@
     "fave_corp": {
       "name": "Phobolog",
       "total": 9,
-      "wins": 3
+      "wins": 4
     },
     "best_corp": {
       "name": "Utopia Invest",
@@ -3995,8 +4009,8 @@
     },
     "most_wins": {
       "name": "Manutech",
-      "total": 6,
-      "wins": 4
+      "total": 7,
+      "wins": 5
     },
     "elo": {
       "value": 1261.6674360353115,
@@ -5611,6 +5625,13 @@
         "rank": 1,
         "points": 70,
         "players": 5
+      },
+      {
+        "id": 110,
+        "corporation": "Phobolog",
+        "rank": 3,
+        "points": 80,
+        "players": 3
       }
     ],
     "best_games": [
@@ -5621,8 +5642,8 @@
       },
       {
         "players": 3,
-        "id": 63,
-        "score": 63
+        "id": 110,
+        "score": 80
       },
       {
         "players": 4,
@@ -5632,7 +5653,7 @@
     ],
     "fave_corp": {
       "name": "Phobolog",
-      "total": 2,
+      "total": 3,
       "wins": 0
     },
     "best_corp": {
