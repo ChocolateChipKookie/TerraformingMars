@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Daily game</title>
+    <link href="../css/meta.css" rel="stylesheet" type="text/css">    
+    <link href="../css/game.css" rel="stylesheet" type="text/css">    
+    <link href="../css/table.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="container page-title">
+        Daily game
+    </div>
+
+    <div class="container">
+        <div class="container-banner">
+            Game outcome
+        </div>
+        <div class="sub-container">
+            <div class="sub-container--element">
+                <label for="name-input">Name:</label>
+                <input type="text" class="option-input" id="name-input" disabled value="Daily game">
+            </div>
+            <div class="sub-container--element">
+                <label for="date-input">Date:</label>
+                <input type="text" class="option-input" id="date-input" disabled value="04/11/2020" required="required">
+            </div>
+            <div class="sub-container--element">
+                <label for="mode-input">Mode:</label>
+                <input type="text" class="option-input" id="mode-input" disabled value="B+Col+CE+Dr+Pr+Ve">
+            </div>
+            <div class="sub-container--element">
+                <label for="map-input">Map:</label>
+                <input type="text" class="option-input" id="map-input" disabled value="Tharsis">
+            </div>
+            <div class="sub-container--element">
+                <label for="players-input">Players:</label>
+                <input type="text" class="option-input" id="players-input" disabled value="3">
+            </div>
+            <div class="sub-container--element">
+                <label for="generations-input">Generations:</label>
+                <input type="text" class="option-input" id="generations-input" disabled value="10">
+            </div>
+            <div class="sub-container--element">
+                <label for="winner-input">Winner:</label>
+                <input type="text" class="option-input" id="winner-input" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;" disabled value="Luka Jenuš">
+            </div>
+            <div class="sub-container--element">
+                <label for="win-corp-input">Winner corporation:</label>
+                <input type="text" class="option-input" id="win-corp-input" disabled value="Manutech">
+            </div>
+            <div class="sub-container--element">
+                <label for="win-score-input">Winner points:</label>
+                <input type="text" class="option-input" id="win-score-input" disabled value="101">
+            </div>
+        </div>
+
+        <div class="container-banner">
+            Points
+        </div>
+        <div class="sub-container sub-container--element" id="points-table-div">
+            <table class="table" id="points-table">
+                <tr id="player-names">                    
+                    <td class="table-cell">Name</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Luka Jenuš</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Robert Bulaić</td>
+                    <td class="table-cell" style="font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Jan Mastrović</td>
+                </tr>
+                <tr id="player-corporations">                    
+                    <td class="table-cell">Corporation</td>
+                    <td class="table-cell">Manutech</td>
+                    <td class="table-cell">Phobolog</td>
+                    <td class="table-cell">Point Luna</td>
+                </tr>
+                <tr id="tr-points">
+                    <td class="table-cell">TR</td>
+                    <td class="table-cell">47</td>
+                    <td class="table-cell">38</td>
+                    <td class="table-cell">39</td>
+                </tr>
+                <tr id="award-points">
+                    <td class="table-cell">Awards</td>
+                    <td class="table-cell">12</td>
+                    <td class="table-cell">5</td>
+                    <td class="table-cell">6</td>
+                </tr>
+                <tr id="milestone-points">
+                    <td class="table-cell">Milestones</td>
+                    <td class="table-cell">5</td>
+                    <td class="table-cell">5</td>
+                    <td class="table-cell">5</td>
+                </tr>
+                <tr id="greenery-points">
+                    <td class="table-cell">Greenery</td>
+                    <td class="table-cell">7</td>
+                    <td class="table-cell">8</td>
+                    <td class="table-cell">4</td>
+                </tr>
+                <tr id="city-points">
+                    <td class="table-cell">Cities</td>
+                    <td class="table-cell">6</td>
+                    <td class="table-cell">11</td>
+                    <td class="table-cell">14</td>
+                </tr>
+                <tr id="card-points">
+                    <td class="table-cell">Cards</td>
+                    <td class="table-cell">24</td>
+                    <td class="table-cell">13</td>
+                    <td class="table-cell">29</td>
+                </tr>
+
+                <tr id="total-points">
+                    <td class="table-cell">Total</td>
+                    <td class="table-cell">101</td>
+                    <td class="table-cell">80</td>
+                    <td class="table-cell">97</td>
+                </tr>
+
+                <tr id="ranks">
+                    <td class="table-cell">Rank</td>
+                    <td class="table-cell">1</td>
+                    <td class="table-cell">3</td>
+                    <td class="table-cell">2</td>
+                </tr>
+                <tr id="player-note">
+                    <td class="table-cell">Notes</td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;">Manu Manu Mije</td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;"></td>
+                    <td class="table-cell" style="text-transform: none; font-weight: bolder; font-family: 'Courier New', Courier, monospace;"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="link-button-wrapper">
+        <button class="link-button-half" onclick="window.location='/games/109.html';">Previous</button>
+        <button class="link-button-half" onclick="window.location='/games/111.html';">Next</button>
+    </div>
+    <div class="link-button-wrapper">
+        <button class="link-button" onclick="window.location='../index.html';">Main page</button>
+    </div>
+</body>
+<footer>
+</footer>
