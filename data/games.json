@@ -12492,5 +12492,168 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 112,
+    "name": "Bravo Mastro",
+    "note": "",
+    "date": "2020-11-07",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Jan Mastrović",
+    "win_corp": "Point Luna",
+    "win_score": 81,
+    "players": 4,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Point Luna",
+        "tr": 30,
+        "awards": 7,
+        "milestones": 5,
+        "greenery": 2,
+        "cities": 3,
+        "cards": 26,
+        "lead": 0,
+        "total": 75,
+        "rank": 3,
+        "note": "dobar pregled",
+        "turmoil": 2
+      },
+      {
+        "player": "Robert Bulaić",
+        "corporation": "Mons Insurance",
+        "tr": 29,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 1,
+        "cities": 0,
+        "cards": 9,
+        "lead": 0,
+        "total": 45,
+        "rank": 4,
+        "note": "dizaster",
+        "turmoil": 1
+      },
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Point Luna",
+        "tr": 32,
+        "awards": 7,
+        "milestones": 0,
+        "greenery": 5,
+        "cities": 8,
+        "cards": 28,
+        "lead": 0,
+        "total": 81,
+        "rank": 1,
+        "note": "jovian power",
+        "turmoil": 1
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Tharsis Republic",
+        "tr": 27,
+        "awards": 5,
+        "milestones": 10,
+        "greenery": 10,
+        "cities": 21,
+        "cards": 2,
+        "lead": 0,
+        "total": 77,
+        "rank": 2,
+        "note": "dobro drugo",
+        "turmoil": 2
+      }
+    ],
+    "milestones": {
+      "Builder": "Dorian Tokmadžić",
+      "Hoverlord": "Luka Jenuš",
+      "Mayor": "Dorian Tokmadžić"
+    },
+    "awards": {
+      "winners": {
+        "Landlord": {
+          "first": [
+            "Dorian Tokmadžić"
+          ],
+          "second": [
+            "Jan Mastrović"
+          ]
+        },
+        "Scientist": {
+          "first": [
+            "Jan Mastrović"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        },
+        "Venuphile": {
+          "first": [
+            "Luka Jenuš",
+            "Robert Bulaić"
+          ],
+          "second": []
+        }
+      },
+      "points": {
+        "Landlord": {
+          "Luka Jenuš": 0,
+          "Robert Bulaić": 0,
+          "Jan Mastrović": 1,
+          "Dorian Tokmadžić": 2
+        },
+        "Scientist": {
+          "Luka Jenuš": 1,
+          "Robert Bulaić": 0,
+          "Jan Mastrović": 2,
+          "Dorian Tokmadžić": 0
+        },
+        "Venuphile": {
+          "Luka Jenuš": 5,
+          "Robert Bulaić": 5,
+          "Jan Mastrović": 0,
+          "Dorian Tokmadžić": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Ceres",
+        "count": 2
+      },
+      {
+        "name": "Europa",
+        "count": 2
+      },
+      {
+        "name": "Callisto",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      },
+      {
+        "name": "Titan",
+        "count": 0
+      }
+    ]
   }
 ]
