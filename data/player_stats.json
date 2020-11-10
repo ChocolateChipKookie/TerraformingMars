@@ -1722,6 +1722,13 @@
         "rank": 1,
         "points": 81,
         "players": 4
+      },
+      {
+        "id": 113,
+        "corporation": "Philares",
+        "rank": 3,
+        "points": 57,
+        "players": 4
       }
     ],
     "best_games": [
@@ -1749,7 +1756,7 @@
     "fave_corp": {
       "name": "Point Luna",
       "total": 8,
-      "wins": 2
+      "wins": 3
     },
     "best_corp": {
       "name": "Arklight",
@@ -2994,6 +3001,13 @@
         "rank": 1,
         "points": 96,
         "players": 5
+      },
+      {
+        "id": 113,
+        "corporation": "Polyphemos",
+        "rank": 1,
+        "points": 65,
+        "players": 4
       }
     ],
     "best_games": [
@@ -3021,7 +3035,7 @@
     "fave_corp": {
       "name": "Teractor",
       "total": 6,
-      "wins": 2
+      "wins": 3
     },
     "best_corp": {
       "name": "Saturn Systems",
@@ -4017,6 +4031,13 @@
         "corporation": "Point Luna",
         "rank": 3,
         "points": 75,
+        "players": 4
+      },
+      {
+        "id": 113,
+        "corporation": "Utopia Invest",
+        "rank": 2,
+        "points": 60,
         "players": 4
       }
     ],
@@ -5978,6 +5999,13 @@
         "corporation": "Tharsis Republic",
         "rank": 2,
         "points": 77,
+        "players": 4
+      },
+      {
+        "id": 113,
+        "corporation": "Factorum",
+        "rank": 4,
+        "points": 57,
         "players": 4
       }
     ],
