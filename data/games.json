@@ -12655,5 +12655,169 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 113,
+    "name": "Tragican gejm",
+    "note": "tragikomican gejm. andro je vjezbao 40h na dan, i isplatilo se... tuzan gejm.. ",
+    "date": "2020-11-10",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Andro Slavić",
+    "win_corp": "Polyphemos",
+    "win_score": 65,
+    "players": 4,
+    "generation": 0,
+    "image": "",
+    "scores": [
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Philares",
+        "tr": 34,
+        "awards": 4,
+        "milestones": 5,
+        "greenery": 2,
+        "cities": 7,
+        "cards": 4,
+        "lead": 1,
+        "total": 57,
+        "rank": 3,
+        "note": "prati awarde",
+        "turmoil": 1
+      },
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Utopia Invest",
+        "tr": 30,
+        "awards": 12,
+        "milestones": 5,
+        "greenery": 1,
+        "cities": 3,
+        "cards": 7,
+        "lead": 0,
+        "total": 60,
+        "rank": 2,
+        "note": "diskutabilan dejm ",
+        "turmoil": 2
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Polyphemos",
+        "tr": 29,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 3,
+        "cities": 4,
+        "cards": 22,
+        "lead": 0,
+        "total": 65,
+        "rank": 1,
+        "note": "sta da ja kazem...",
+        "turmoil": 2
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Factorum",
+        "tr": 24,
+        "awards": 0,
+        "milestones": 5,
+        "greenery": 10,
+        "cities": 14,
+        "cards": 3,
+        "lead": 0,
+        "total": 57,
+        "rank": 4,
+        "note": "katastrofa",
+        "turmoil": 1
+      }
+    ],
+    "milestones": {
+      "Planer": "Jan Mastrović",
+      "Gardener": "Dorian Tokmadžić",
+      "Terraformer": "Luka Jenuš"
+    },
+    "awards": {
+      "winners": {
+        "Miner": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Jan Mastrović"
+          ]
+        },
+        "Banker": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        },
+        "Venuphile": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Jan Mastrović"
+          ]
+        }
+      },
+      "points": {
+        "Miner": {
+          "Jan Mastrović": 10,
+          "Luka Jenuš": 20,
+          "Andro Slavić": 0,
+          "Dorian Tokmadžić": 0
+        },
+        "Banker": {
+          "Jan Mastrović": 0,
+          "Luka Jenuš": 10,
+          "Andro Slavić": 20,
+          "Dorian Tokmadžić": 0
+        },
+        "Venuphile": {
+          "Jan Mastrović": 2,
+          "Luka Jenuš": 5,
+          "Andro Slavić": 0,
+          "Dorian Tokmadžić": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Callisto",
+        "count": 0
+      },
+      {
+        "name": "Ganymede",
+        "count": 1
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Luna",
+        "count": 3
+      },
+      {
+        "name": "Pluto",
+        "count": 3
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      }
+    ]
   }
 ]
