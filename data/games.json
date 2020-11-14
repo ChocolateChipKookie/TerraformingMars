@@ -12990,5 +12990,146 @@
         "count": 1
       }
     ]
+  },
+  {
+    "id": 115,
+    "name": "jedan pro gejm",
+    "note": "Gust gejm od samog pocetka. \ndobar gejm. ",
+    "date": "2020-11-14",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Hellas",
+    "winner": "Andro Slavić",
+    "win_corp": "Utopia Invest",
+    "win_score": 99,
+    "players": 3,
+    "generation": 11,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Stormcraft Incorporated",
+        "tr": 33,
+        "awards": 7,
+        "milestones": 10,
+        "greenery": 4,
+        "cities": 3,
+        "cards": 40,
+        "lead": 0,
+        "total": 98,
+        "rank": 2,
+        "note": "",
+        "turmoil": 1
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Utopia Invest",
+        "tr": 33,
+        "awards": 10,
+        "milestones": 5,
+        "greenery": 5,
+        "cities": 11,
+        "cards": 34,
+        "lead": 0,
+        "total": 99,
+        "rank": 1,
+        "note": "",
+        "turmoil": 1
+      },
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Tharsis Republic",
+        "tr": 37,
+        "awards": 7,
+        "milestones": 0,
+        "greenery": 8,
+        "cities": 17,
+        "cards": 25,
+        "lead": 1,
+        "total": 96,
+        "rank": 3,
+        "note": "",
+        "turmoil": 2
+      }
+    ],
+    "milestones": {
+      "Energizer": "Andro Slavić",
+      "Rim Settler": "Luka Jenuš",
+      "Hoverlord": "Luka Jenuš"
+    },
+    "awards": {
+      "winners": {
+        "Contractor": {
+          "first": [
+            "Andro Slavić",
+            "Jan Mastrović"
+          ],
+          "second": []
+        },
+        "Venuphile": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        },
+        "Excentric": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Jan Mastrović"
+          ]
+        }
+      },
+      "points": {
+        "Contractor": {
+          "Luka Jenuš": 0,
+          "Andro Slavić": 15,
+          "Jan Mastrović": 15
+        },
+        "Venuphile": {
+          "Luka Jenuš": 3,
+          "Andro Slavić": 8,
+          "Jan Mastrović": 0
+        },
+        "Excentric": {
+          "Luka Jenuš": 10,
+          "Andro Slavić": 0,
+          "Jan Mastrović": 9
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Callisto",
+        "count": 0
+      },
+      {
+        "name": "Triton",
+        "count": 1
+      },
+      {
+        "name": "Ceres",
+        "count": 1
+      },
+      {
+        "name": "Luna",
+        "count": 2
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      }
+    ]
   }
 ]
