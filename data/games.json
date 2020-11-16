@@ -13131,5 +13131,173 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 116,
+    "name": "Dnevni gejm",
+    "note": "",
+    "date": "2020-11-16",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Hellas",
+    "winner": "Andro Slavić",
+    "win_corp": "Valley Trust",
+    "win_score": 70,
+    "players": 4,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Andro Slavić",
+        "corporation": "Valley Trust",
+        "tr": 30,
+        "awards": 2,
+        "milestones": 0,
+        "greenery": 4,
+        "cities": 4,
+        "cards": 28,
+        "lead": 0,
+        "total": 70,
+        "rank": 1,
+        "note": "Prosla spika",
+        "turmoil": 2
+      },
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Aridor",
+        "tr": 24,
+        "awards": 5,
+        "milestones": 10,
+        "greenery": 1,
+        "cities": 5,
+        "cards": 16,
+        "lead": 0,
+        "total": 62,
+        "rank": 3,
+        "note": "prerano zavrsilo",
+        "turmoil": 1
+      },
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Teractor",
+        "tr": 27,
+        "awards": 9,
+        "milestones": 5,
+        "greenery": 0,
+        "cities": 0,
+        "cards": 23,
+        "lead": 0,
+        "total": 66,
+        "rank": 2,
+        "note": "broji karte",
+        "turmoil": 2
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Factorum",
+        "tr": 38,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 3,
+        "cities": 5,
+        "cards": 7,
+        "lead": 0,
+        "total": 60,
+        "rank": 4,
+        "note": "cudan gejm",
+        "turmoil": 2
+      }
+    ],
+    "milestones": {
+      "Diversifier": "Luka Jenuš",
+      "Energizer": "Matteo Samsa",
+      "Hoverlord": "Luka Jenuš"
+    },
+    "awards": {
+      "winners": {
+        "Contractor": {
+          "first": [
+            "Dorian Tokmadžić"
+          ],
+          "second": [
+            "Matteo Samsa"
+          ]
+        },
+        "Excentric": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Matteo Samsa"
+          ]
+        },
+        "Magnate": {
+          "first": [
+            "Matteo Samsa"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        }
+      },
+      "points": {
+        "Contractor": {
+          "Andro Slavić": 2,
+          "Luka Jenuš": 5,
+          "Matteo Samsa": 9,
+          "Dorian Tokmadžić": 16
+        },
+        "Excentric": {
+          "Andro Slavić": 4,
+          "Luka Jenuš": 19,
+          "Matteo Samsa": 10,
+          "Dorian Tokmadžić": 0
+        },
+        "Magnate": {
+          "Andro Slavić": 13,
+          "Luka Jenuš": 12,
+          "Matteo Samsa": 16,
+          "Dorian Tokmadžić": 11
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Enceladus",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Luna",
+        "count": 0
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      },
+      {
+        "name": "Pluto",
+        "count": 0
+      },
+      {
+        "name": "Titan",
+        "count": 1
+      },
+      {
+        "name": "Triton",
+        "count": 2
+      }
+    ]
   }
 ]
