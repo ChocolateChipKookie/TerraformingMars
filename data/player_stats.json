@@ -644,6 +644,13 @@
         "rank": 2,
         "points": 66,
         "players": 4
+      },
+      {
+        "id": 117,
+        "corporation": "Lakefront Resorts",
+        "rank": 1,
+        "points": 80,
+        "players": 5
       }
     ],
     "best_games": [
@@ -3087,6 +3094,13 @@
         "rank": 1,
         "points": 70,
         "players": 4
+      },
+      {
+        "id": 117,
+        "corporation": "Credicor",
+        "rank": 4,
+        "points": 58,
+        "players": 5
       }
     ],
     "best_games": [
@@ -4159,6 +4173,13 @@
         "rank": 3,
         "points": 62,
         "players": 4
+      },
+      {
+        "id": 117,
+        "corporation": "Manutech",
+        "rank": 3,
+        "points": 58,
+        "players": 5
       }
     ],
     "best_games": [
@@ -4195,7 +4216,7 @@
     },
     "most_wins": {
       "name": "Manutech",
-      "total": 7,
+      "total": 8,
       "wins": 5
     },
     "elo": {
@@ -6020,6 +6041,13 @@
         "rank": 5,
         "points": 51,
         "players": 5
+      },
+      {
+        "id": 117,
+        "corporation": "Poseidon",
+        "rank": 5,
+        "points": 45,
+        "players": 5
       }
     ],
     "best_games": [
@@ -6171,6 +6199,13 @@
         "rank": 4,
         "points": 60,
         "players": 4
+      },
+      {
+        "id": 117,
+        "corporation": "Morning Star INC",
+        "rank": 2,
+        "points": 76,
+        "players": 5
       }
     ],
     "best_games": [
