@@ -12415,6 +12415,73 @@
     ]
   },
   {
+    "id": 110,
+    "name": "daily game",
+    "note": "",
+    "date": "2020-11-04",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Ve",
+    "map": "Tharsis",
+    "winner": "Luka Jenuš",
+    "win_corp": "Manutech",
+    "win_score": 101,
+    "players": 3,
+    "generation": 10,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Manutech",
+        "tr": 47,
+        "awards": 12,
+        "milestones": 5,
+        "greenery": 7,
+        "cities": 6,
+        "cards": 24,
+        "lead": 0,
+        "total": 101,
+        "rank": 1,
+        "note": "Manu Manu Mije"
+      },
+      {
+        "player": "Robert Bulaić",
+        "corporation": "Phobolog",
+        "tr": 38,
+        "awards": 5,
+        "milestones": 5,
+        "greenery": 8,
+        "cities": 11,
+        "cards": 13,
+        "lead": 0,
+        "total": 80,
+        "rank": 3,
+        "note": ""
+      },
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Point Luna",
+        "tr": 39,
+        "awards": 6,
+        "milestones": 5,
+        "greenery": 4,
+        "cities": 14,
+        "cards": 29,
+        "lead": 0,
+        "total": 97,
+        "rank": 2,
+        "note": ""
+      }
+    ],
+    "colonies": []
+  },
+  {
     "id": 111,
     "name": "Turmojl pod towerom",
     "note": "",
