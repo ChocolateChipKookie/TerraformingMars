@@ -59,6 +59,10 @@ window.playerSearch = function(){
 
 window.displayPlayerStatsToggle = function(name){
     hideContainer( document.getElementById("hide-players"), "player-list");
+    
+    // TODO: REMOVE
+    console.log(player_stats[name]);
+
     displayPlayerStats(name);
 }
 
@@ -125,6 +129,10 @@ window.displayPlayerStats = function (name){
     player_data.games.forEach(game => games[game.id] = {score:game.points, rank:game.rank});
     Object.keys(games).forEach(function(id){
         var game = all_games.find(game=>game.id == id);
+        
+        // REMOVE
+        console.log(game.id);
+        
         var elo = player_data.elo.history.find(game=>game.id == id);
         table_contents += `
         <tr>
