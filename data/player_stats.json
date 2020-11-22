@@ -3142,6 +3142,13 @@
         "rank": 4,
         "points": 74,
         "players": 4
+      },
+      {
+        "id": 119,
+        "corporation": "Phobolog",
+        "rank": 2,
+        "points": 107,
+        "players": 2
       }
     ],
     "best_games": [
@@ -4243,6 +4250,13 @@
         "rank": 1,
         "points": 108,
         "players": 4
+      },
+      {
+        "id": 119,
+        "corporation": "Tharsis Republic",
+        "rank": 1,
+        "points": 110,
+        "players": 2
       }
     ],
     "best_games": [
@@ -4273,9 +4287,9 @@
       "wins": 4
     },
     "best_corp": {
-      "name": "Helion",
-      "total": 1,
-      "wins": 1
+      "name": "Tharsis Republic",
+      "total": 2,
+      "wins": 2
     },
     "most_wins": {
       "name": "Manutech",
