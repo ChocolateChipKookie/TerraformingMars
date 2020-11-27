@@ -1798,6 +1798,13 @@
         "rank": 3,
         "points": 75,
         "players": 4
+      },
+      {
+        "id": 120,
+        "corporation": "Viron",
+        "rank": 2,
+        "points": 76,
+        "players": 3
       }
     ],
     "best_games": [
@@ -3149,6 +3156,13 @@
         "rank": 2,
         "points": 107,
         "players": 2
+      },
+      {
+        "id": 120,
+        "corporation": "Lakefront Resorts",
+        "rank": 3,
+        "points": 72,
+        "players": 3
       }
     ],
     "best_games": [
@@ -4262,6 +4276,13 @@
         "rank": 1,
         "points": 110,
         "players": 2
+      },
+      {
+        "id": 120,
+        "corporation": "Manutech",
+        "rank": 1,
+        "points": 83,
+        "players": 3
       }
     ],
     "best_games": [
@@ -4287,9 +4308,9 @@
       }
     ],
     "fave_corp": {
-      "name": "Phobolog",
+      "name": "Manutech",
       "total": 9,
-      "wins": 4
+      "wins": 6
     },
     "best_corp": {
       "name": "Tharsis Republic",
@@ -4298,8 +4319,8 @@
     },
     "most_wins": {
       "name": "Manutech",
-      "total": 8,
-      "wins": 5
+      "total": 9,
+      "wins": 6
     },
     "elo": {
       "value": 1239.4368144217294,
