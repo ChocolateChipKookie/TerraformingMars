@@ -13921,5 +13921,147 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 120,
+    "name": "Lijep gejm, ugodna atmosfera",
+    "note": "",
+    "date": "2020-11-27",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Luka Jenuš",
+    "win_corp": "Manutech",
+    "win_score": 83,
+    "players": 3,
+    "generation": 0,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Manutech",
+        "tr": 46,
+        "awards": 4,
+        "milestones": 0,
+        "greenery": 5,
+        "cities": 5,
+        "cards": 21,
+        "lead": 0,
+        "total": 83,
+        "rank": 1,
+        "note": "skolski manu",
+        "turmoil": 2
+      },
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Viron",
+        "tr": 23,
+        "awards": 10,
+        "milestones": 10,
+        "greenery": 0,
+        "cities": 1,
+        "cards": 31,
+        "lead": 0,
+        "total": 76,
+        "rank": 2,
+        "note": "ugodno iznenaden",
+        "turmoil": 1
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Lakefront Resorts",
+        "tr": 38,
+        "awards": 7,
+        "milestones": 5,
+        "greenery": 2,
+        "cities": 1,
+        "cards": 17,
+        "lead": 0,
+        "total": 72,
+        "rank": 3,
+        "note": "rusho zadnju gen dosta lose",
+        "turmoil": 2
+      }
+    ],
+    "milestones": {
+      "Hoverlord": "Jan Mastrović",
+      "Planer": "Jan Mastrović",
+      "Terraformer": "Andro Slavić"
+    },
+    "awards": {
+      "winners": {
+        "Miner": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        },
+        "Scientist": {
+          "first": [
+            "Jan Mastrović"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        },
+        "Thermalist": {
+          "first": [
+            "Jan Mastrović"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        }
+      },
+      "points": {
+        "Miner": {
+          "Luka Jenuš": 1,
+          "Jan Mastrović": 0,
+          "Andro Slavić": 2
+        },
+        "Scientist": {
+          "Luka Jenuš": 0,
+          "Jan Mastrović": 2,
+          "Andro Slavić": 1
+        },
+        "Thermalist": {
+          "Luka Jenuš": 1,
+          "Jan Mastrović": 2,
+          "Andro Slavić": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Ceres",
+        "count": 0
+      },
+      {
+        "name": "Europa",
+        "count": 0
+      },
+      {
+        "name": "Ganymede",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Pluto",
+        "count": 0
+      }
+    ]
   }
 ]
