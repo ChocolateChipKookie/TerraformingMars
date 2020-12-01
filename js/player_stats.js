@@ -66,6 +66,8 @@ window.displayPlayerStatsToggle = function(name){
 
 window.displayPlayerStats = function (name){
     var player_data = player_stats[name];
+    document.title = "Stats for " + name;
+
     document.getElementById("player-name").value = name;    
     document.getElementById("player-elo").value = Math.floor(player_data.elo.value);
 
