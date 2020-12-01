@@ -155,7 +155,7 @@ function timerSetup(){
     mainTimer = new Clickable();
     mainTimer.locate(0.1 * windowWidth, 40 + (unitHeight + 10) * no_players);
     mainTimer.resize(unitWidth, unitHeight * 2);
-    mainTimer.stroke = button_color;
+    mainTimer.stroke = colors[active_player];
     mainTimer.strokeWeight = 5;
     mainTimer.color = button_color;
     mainTimer.textColor = text_color;
