@@ -155,8 +155,10 @@ function timerSetup(){
     mainTimer = new Clickable();
     mainTimer.locate(0.1 * windowWidth, 40 + (unitHeight + 10) * no_players);
     mainTimer.resize(unitWidth, unitHeight * 2);
-    mainTimer.textColor = text_color;
+    mainTimer.stroke = button_color;
+    mainTimer.strokeWeight = 5;
     mainTimer.color = button_color;
+    mainTimer.textColor = text_color;
     mainTimer.textSize = 40;
     mainTimer.textFont = font;
     // Update text to the current player time
