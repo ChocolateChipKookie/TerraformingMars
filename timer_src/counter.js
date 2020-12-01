@@ -67,6 +67,7 @@ function timerSetup(){
         } while(players[active_player].big_pass);
         // Set the timer start to now
         players[active_player].timer_start = Date.now();
+        mainTimer.stroke = colors[active_player];
     }
 
     // Function executed when all the players have ended their turn
