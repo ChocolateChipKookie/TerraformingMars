@@ -1,7 +1,6 @@
 var canvas;
 var MAX_PLAYERS = 5;
 var no_players = 3;
-var timer_box = null;
 
 var clicks = [];
 var start=false;
@@ -11,6 +10,8 @@ var colors = ["#444444","#B90E0A","#11AA11","#3344AA","#CCCC11"];
 var text_color = "#000"
 var button_color = "#DDD"
 var passed_color = "#999";
+var background_color = "#1E1E1E";
+var font = null;
 
 var max_time = 5;
 var gen_first = 0;
@@ -36,11 +37,11 @@ function parseTime(time){
     return `${negative ? "-":""}${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
-function startSequence(){
+function timerSetup(){
     // Set start flag to true
     start = true;
 
-    var unitWidth = 0.8*windowWidth;
+    var unitWidth = 0.8 * windowWidth;
     var unitHeight = (windowHeight - (10*no_players) - 2 * 30 - 15) / (no_players + 3);
     
     // Create players
@@ -51,23 +52,50 @@ function startSequence(){
         elem.timer_start = Date.now();
     });
 
+    // Function executed when the main timer is clicked
     function nextPlayer(){
+        // If the turn is paused, do nothing
+        if(pause) return;
+
+        // Update the timer for the active player
         players[active_player].time -= Date.now() - players[active_player].timer_start;
         
+        // Update the current active player
         do {
+            // Increase the counter by one untill a player has not passed
             active_player = (active_player + 1) % no_players;
         } while(players[active_player].big_pass);
-
+        // Set the timer start to now
         players[active_player].timer_start = Date.now();
     }
 
+    // Function executed when all the players have ended their turn
     function nextGen(){
-        timers[gen_first].strokeWeight = 
+        // Set the active and generation first player to the new value
         active_player = gen_first = (gen_first + 1) % no_players;
+        // Set generation first player colour
+        mainTimer.stroke = colors[active_player];
+        // Increment generation
+        generation += 1;
+
+        // Reset button variables
         players.forEach(player=>player.big_pass = false);
         timers.forEach(timer => timer.color = button_color);
-        timer_box.stroke = colors[active_player];
-        generation += 1;
+    }
+
+    // Function to enter pause
+    function enterPause(){
+        pause = !pause;
+        if(pause){
+            // Entering pause
+            players[active_player].time -= Date.now() - players[active_player].timer_start;
+            pauseButton.text = "Unpause"
+        }
+        else{
+            // Exiting pause
+            players[active_player].timer_start = Date.now();
+            pauseButton.text = "Pause"
+        }
     }
 
     // Create a timer box for every player
@@ -81,7 +109,7 @@ function startSequence(){
         timer.stroke = colors[i];
         timer.id = i;
         timer.textSize = 20;
-        timer.textFont = prototype;
+        timer.textFont = font;
         timer.onPress = function(){
             // If paused, the player cannot pass
             if(pause) return;
@@ -100,8 +128,8 @@ function startSequence(){
                 var finished = players.reduce((acc, elem)=> acc && elem.big_pass, true);
                 if (finished){
                     // Go to next generation and pause
-                    nextGen();
                     enterPause();
+                    nextGen();
                 }
                 else{
                     // Go to next player
@@ -123,48 +151,35 @@ function startSequence(){
     }
 
     // Create the main timer box
-    timer_box = new Clickable();
-    timer_box.locate(0.1 * windowWidth, 40 + (unitHeight + 10) * no_players);
-    timer_box.resize(unitWidth, unitHeight * 2);
-    timer_box.textColor = text_color;
-    timer_box.color = button_color;
-    timer_box.textSize = 40;
-    timer_box.textFont = prototype;
+    mainTimer = new Clickable();
+    mainTimer.locate(0.1 * windowWidth, 40 + (unitHeight + 10) * no_players);
+    mainTimer.resize(unitWidth, unitHeight * 2);
+    mainTimer.textColor = text_color;
+    mainTimer.color = button_color;
+    mainTimer.textSize = 40;
+    mainTimer.textFont = font;
     // Update text to the current player time
-    timer_box.updateText = function(){
+    mainTimer.updateText = function(){
         var time_delta = !pause ? Date.now() - players[active_player].timer_start : 0;
         this.text = `${parseTime(players[active_player].time - time_delta)}\nGen: ${generation}`;
         return this;
     };
     // On press change player
-    timer_box.onPress = nextPlayer;
+    mainTimer.onPress = nextPlayer;
 
     // Create button for pause
-    clickPause = new Clickable();
-    clickPause.locate(0.1 * windowWidth, 70 + (unitHeight + 10) * no_players + 2*unitHeight);
-    clickPause.resize(unitWidth, unitHeight);
-    clickPause.textColor = text_color;
-    clickPause.color = button_color;
-    clickPause.text = 'Pause';
-    clickPause.onPress = enterPause;
-    clickPause.textSize = 40;
-    clickPause.textFont = prototype;
-
-    function enterPause(){
-        // Ako se ulazi u pauzu
-        if(!pause){
-            players[active_player].time -= Date.now() - players[active_player].timer_start;
-        }
-        else{
-            players[active_player].timer_start = Date.now();
-        }
-        pause = !pause;
-        clickPause.text = pause ? "Unpause" : "Pause";
-    }
-
+    pauseButton = new Clickable();
+    pauseButton.locate(0.1 * windowWidth, 70 + (unitHeight + 10) * no_players + 2*unitHeight);
+    pauseButton.resize(unitWidth, unitHeight);
+    pauseButton.textColor = text_color;
+    pauseButton.color = button_color;
+    pauseButton.text = 'Pause';
+    pauseButton.onPress = enterPause;
+    pauseButton.textSize = 40;
+    pauseButton.textFont = font;
 }
 
-function colorRotate (index){
+function colourRotate (index){
     var tmp = colors[MAX_PLAYERS-1];
 
     for(var i = MAX_PLAYERS-1; i >= index; --i){
@@ -182,19 +197,20 @@ function setup() {
     // Set graphics globals
     createCanvas(windowWidth, windowHeight);
     frameRate(30);
-    prototype = loadFont('../resources/fonts/Prototype.ttf');
+    font = loadFont('../resources/fonts/Prototype.ttf');
 
+    // The unit height is window height - 8 spaces 15 pixels tall / seven possible tiles
     var unitHeight = (windowHeight - 8 * 15) / 7;
 
     //Create player counter
-    clickNoPlayers = new Clickable();
-    clickNoPlayers.locate(0.1*windowWidth, 15);
-    clickNoPlayers.resize(0.35*windowWidth, unitHeight);
-    clickNoPlayers.color = button_color;
-    clickNoPlayers.text = no_players;
-    clickNoPlayers.textFont = prototype;
-    clickNoPlayers.textSize = 40;
-    clickNoPlayers.onPress = function () {
+    playersSelector = new Clickable();
+    playersSelector.locate(0.1*windowWidth, 15);
+    playersSelector.resize(0.35*windowWidth, unitHeight);
+    playersSelector.color = button_color;
+    playersSelector.text = no_players;
+    playersSelector.textFont = font;
+    playersSelector.textSize = 40;
+    playersSelector.onPress = function () {
         no_players += 1;
         if (no_players > 5) 
             no_players = 1;
@@ -202,14 +218,14 @@ function setup() {
     };
 
     // Create time counter
-    clickTime = new Clickable();
-    clickTime.locate(0.55*windowWidth, 15);
-    clickTime.resize(0.35*windowWidth, unitHeight);
-    clickTime.color = button_color;
-    clickTime.text = max_time;
-    clickTime.textFont = prototype;
-    clickTime.textSize = 40;
-    clickTime.onPress = function () {
+    timeSelector = new Clickable();
+    timeSelector.locate(0.55*windowWidth, 15);
+    timeSelector.resize(0.35*windowWidth, unitHeight);
+    timeSelector.color = button_color;
+    timeSelector.text = max_time;
+    timeSelector.textFont = font;
+    timeSelector.textSize = 40;
+    timeSelector.onPress = function () {
         max_time = max_time + 5;
         if(max_time > 120){
             max_time = 5;
@@ -217,20 +233,19 @@ function setup() {
         this.text = max_time;
     }
 
-    clickStart = new Clickable();
-    clickStart.locate(0.1*windowWidth, unitHeight + 30);
-    clickStart.resize(0.8*windowWidth, unitHeight);
-    clickStart.updatePosition = function(){
+    startButton = new Clickable();
+    startButton.locate(0.1*windowWidth, unitHeight + 30);
+    startButton.resize(0.8*windowWidth, unitHeight);
+    startButton.updatePosition = function(){
         this.locate(0.1*windowWidth, 15 + (unitHeight + 15) * (no_players + 1));
         return this;
     }
-
-    clickStart.color = button_color;
-    clickStart.textScaled = true;
-    clickStart.text = "Start";
-    clickStart.textFont = prototype;
-    clickStart.textSize = 40;
-    clickStart.onPress = startSequence;
+    startButton.color = button_color;
+    startButton.textScaled = true;
+    startButton.text = "Start";
+    startButton.textFont = font;
+    startButton.textSize = 40;
+    startButton.onPress = timerSetup;
   
     for(var i = 0; i < MAX_PLAYERS; ++i){
         var click = new Clickable();
@@ -240,7 +255,7 @@ function setup() {
         click.text = "";
         click.color = colors[i];
         click.onPress = function () {
-            colorRotate(this.id);
+            colourRotate(this.id);
         }
         clicks.push(click);
     }
@@ -248,19 +263,20 @@ function setup() {
 
 function draw() {
     if (!start){
-        background(32, 32, 32);
-        clickNoPlayers.draw();
-        clickStart.updatePosition().draw();
-        clickTime.draw();
+        background(background_color);
+        playersSelector.draw();
+        startButton.updatePosition().draw();
+        timeSelector.draw();
 
         for(var i = 0; i < no_players; ++i){
             clicks[i].draw();
         }
     }
     else{
-        background(colors[active_player]);
-        timer_box.updateText().draw();
-        clickPause.draw();
+//        background(colors[active_player]);
+        background(background_color);
+        mainTimer.updateText().draw();
+        pauseButton.draw();
         timers.forEach(timer => timer.updateText().draw());
     }
 }
