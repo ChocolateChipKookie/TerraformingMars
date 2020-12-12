@@ -14555,5 +14555,169 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 124,
+    "name": "Matteo prva placa",
+    "note": "",
+    "date": "2020-12-12",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Dorian Tokmadžić",
+    "win_corp": "Phobolog",
+    "win_score": 91,
+    "players": 4,
+    "generation": 9,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Philares",
+        "tr": 32,
+        "awards": 10,
+        "milestones": 0,
+        "greenery": 7,
+        "cities": 5,
+        "cards": 23,
+        "lead": 0,
+        "total": 79,
+        "rank": 3,
+        "note": "Tokma zasluzio",
+        "turmoil": 2
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Manutech",
+        "tr": 28,
+        "awards": 9,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 8,
+        "cards": 28,
+        "lead": 0,
+        "total": 77,
+        "rank": 4,
+        "note": "Tokma peder",
+        "turmoil": 2
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Phobolog",
+        "tr": 29,
+        "awards": 0,
+        "milestones": 10,
+        "greenery": 5,
+        "cities": 4,
+        "cards": 42,
+        "lead": 0,
+        "total": 91,
+        "rank": 1,
+        "note": "dobro je igrao",
+        "turmoil": 1
+      },
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Tharsis Republic",
+        "tr": 22,
+        "awards": 2,
+        "milestones": 5,
+        "greenery": 4,
+        "cities": 14,
+        "cards": 33,
+        "lead": 0,
+        "total": 81,
+        "rank": 2,
+        "note": "tokma krao masu (10 sume u kljucnim trenucima a i kolonije), vidljivo je gdje je sjedio i da je miranda u igri... ja sam imao 4 skupljanja zivotinja -.-",
+        "turmoil": 1
+      }
+    ],
+    "milestones": {
+      "Hoverlord": "Matteo Samsa",
+      "Gardener": "Dorian Tokmadžić",
+      "Terraformer": "Dorian Tokmadžić"
+    },
+    "awards": {
+      "winners": {
+        "Banker": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Matteo Samsa"
+          ]
+        },
+        "Scientist": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        },
+        "Venuphile": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        }
+      },
+      "points": {
+        "Banker": {
+          "Luka Jenuš": 0,
+          "Andro Slavić": 37,
+          "Dorian Tokmadžić": 0,
+          "Matteo Samsa": 32
+        },
+        "Scientist": {
+          "Luka Jenuš": 15,
+          "Andro Slavić": 14,
+          "Dorian Tokmadžić": 0,
+          "Matteo Samsa": 0
+        },
+        "Venuphile": {
+          "Luka Jenuš": 5,
+          "Andro Slavić": 1,
+          "Dorian Tokmadžić": 0,
+          "Matteo Samsa": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Luna",
+        "count": 3
+      },
+      {
+        "name": "Miranda",
+        "count": 2
+      },
+      {
+        "name": "Titan",
+        "count": 1
+      },
+      {
+        "name": "Enceladus",
+        "count": 0
+      },
+      {
+        "name": "Europa",
+        "count": 0
+      },
+      {
+        "name": "Callisto",
+        "count": 0
+      }
+    ]
   }
 ]
