@@ -15092,5 +15092,169 @@
         "count": 3
       }
     ]
+  },
+  {
+    "id": 127,
+    "name": "radna akcija",
+    "note": "gardener-ecologist, mayor, generalist; landlord-desert settler, miner- contractor, termalist-kultivator. ",
+    "date": "2020-12-22",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Jan Mastrović",
+    "win_corp": "Saturn Systems",
+    "win_score": 72,
+    "players": 4,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Saturn Systems",
+        "tr": 27,
+        "awards": 4,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 6,
+        "cards": 32,
+        "lead": 0,
+        "total": 72,
+        "rank": 1,
+        "note": "jovian power strikes again. bez brojanja. experimental forest preludij izbacio europu i ganimed colony... ",
+        "turmoil": 1
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Robinson Industries",
+        "tr": 26,
+        "awards": 2,
+        "milestones": 5,
+        "greenery": 3,
+        "cities": 1,
+        "cards": 19,
+        "lead": 0,
+        "total": 58,
+        "rank": 4,
+        "note": "jebeni robinson.. ",
+        "turmoil": 2
+      },
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Teractor",
+        "tr": 32,
+        "awards": 5,
+        "milestones": 5,
+        "greenery": 0,
+        "cities": 1,
+        "cards": 16,
+        "lead": 0,
+        "total": 61,
+        "rank": 2,
+        "note": "sve beskorisne karte.. ",
+        "turmoil": 2
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Ecoline",
+        "tr": 26,
+        "awards": 10,
+        "milestones": 5,
+        "greenery": 9,
+        "cities": 8,
+        "cards": 1,
+        "lead": 0,
+        "total": 60,
+        "rank": 3,
+        "note": "",
+        "turmoil": 1
+      }
+    ],
+    "milestones": {
+      "Planer": "Luka Jenuš",
+      "Gardener": "Andro Slavić",
+      "Mayor": "Dorian Tokmadžić"
+    },
+    "awards": {
+      "winners": {
+        "Landlord": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Jan Mastrović"
+          ]
+        },
+        "Miner": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Jan Mastrović"
+          ]
+        },
+        "Thermalist": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Dorian Tokmadžić"
+          ]
+        }
+      },
+      "points": {
+        "Landlord": {
+          "Jan Mastrović": 5,
+          "Dorian Tokmadžić": 0,
+          "Luka Jenuš": 0,
+          "Andro Slavić": 10
+        },
+        "Miner": {
+          "Jan Mastrović": 5,
+          "Dorian Tokmadžić": 0,
+          "Luka Jenuš": 10,
+          "Andro Slavić": 0
+        },
+        "Thermalist": {
+          "Jan Mastrović": 0,
+          "Dorian Tokmadžić": 5,
+          "Luka Jenuš": 0,
+          "Andro Slavić": 10
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Luna",
+        "count": 2
+      },
+      {
+        "name": "Enceladus",
+        "count": 0
+      },
+      {
+        "name": "Pluto",
+        "count": 1
+      },
+      {
+        "name": "Titan",
+        "count": 0
+      },
+      {
+        "name": "Ganymede",
+        "count": 0
+      },
+      {
+        "name": "Callisto",
+        "count": 0
+      }
+    ]
   }
 ]
