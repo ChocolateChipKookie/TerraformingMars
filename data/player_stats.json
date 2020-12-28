@@ -700,6 +700,13 @@
         "rank": 1,
         "points": 105,
         "players": 4
+      },
+      {
+        "id": 129,
+        "corporation": "Tharsis Republic",
+        "rank": 2,
+        "points": 65,
+        "players": 5
       }
     ],
     "best_games": [
@@ -727,7 +734,7 @@
     "fave_corp": {
       "name": "Teractor",
       "total": 11,
-      "wins": 4
+      "wins": 5
     },
     "best_corp": {
       "name": "Phobolog",
@@ -736,7 +743,7 @@
     },
     "most_wins": {
       "name": "Tharsis Republic",
-      "total": 9,
+      "total": 10,
       "wins": 5
     },
     "elo": {
@@ -3356,6 +3363,13 @@
         "rank": 2,
         "points": 101,
         "players": 4
+      },
+      {
+        "id": 129,
+        "corporation": "Valley Trust",
+        "rank": 1,
+        "points": 72,
+        "players": 5
       }
     ],
     "best_games": [
@@ -3387,12 +3401,12 @@
     },
     "best_corp": {
       "name": "Valley Trust",
-      "total": 5,
-      "wins": 3
+      "total": 6,
+      "wins": 4
     },
     "most_wins": {
-      "name": "Teractor",
-      "total": 8,
+      "name": "Valley Trust",
+      "total": 6,
       "wins": 4
     },
     "elo": {
@@ -5450,6 +5464,13 @@
         "rank": 2,
         "points": 62,
         "players": 5
+      },
+      {
+        "id": 129,
+        "corporation": "Cheung Shing Mars",
+        "rank": 4,
+        "points": 57,
+        "players": 5
       }
     ],
     "best_games": [
@@ -5475,7 +5496,7 @@
       "wins": 2
     },
     "best_corp": {
-      "name": "Cheung Shing Mars",
+      "name": "Viron",
       "total": 1,
       "wins": 1
     },
@@ -6132,6 +6153,13 @@
         "rank": 1,
         "points": 62,
         "players": 5
+      },
+      {
+        "id": 129,
+        "corporation": "Robinson Industries",
+        "rank": 5,
+        "points": 53,
+        "players": 5
       }
     ],
     "best_games": [
@@ -6752,6 +6780,13 @@
         "rank": 4,
         "points": 58,
         "players": 4
+      },
+      {
+        "id": 129,
+        "corporation": "Inventrix",
+        "rank": 3,
+        "points": 64,
+        "players": 5
       }
     ],
     "best_games": [
