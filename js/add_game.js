@@ -289,7 +289,15 @@ window.updateMilestoneInputs = function (){
         return active_milestones;
     }
 
-    var milestones_select = getMilestones().map(milestone => `<option value="${milestone}">${milestone}</option>`).join("\n");
+    function getAllMilestones(){
+        var active_milestones = [];
+        active_milestones.push.apply(active_milestones, util.game_data.milestones["all"]);
+        active_milestones.sort();
+        return active_milestones;
+    }
+
+    //var milestones_select = getMilestones().map(milestone => `<option value="${milestone}">${milestone}</option>`).join("\n");
+    var milestones_select = getAllMilestones().map(milestone => `<option value="${milestone}">${milestone}</option>`).join("\n");
     var active_players_select = util.game_data.active_players.map(player => `<option value="${player}">${player}</option>`).join("\n");
     
     // Create input fields
@@ -445,11 +453,18 @@ window.updateAwardInputs = function (){
             active_awards.push.apply(active_awards, util.game_data.awards["Venus"]);
         }
         active_awards.sort();
-
         return active_awards;
     }
 
-    var awards_select = getAwards().map(award => `<option value="${award}">${award}</option>`).join("\n");
+    function getAllAwards(){
+        var active_awards = [];
+        active_awards.push.apply(active_awards, util.game_data.awards["all"]);
+        active_awards.sort();
+        return active_awards;
+    }
+
+//    var awards_select = getAwards().map(award => `<option value="${award}">${award}</option>`).join("\n");
+    var awards_select = getAllAwards().map(award => `<option value="${award}">${award}</option>`).join("\n");
 
     // Adds all point rows
     var awards = `

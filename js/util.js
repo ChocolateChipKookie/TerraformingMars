@@ -168,6 +168,24 @@ window.util = {
             ],
             "Venus":[
                 "Hoverlord"
+            ],
+            "all":[
+                "Builder",
+                "Gardener",
+                "Mayor",
+                "Planer",
+                "Terraformer",
+                "Diversifier",
+                "Tactician",
+                "Polar Explorer",
+                "Energizer",
+                "Rim Settler",
+                "Generalist",
+                "Specialist",
+                "Ecologist",
+                "Tycoon",
+                "Legend",
+                "Hoverlord"
             ]
           },
         "awards":{
@@ -193,6 +211,24 @@ window.util = {
                 "Benefactor"
             ],
             "Venus":[
+                "Venuphile"
+            ],
+            "all":[
+                "Landlord",
+                "Scientist",
+                "Banker",
+                "Thermalist",
+                "Miner",
+                "Cultivator",
+                "Magnate",
+                "Space Baron",
+                "Excentric",
+                "Contractor",
+                "Celebrity",
+                "Industrialist",
+                "Desert Settler",
+                "Estate Dealer",
+                "Benefactor",
                 "Venuphile"
             ]
         }
