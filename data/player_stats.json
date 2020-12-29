@@ -707,6 +707,13 @@
         "rank": 2,
         "points": 65,
         "players": 5
+      },
+      {
+        "id": 129,
+        "corporation": "Tharsis Republic",
+        "rank": 2,
+        "points": 65,
+        "players": 5
       }
     ],
     "best_games": [
@@ -732,7 +739,7 @@
       }
     ],
     "fave_corp": {
-      "name": "Teractor",
+      "name": "Tharsis Republic",
       "total": 11,
       "wins": 5
     },
@@ -743,7 +750,7 @@
     },
     "most_wins": {
       "name": "Tharsis Republic",
-      "total": 10,
+      "total": 11,
       "wins": 5
     },
     "elo": {
@@ -3370,6 +3377,13 @@
         "rank": 1,
         "points": 72,
         "players": 5
+      },
+      {
+        "id": 129,
+        "corporation": "Valley Trust",
+        "rank": 1,
+        "points": 72,
+        "players": 5
       }
     ],
     "best_games": [
@@ -3401,13 +3415,13 @@
     },
     "best_corp": {
       "name": "Valley Trust",
-      "total": 6,
-      "wins": 4
+      "total": 7,
+      "wins": 5
     },
     "most_wins": {
       "name": "Valley Trust",
-      "total": 6,
-      "wins": 4
+      "total": 7,
+      "wins": 5
     },
     "elo": {
       "value": 1026.4884574952637,
@@ -5471,6 +5485,13 @@
         "rank": 4,
         "points": 57,
         "players": 5
+      },
+      {
+        "id": 129,
+        "corporation": "Cheung Shing Mars",
+        "rank": 4,
+        "points": 57,
+        "players": 5
       }
     ],
     "best_games": [
@@ -6160,6 +6181,13 @@
         "rank": 5,
         "points": 53,
         "players": 5
+      },
+      {
+        "id": 129,
+        "corporation": "Robinson Industries",
+        "rank": 5,
+        "points": 53,
+        "players": 5
       }
     ],
     "best_games": [
@@ -6175,8 +6203,8 @@
       }
     ],
     "fave_corp": {
-      "name": "Tharsis Republic",
-      "total": 3,
+      "name": "Robinson Industries",
+      "total": 4,
       "wins": 0
     },
     "best_corp": {
@@ -6780,6 +6808,13 @@
         "rank": 4,
         "points": 58,
         "players": 4
+      },
+      {
+        "id": 129,
+        "corporation": "Inventrix",
+        "rank": 3,
+        "points": 64,
+        "players": 5
       },
       {
         "id": 129,
