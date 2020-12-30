@@ -714,6 +714,13 @@
         "rank": 2,
         "points": 65,
         "players": 5
+      },
+      {
+        "id": 130,
+        "corporation": "Manutech",
+        "rank": 3,
+        "points": 77,
+        "players": 4
       }
     ],
     "best_games": [
@@ -3389,6 +3396,13 @@
         "rank": 1,
         "points": 72,
         "players": 5
+      },
+      {
+        "id": 130,
+        "corporation": "Celestic",
+        "rank": 2,
+        "points": 82,
+        "players": 4
       }
     ],
     "best_games": [
@@ -4614,6 +4628,13 @@
         "corporation": "Point Luna",
         "rank": 3,
         "points": 97,
+        "players": 4
+      },
+      {
+        "id": 130,
+        "corporation": "Credicor",
+        "rank": 1,
+        "points": 84,
         "players": 4
       }
     ],
@@ -6842,6 +6863,13 @@
         "rank": 3,
         "points": 64,
         "players": 5
+      },
+      {
+        "id": 130,
+        "corporation": "Teractor",
+        "rank": 4,
+        "points": 72,
+        "players": 4
       }
     ],
     "best_games": [
