@@ -742,6 +742,13 @@
         "rank": 4,
         "points": 76,
         "players": 5
+      },
+      {
+        "id": 136,
+        "corporation": "Stormcraft Incorporated",
+        "rank": 2,
+        "points": 100,
+        "players": 2
       }
     ],
     "best_games": [
@@ -4794,6 +4801,13 @@
         "rank": 2,
         "points": 90,
         "players": 3
+      },
+      {
+        "id": 136,
+        "corporation": "Point Luna",
+        "rank": 1,
+        "points": 144,
+        "players": 2
       }
     ],
     "best_games": [
