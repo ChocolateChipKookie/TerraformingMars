@@ -16713,5 +16713,193 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 137,
+    "name": "Adi prebija",
+    "note": "",
+    "date": "2021-02-07",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Adi Čaušević",
+    "win_corp": "Phobolog",
+    "win_score": 89,
+    "players": 5,
+    "generation": 7,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Teractor",
+        "tr": 35,
+        "awards": 4,
+        "milestones": 5,
+        "greenery": 5,
+        "cities": 4,
+        "cards": 3,
+        "lead": 0,
+        "total": 57,
+        "rank": 2,
+        "note": "iznenađen razlikom, ali u 5. gen je vec sve bilo jasno.",
+        "turmoil": 1
+      },
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Manutech",
+        "tr": 25,
+        "awards": 2,
+        "milestones": 0,
+        "greenery": 1,
+        "cities": 1,
+        "cards": 16,
+        "lead": 0,
+        "total": 46,
+        "rank": 5,
+        "note": "Manutech bez produkcije ne ide. large convoy u ruci na kraju sa titanom za platit. Adi endao gejm šumama s goldom.",
+        "turmoil": 1
+      },
+      {
+        "player": "Adi Čaušević",
+        "corporation": "Phobolog",
+        "tr": 35,
+        "awards": 15,
+        "milestones": 5,
+        "greenery": 5,
+        "cities": 5,
+        "cards": 23,
+        "lead": 0,
+        "total": 89,
+        "rank": 1,
+        "note": "LOL",
+        "turmoil": 1
+      },
+      {
+        "player": "Hrvoje Maligec",
+        "corporation": "Point Luna",
+        "tr": 24,
+        "awards": 7,
+        "milestones": 0,
+        "greenery": 0,
+        "cities": 0,
+        "cards": 14,
+        "lead": 1,
+        "total": 46,
+        "rank": 4,
+        "note": "NC",
+        "turmoil": 1
+      },
+      {
+        "player": "Dolores Frančišković",
+        "corporation": "Tharsis Republic",
+        "tr": 29,
+        "awards": 2,
+        "milestones": 5,
+        "greenery": 1,
+        "cities": 3,
+        "cards": 10,
+        "lead": 0,
+        "total": 52,
+        "rank": 3,
+        "note": "Neka i Adi jednom pobjedi",
+        "turmoil": 2
+      }
+    ],
+    "milestones": {
+      "Generalist": "Adi Čaušević",
+      "Energizer": "Dolores Frančišković",
+      "Legend": "Luka Jenuš"
+    },
+    "awards": {
+      "winners": {
+        "Venuphile": {
+          "first": [
+            "Adi Čaušević"
+          ],
+          "second": [
+            "Luka Jenuš",
+            "Matteo Samsa",
+            "Hrvoje Maligec",
+            "Dolores Frančišković"
+          ]
+        },
+        "Space Baron": {
+          "first": [
+            "Adi Čaušević",
+            "Hrvoje Maligec"
+          ],
+          "second": []
+        },
+        "Estate Dealer": {
+          "first": [
+            "Adi Čaušević"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        }
+      },
+      "points": {
+        "Venuphile": {
+          "Luka Jenuš": 1,
+          "Matteo Samsa": 1,
+          "Adi Čaušević": 2,
+          "Hrvoje Maligec": 1,
+          "Dolores Frančišković": 1
+        },
+        "Space Baron": {
+          "Luka Jenuš": 0,
+          "Matteo Samsa": 0,
+          "Adi Čaušević": 9,
+          "Hrvoje Maligec": 9,
+          "Dolores Frančišković": 0
+        },
+        "Estate Dealer": {
+          "Luka Jenuš": 6,
+          "Matteo Samsa": 0,
+          "Adi Čaušević": 7,
+          "Hrvoje Maligec": 0,
+          "Dolores Frančišković": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Callisto",
+        "count": 0
+      },
+      {
+        "name": "Ceres",
+        "count": 2
+      },
+      {
+        "name": "Europa",
+        "count": 1
+      },
+      {
+        "name": "Enceladus",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Titan",
+        "count": 1
+      },
+      {
+        "name": "Triton",
+        "count": 3
+      }
+    ]
   }
 ]
