@@ -15957,173 +15957,6 @@
   },
   {
     "id": 132,
-    "name": "25 min ipak nije dovoljno",
-    "note": "",
-    "date": "2021-01-03",
-    "mode": [
-      "Base",
-      "Colonies",
-      "Corporate Era",
-      "Draft",
-      "Prelude",
-      "Turmoil",
-      "Venus"
-    ],
-    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
-    "map": "Tharsis",
-    "winner": "Dorian Tokmadžić",
-    "win_corp": "Mons Insurance",
-    "win_score": 159,
-    "players": 4,
-    "generation": 12,
-    "image": "",
-    "scores": [
-      {
-        "player": "Adi Čaušević",
-        "corporation": "Aphrodite",
-        "tr": 21,
-        "awards": 4,
-        "milestones": 0,
-        "greenery": 4,
-        "cities": 4,
-        "cards": 15,
-        "lead": 0,
-        "total": 48,
-        "rank": 3,
-        "note": "Lezao na kaucu, istekao u 8.gen",
-        "turmoil": 0
-      },
-      {
-        "player": "Dorian Tokmadžić",
-        "corporation": "Mons Insurance",
-        "tr": 48,
-        "awards": 15,
-        "milestones": 10,
-        "greenery": 17,
-        "cities": 22,
-        "cards": 42,
-        "lead": 0,
-        "total": 159,
-        "rank": 1,
-        "note": "ez",
-        "turmoil": 5
-      },
-      {
-        "player": "Mia Čaušević",
-        "corporation": "Stormcraft Incorporated",
-        "tr": 26,
-        "awards": 4,
-        "milestones": 5,
-        "greenery": 1,
-        "cities": 2,
-        "cards": 21,
-        "lead": 1,
-        "total": 59,
-        "rank": 2,
-        "note": "kriminal istekla u 9.gen",
-        "turmoil": 0
-      },
-      {
-        "player": "Matteo Samsa",
-        "corporation": "Terralabs Research",
-        "tr": 20,
-        "awards": 4,
-        "milestones": 0,
-        "greenery": 2,
-        "cities": 3,
-        "cards": 18,
-        "lead": 0,
-        "total": 47,
-        "rank": 4,
-        "note": "one man terraformer, 14 titan produkcije, alloye i unity je vladao zadnjih 5 gen KOJE JE SAM IGRAO!! (i jos par gen je unity bio)... istekli smo na vremenu jer nismo digli kisik i jedan ocean znaci... imao je io, europu, \"samo\" 7 joviana, ali TG medju njima... u 8.gen izvukao plant karte i 3 plant taga daju 4 plant produkcije, na kraju imao para a nije imao kartica... samo sume kupovao zadnje 2 gen prije nego je odlucio zavrsit s oceanom s europe. Antigraviy i mass converter, struja lagano putuje s floterima i strujom (2 flote naravno…). A i cleanup je radio. Mogli su mu malo bolje blokirat u draftu, al nismo mogli nikao u vremenu zavrsit. Ja igrao plavu igru I istekao u 7. gen",
-        "turmoil": 0
-      }
-    ],
-    "milestones": {
-      "Hoverlord": "Dorian Tokmadžić",
-      "Rim Settler": "Mia Čaušević",
-      "Energizer": "Dorian Tokmadžić"
-    },
-    "awards": {
-      "winners": {
-        "Space Baron": {
-          "first": [
-            "Dorian Tokmadžić"
-          ],
-          "second": [
-            "Adi Čaušević",
-            "Mia Čaušević"
-          ]
-        },
-        "Scientist": {
-          "first": [
-            "Dorian Tokmadžić"
-          ],
-          "second": [
-            "Mia Čaušević",
-            "Matteo Samsa"
-          ]
-        },
-        "Estate Dealer": {
-          "first": [
-            "Dorian Tokmadžić"
-          ],
-          "second": [
-            "Adi Čaušević",
-            "Matteo Samsa"
-          ]
-        }
-      },
-      "points": {
-        "Space Baron": {
-          "Adi Čaušević": 5,
-          "Dorian Tokmadžić": 19,
-          "Mia Čaušević": 5,
-          "Matteo Samsa": 2
-        },
-        "Scientist": {
-          "Adi Čaušević": 3,
-          "Dorian Tokmadžić": 13,
-          "Mia Čaušević": 4,
-          "Matteo Samsa": 4
-        },
-        "Estate Dealer": {
-          "Adi Čaušević": 3,
-          "Dorian Tokmadžić": 16,
-          "Mia Čaušević": 1,
-          "Matteo Samsa": 3
-        }
-      }
-    },
-    "colonies": [
-      {
-        "name": "Ganymede",
-        "count": 0
-      },
-      {
-        "name": "Miranda",
-        "count": 1
-      },
-      {
-        "name": "Titan",
-        "count": 1
-      },
-      {
-        "name": "Triton",
-        "count": 3
-      },
-      {
-        "name": "Pluto",
-        "count": 0
-      },
-      {
-        "name": "Callisto",
-        "count": 0
-      }
-    ]
-  },
-  {
-    "id": 133,
     "name": "deklasiranje 2.0",
     "note": "",
     "date": "2021-01-04",
@@ -16265,7 +16098,7 @@
     ]
   },
   {
-    "id": 134,
+    "id": 133,
     "name": "Baš sam leš",
     "note": "",
     "date": "2021-01-06",
@@ -16452,7 +16285,7 @@
     ]
   },
   {
-    "id": 135,
+    "id": 134,
     "name": "Neklasiranje",
     "note": "",
     "date": "2021-01-14",
@@ -16595,7 +16428,7 @@
     ]
   },
   {
-    "id": 136,
+    "id": 135,
     "name": "Pro game",
     "note": "",
     "date": "2021-01-30",
@@ -16715,7 +16548,7 @@
     ]
   },
   {
-    "id": 137,
+    "id": 136,
     "name": "Adi prebija",
     "note": "",
     "date": "2021-02-07",
