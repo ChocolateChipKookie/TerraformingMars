@@ -1319,7 +1319,7 @@ window.calculateAllStats = async function (password){
 
     // Add all players to the database
     var games = JSON.parse(b64_to_utf8((await getFile("data/games.json", octokit)).data.content));
-    var player_stats = {};
+    var player_stats = JSON.parse(b64_to_utf8((await getFile("data/player_stats.json", octokit)).data.content));
 
     for(var i=0; i < games.length; ++i){
         games[i].scores.forEach(function(elem){
