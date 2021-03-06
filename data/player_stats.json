@@ -3530,6 +3530,13 @@
         "rank": 1,
         "points": 96,
         "players": 3
+      },
+      {
+        "id": 139,
+        "corporation": "Utopia Invest",
+        "rank": 1,
+        "points": 135,
+        "players": 2
       }
     ],
     "best_games": [
@@ -4844,6 +4851,13 @@
         "rank": 2,
         "points": 92,
         "players": 5
+      },
+      {
+        "id": 139,
+        "corporation": "Inventrix",
+        "rank": 2,
+        "points": 101,
+        "players": 2
       }
     ],
     "best_games": [
