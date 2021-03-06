@@ -17083,5 +17083,129 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 139,
+    "name": "Definitvno top2 playera",
+    "note": "",
+    "date": "2021-03-06",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Andro Slavić",
+    "win_corp": "Utopia Invest",
+    "win_score": 135,
+    "players": 2,
+    "generation": 11,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Inventrix",
+        "tr": 39,
+        "awards": 9,
+        "milestones": 10,
+        "greenery": 0,
+        "cities": 3,
+        "cards": 36,
+        "lead": 0,
+        "total": 101,
+        "rank": 2,
+        "note": "",
+        "turmoil": 4
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Utopia Invest",
+        "tr": 54,
+        "awards": 12,
+        "milestones": 5,
+        "greenery": 13,
+        "cities": 20,
+        "cards": 30,
+        "lead": 0,
+        "total": 135,
+        "rank": 1,
+        "note": "",
+        "turmoil": 1
+      }
+    ],
+    "milestones": {
+      "Builder": "Andro Slavić",
+      "Tactician": "Luka Jenuš",
+      "Planer": "Luka Jenuš"
+    },
+    "awards": {
+      "winners": {
+        "Desert Settler": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        },
+        "Landlord": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Luka Jenuš"
+          ]
+        },
+        "Venuphile": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        }
+      },
+      "points": {
+        "Desert Settler": {
+          "Luka Jenuš": 2,
+          "Andro Slavić": 10
+        },
+        "Landlord": {
+          "Luka Jenuš": 2,
+          "Andro Slavić": 10
+        },
+        "Venuphile": {
+          "Luka Jenuš": 5,
+          "Andro Slavić": 2
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Pluto",
+        "count": 2
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      },
+      {
+        "name": "Ganymede",
+        "count": 1
+      },
+      {
+        "name": "Titan",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      }
+    ]
   }
 ]
