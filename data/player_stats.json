@@ -3537,6 +3537,13 @@
         "rank": 1,
         "points": 135,
         "players": 2
+      },
+      {
+        "id": 140,
+        "corporation": "Lakefront Resorts",
+        "rank": 2,
+        "points": 78,
+        "players": 2
       }
     ],
     "best_games": [
@@ -4863,6 +4870,13 @@
         "rank": 2,
         "points": 101,
         "players": 2
+      },
+      {
+        "id": 140,
+        "corporation": "Point Luna",
+        "rank": 1,
+        "points": 122,
+        "players": 2
       }
     ],
     "best_games": [
@@ -4888,9 +4902,9 @@
       }
     ],
     "fave_corp": {
-      "name": "Manutech",
-      "total": 9,
-      "wins": 6
+      "name": "Point Luna",
+      "total": 10,
+      "wins": 5
     },
     "best_corp": {
       "name": "Helion",
