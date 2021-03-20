@@ -756,6 +756,13 @@
         "rank": 5,
         "points": 62,
         "players": 5
+      },
+      {
+        "id": 141,
+        "corporation": "Tharsis Republic",
+        "rank": 1,
+        "points": 77,
+        "players": 4
       }
     ],
     "best_games": [
@@ -782,7 +789,7 @@
     ],
     "fave_corp": {
       "name": "Tharsis Republic",
-      "total": 11,
+      "total": 12,
       "wins": 5
     },
     "best_corp": {
@@ -792,8 +799,8 @@
     },
     "most_wins": {
       "name": "Tharsis Republic",
-      "total": 11,
-      "wins": 5
+      "total": 12,
+      "wins": 6
     },
     "elo": {
       "value": 1074.4791801978986,
@@ -2028,6 +2035,13 @@
         "corporation": "Mining Guild",
         "rank": 4,
         "points": 54,
+        "players": 4
+      },
+      {
+        "id": 141,
+        "corporation": "Valley Trust",
+        "rank": 3,
+        "points": 59,
         "players": 4
       }
     ],
@@ -4882,6 +4896,13 @@
         "rank": 1,
         "points": 122,
         "players": 2
+      },
+      {
+        "id": 141,
+        "corporation": "Septem Tribus",
+        "rank": 2,
+        "points": 59,
+        "players": 4
       }
     ],
     "best_games": [
@@ -5852,6 +5873,13 @@
         "rank": 4,
         "points": 67,
         "players": 5
+      },
+      {
+        "id": 141,
+        "corporation": "Manutech",
+        "rank": 4,
+        "points": 50,
+        "players": 4
       }
     ],
     "best_games": [
