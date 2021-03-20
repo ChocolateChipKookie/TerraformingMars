@@ -17327,5 +17327,171 @@
         "count": 1
       }
     ]
+  },
+  {
+    "id": 141,
+    "name": "Kasan Petak",
+    "note": "",
+    "date": "2021-03-20",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Matteo Samsa",
+    "win_corp": "Tharsis Republic",
+    "win_score": 77,
+    "players": 4,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Septem Tribus",
+        "tr": 26,
+        "awards": 7,
+        "milestones": 5,
+        "greenery": 1,
+        "cities": 2,
+        "cards": 16,
+        "lead": 0,
+        "total": 59,
+        "rank": 2,
+        "note": "",
+        "turmoil": 2
+      },
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Valley Trust",
+        "tr": 23,
+        "awards": 2,
+        "milestones": 0,
+        "greenery": 3,
+        "cities": 5,
+        "cards": 24,
+        "lead": 0,
+        "total": 59,
+        "rank": 3,
+        "note": "gold lead",
+        "turmoil": 2
+      },
+      {
+        "player": "Adi Čaušević",
+        "corporation": "Manutech",
+        "tr": 27,
+        "awards": 12,
+        "milestones": 0,
+        "greenery": 0,
+        "cities": 1,
+        "cards": 9,
+        "lead": 0,
+        "total": 50,
+        "rank": 4,
+        "note": "",
+        "turmoil": 1
+      },
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Tharsis Republic",
+        "tr": 27,
+        "awards": 4,
+        "milestones": 10,
+        "greenery": 8,
+        "cities": 12,
+        "cards": 15,
+        "lead": 0,
+        "total": 77,
+        "rank": 1,
+        "note": "pazi zadnju gen",
+        "turmoil": 1
+      }
+    ],
+    "milestones": {
+      "Polar Explorer": "Matteo Samsa",
+      "Mayor": "Matteo Samsa",
+      "Generalist": "Luka Jenuš"
+    },
+    "awards": {
+      "winners": {
+        "Banker": {
+          "first": [
+            "Adi Čaušević"
+          ],
+          "second": [
+            "Matteo Samsa"
+          ]
+        },
+        "Venuphile": {
+          "first": [
+            "Adi Čaušević"
+          ],
+          "second": [
+            "Luka Jenuš",
+            "Jan Mastrović",
+            "Matteo Samsa"
+          ]
+        },
+        "Industrialist": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Adi Čaušević"
+          ]
+        }
+      },
+      "points": {
+        "Banker": {
+          "Luka Jenuš": 0,
+          "Jan Mastrović": 0,
+          "Adi Čaušević": 35,
+          "Matteo Samsa": 25
+        },
+        "Venuphile": {
+          "Luka Jenuš": 2,
+          "Jan Mastrović": 2,
+          "Adi Čaušević": 3,
+          "Matteo Samsa": 2
+        },
+        "Industrialist": {
+          "Luka Jenuš": 10,
+          "Jan Mastrović": 2,
+          "Adi Čaušević": 5,
+          "Matteo Samsa": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Pluto",
+        "count": 1
+      },
+      {
+        "name": "Miranda",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Luna",
+        "count": 1
+      },
+      {
+        "name": "Ganymede",
+        "count": 0
+      },
+      {
+        "name": "Ceres",
+        "count": 2
+      }
+    ]
   }
 ]
