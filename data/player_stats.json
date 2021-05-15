@@ -770,6 +770,13 @@
         "rank": 2,
         "points": 65,
         "players": 5
+      },
+      {
+        "id": 143,
+        "corporation": "Philares",
+        "rank": 2,
+        "points": 76,
+        "players": 5
       }
     ],
     "best_games": [
@@ -3587,6 +3594,13 @@
         "rank": 3,
         "points": 60,
         "players": 5
+      },
+      {
+        "id": 143,
+        "corporation": "Point Luna",
+        "rank": 5,
+        "points": 59,
+        "players": 5
       }
     ],
     "best_games": [
@@ -4944,6 +4958,13 @@
         "rank": 1,
         "points": 72,
         "players": 5
+      },
+      {
+        "id": 143,
+        "corporation": "Aridor",
+        "rank": 1,
+        "points": 77,
+        "players": 5
       }
     ],
     "best_games": [
@@ -5937,6 +5958,13 @@
         "corporation": "Teractor",
         "rank": 4,
         "points": 51,
+        "players": 5
+      },
+      {
+        "id": 143,
+        "corporation": "Manutech",
+        "rank": 3,
+        "points": 69,
         "players": 5
       }
     ],
@@ -7375,6 +7403,13 @@
         "rank": 1,
         "points": 96,
         "players": 5
+      },
+      {
+        "id": 143,
+        "corporation": "Ecoline",
+        "rank": 4,
+        "points": 65,
+        "players": 5
       }
     ],
     "best_games": [
@@ -7396,7 +7431,7 @@
     ],
     "fave_corp": {
       "name": "Ecoline",
-      "total": 3,
+      "total": 4,
       "wins": 1
     },
     "best_corp": {
