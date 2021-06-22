@@ -2108,6 +2108,13 @@
         "rank": 3,
         "points": 59,
         "players": 4
+      },
+      {
+        "id": 147,
+        "corporation": "Mining Guild",
+        "rank": 3,
+        "points": 68,
+        "players": 3
       }
     ],
     "best_games": [
@@ -3663,6 +3670,13 @@
         "rank": 3,
         "points": 68,
         "players": 4
+      },
+      {
+        "id": 147,
+        "corporation": "Point Luna",
+        "rank": 2,
+        "points": 99,
+        "players": 3
       }
     ],
     "best_games": [
@@ -5068,6 +5082,13 @@
         "rank": 1,
         "points": 94,
         "players": 4
+      },
+      {
+        "id": 147,
+        "corporation": "Vitor",
+        "rank": 1,
+        "points": 109,
+        "players": 3
       }
     ],
     "best_games": [
