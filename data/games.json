@@ -18470,5 +18470,192 @@
         "count": 1
       }
     ]
+  },
+  {
+    "id": 148,
+    "name": "beskonacni gejm",
+    "note": "",
+    "date": "2021-07-17",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Andro Slavić",
+    "win_corp": "Viron",
+    "win_score": 90,
+    "players": 5,
+    "generation": 9,
+    "image": "",
+    "scores": [
+      {
+        "player": "Andro Slavić",
+        "corporation": "Viron",
+        "tr": 32,
+        "awards": 6,
+        "milestones": 5,
+        "greenery": 6,
+        "cities": 6,
+        "cards": 34,
+        "lead": 0,
+        "total": 90,
+        "rank": 1,
+        "note": "crvene su opasne",
+        "turmoil": 1
+      },
+      {
+        "player": "Adi Čaušević",
+        "corporation": "Polyphemos",
+        "tr": 22,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 2,
+        "cards": 26,
+        "lead": 0,
+        "total": 59,
+        "rank": 5,
+        "note": "uh",
+        "turmoil": 2
+      },
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Morning Star INC",
+        "tr": 28,
+        "awards": 5,
+        "milestones": 10,
+        "greenery": 1,
+        "cities": 2,
+        "cards": 27,
+        "lead": 0,
+        "total": 74,
+        "rank": 2,
+        "note": "treba tajmer",
+        "turmoil": 1
+      },
+      {
+        "player": "Jan Mastrović",
+        "corporation": "Inventrix",
+        "tr": 40,
+        "awards": 5,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 3,
+        "cards": 12,
+        "lead": 0,
+        "total": 63,
+        "rank": 4,
+        "note": "nemam ništa",
+        "turmoil": 1
+      },
+      {
+        "player": "Matteo Samsa",
+        "corporation": "Factorum",
+        "tr": 25,
+        "awards": 2,
+        "milestones": 0,
+        "greenery": 3,
+        "cities": 3,
+        "cards": 31,
+        "lead": 0,
+        "total": 65,
+        "rank": 3,
+        "note": "umoran sam",
+        "turmoil": 1
+      }
+    ],
+    "milestones": {
+      "Planer": "Dorian Tokmadžić",
+      "Legend": "Dorian Tokmadžić",
+      "Hoverlord": "Andro Slavić"
+    },
+    "awards": {
+      "winners": {
+        "Venuphile": {
+          "first": [
+            "Dorian Tokmadžić"
+          ],
+          "second": [
+            "Andro Slavić",
+            "Matteo Samsa"
+          ]
+        },
+        "Contractor": {
+          "first": [
+            "Adi Čaušević"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        },
+        "Magnate": {
+          "first": [
+            "Jan Mastrović"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        }
+      },
+      "points": {
+        "Venuphile": {
+          "Andro Slavić": 5,
+          "Adi Čaušević": 0,
+          "Dorian Tokmadžić": 10,
+          "Jan Mastrović": 0,
+          "Matteo Samsa": 5
+        },
+        "Contractor": {
+          "Andro Slavić": 8,
+          "Adi Čaušević": 15,
+          "Dorian Tokmadžić": 0,
+          "Jan Mastrović": 0,
+          "Matteo Samsa": 0
+        },
+        "Magnate": {
+          "Andro Slavić": 19,
+          "Adi Čaušević": 0,
+          "Dorian Tokmadžić": 0,
+          "Jan Mastrović": 21,
+          "Matteo Samsa": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Callisto",
+        "count": 1
+      },
+      {
+        "name": "Ceres",
+        "count": 1
+      },
+      {
+        "name": "Ganymede",
+        "count": 1
+      },
+      {
+        "name": "Io",
+        "count": 0
+      },
+      {
+        "name": "Luna",
+        "count": 1
+      },
+      {
+        "name": "Miranda",
+        "count": 1
+      },
+      {
+        "name": "Titan",
+        "count": 2
+      }
+    ]
   }
 ]
