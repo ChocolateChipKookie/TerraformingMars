@@ -3789,6 +3789,13 @@
         "rank": 1,
         "points": 75,
         "players": 4
+      },
+      {
+        "id": 154,
+        "corporation": "Credicor",
+        "rank": 2,
+        "points": 75,
+        "players": 3
       }
     ],
     "best_games": [
@@ -5259,6 +5266,13 @@
         "rank": 3,
         "points": 70,
         "players": 4
+      },
+      {
+        "id": 154,
+        "corporation": "Septem Tribus",
+        "rank": 3,
+        "points": 70,
+        "players": 3
       }
     ],
     "best_games": [
@@ -7837,6 +7851,13 @@
         "rank": 4,
         "points": 66,
         "players": 4
+      },
+      {
+        "id": 154,
+        "corporation": "Phobolog",
+        "rank": 1,
+        "points": 88,
+        "players": 3
       }
     ],
     "best_games": [
@@ -7863,13 +7884,13 @@
     },
     "best_corp": {
       "name": "Phobolog",
-      "total": 1,
-      "wins": 1
+      "total": 2,
+      "wins": 2
     },
     "most_wins": {
       "name": "Phobolog",
-      "total": 1,
-      "wins": 1
+      "total": 2,
+      "wins": 2
     },
     "elo": {
       "value": 1163.86443900092,
