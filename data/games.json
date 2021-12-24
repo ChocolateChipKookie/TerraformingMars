@@ -20251,5 +20251,169 @@
         "count": 0
       }
     ]
+  },
+  {
+    "id": 159,
+    "name": "Kasan gejm",
+    "note": "",
+    "date": "2021-12-24",
+    "mode": [
+      "Base",
+      "Colonies",
+      "Corporate Era",
+      "Draft",
+      "Prelude",
+      "Turmoil",
+      "Venus"
+    ],
+    "mode_code": "B+Col+CE+Dr+Pr+Tu+Ve",
+    "map": "Tharsis",
+    "winner": "Andro Slavić",
+    "win_corp": "Point Luna",
+    "win_score": 97,
+    "players": 4,
+    "generation": 8,
+    "image": "",
+    "scores": [
+      {
+        "player": "Dorian Tokmadžić",
+        "corporation": "Phobolog",
+        "tr": 41,
+        "awards": 0,
+        "milestones": 0,
+        "greenery": 2,
+        "cities": 0,
+        "cards": 38,
+        "lead": 0,
+        "total": 82,
+        "rank": 2,
+        "note": "",
+        "turmoil": 1
+      },
+      {
+        "player": "Andro Slavić",
+        "corporation": "Point Luna",
+        "tr": 30,
+        "awards": 9,
+        "milestones": 5,
+        "greenery": 4,
+        "cities": 9,
+        "cards": 39,
+        "lead": 0,
+        "total": 97,
+        "rank": 1,
+        "note": "",
+        "turmoil": 1
+      },
+      {
+        "player": "Luka Jenuš",
+        "corporation": "Viron",
+        "tr": 27,
+        "awards": 5,
+        "milestones": 5,
+        "greenery": 2,
+        "cities": 0,
+        "cards": 25,
+        "lead": 0,
+        "total": 65,
+        "rank": 4,
+        "note": "",
+        "turmoil": 1
+      },
+      {
+        "player": "Adi Čaušević",
+        "corporation": "Valley Trust",
+        "tr": 24,
+        "awards": 7,
+        "milestones": 5,
+        "greenery": 8,
+        "cities": 11,
+        "cards": 13,
+        "lead": 0,
+        "total": 69,
+        "rank": 3,
+        "note": "",
+        "turmoil": 1
+      }
+    ],
+    "milestones": {
+      "Diversifier": "Luka Jenuš",
+      "Polar Explorer": "Adi Čaušević",
+      "Planer": "Andro Slavić"
+    },
+    "awards": {
+      "winners": {
+        "Landlord": {
+          "first": [
+            "Adi Čaušević"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        },
+        "Contractor": {
+          "first": [
+            "Andro Slavić"
+          ],
+          "second": [
+            "Adi Čaušević"
+          ]
+        },
+        "Venuphile": {
+          "first": [
+            "Luka Jenuš"
+          ],
+          "second": [
+            "Andro Slavić"
+          ]
+        }
+      },
+      "points": {
+        "Landlord": {
+          "Dorian Tokmadžić": 0,
+          "Andro Slavić": 15,
+          "Luka Jenuš": 0,
+          "Adi Čaušević": 20
+        },
+        "Contractor": {
+          "Dorian Tokmadžić": 0,
+          "Andro Slavić": 10,
+          "Luka Jenuš": 0,
+          "Adi Čaušević": 9
+        },
+        "Venuphile": {
+          "Dorian Tokmadžić": 0,
+          "Andro Slavić": 4,
+          "Luka Jenuš": 6,
+          "Adi Čaušević": 0
+        }
+      }
+    },
+    "colonies": [
+      {
+        "name": "Enceladus",
+        "count": 0
+      },
+      {
+        "name": "Pluto",
+        "count": 2
+      },
+      {
+        "name": "Titan",
+        "count": 0
+      },
+      {
+        "name": "Triton",
+        "count": 3
+      },
+      {
+        "name": "Ceres",
+        "count": 0
+      },
+      {
+        "name": "Io",
+        "count": 0
+      }
+    ]
   }
 ]
