@@ -2217,6 +2217,13 @@
         "rank": 4,
         "points": 64,
         "players": 5
+      },
+      {
+        "id": 160,
+        "corporation": "Point Luna",
+        "rank": 3,
+        "points": 78,
+        "players": 3
       }
     ],
     "best_games": [
@@ -2243,7 +2250,7 @@
     ],
     "fave_corp": {
       "name": "Point Luna",
-      "total": 8,
+      "total": 9,
       "wins": 3
     },
     "best_corp": {
@@ -3884,6 +3891,13 @@
         "rank": 1,
         "points": 97,
         "players": 4
+      },
+      {
+        "id": 160,
+        "corporation": "Aridor",
+        "rank": 2,
+        "points": 102,
+        "players": 3
       }
     ],
     "best_games": [
@@ -5414,6 +5428,13 @@
         "rank": 4,
         "points": 65,
         "players": 4
+      },
+      {
+        "id": 160,
+        "corporation": "Utopia Invest",
+        "rank": 1,
+        "points": 103,
+        "players": 3
       }
     ],
     "best_games": [
