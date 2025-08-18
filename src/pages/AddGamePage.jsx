@@ -340,7 +340,7 @@ function AddGamePage() {
     "Draft": true,
     "Corporate Era": true,
     "Prelude": true,
-    "Prelude 2": false,
+    "Prelude 2": true,
     "Venus Next": false,
     "Colonies": false,
     "Turmoil": false,
