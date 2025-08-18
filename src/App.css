@@ -1,0 +1,17 @@
+@font-face {
+  font-family: 'tm-default';
+  src: url('../public/resources/fonts/Prototype.ttf');
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}

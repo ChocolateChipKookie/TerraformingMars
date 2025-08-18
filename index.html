@@ -2,31 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <link href="css/meta.css" rel="stylesheet" type="text/css">    
-    <title>Terraforming mars</title>
+    <title>Terraforming Mars</title>
 </head>
 <body>
-    <div class="center-container-wrapper">
-        <div class="center-container">
-            <div class="link-button-wrapper">
-                <button class="link-button" onclick="window.location='/add_game.html';">Add game</button>
-            </div>
-            <div class="link-button-wrapper">
-                <button class="link-button" onclick="window.location='/player_stats.html';">Player stats</button>
-            </div>
-            <div class="link-button-wrapper" style="display: none;">
-                <button class="link-button" onclick="window.location='/corporation_stats.html';">Corporation stats</button>
-            </div>
-            <div class="link-button-wrapper">
-                <button class="link-button" onclick="window.location='/games.html';">Played games</button>
-            </div>
-            <div class="link-button-wrapper">
-                <button class="link-button" onclick="window.location='/timer.html';">Game timer</button>
-            </div>
-        </div>
-    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
 </body>
-
-<footer>
-
-</footer>
+</html>

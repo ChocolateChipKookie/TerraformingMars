@@ -1,0 +1,79 @@
+{
+  "player_names": [
+    "Adi Čaušević",
+    "Andro Slavić",
+    "Dino Šarić",
+    "Dolores Frančišković",
+    "Filip Pavletić",
+    "Hrvoje Maligec",
+    "Jan Mastrović",
+    "Jan/Karla",
+    "Juraj Vladika",
+    "Luka Jenuš",
+    "Luka Lozina",
+    "Marijan Vukelić",
+    "Marko Blaženić",
+    "Matteo Samsa",
+    "Mia Čaušević",
+    "Mia/Jan",
+    "Mia/Romana",
+    "Mislav Monjac",
+    "Natan Turčinović",
+    "Nola Smolica",
+    "Robert Bulaić",
+    "Romana Ivković",
+    "Vito Papa",
+    "Orijan Markić",
+    "Dorian Tokmadžić",
+    "Matej Šare",
+    "Tonko Pavičević",
+    "Matea Korda"
+  ],
+  "current_id": 161,
+  "elo_params": {
+    "means": {
+      "2": {
+        "total": 738,
+        "count": 6,
+        "mean": 123
+      },
+      "3": {
+        "total": 6115,
+        "count": 66,
+        "mean": 92.65151515151516
+      },
+      "4": {
+        "total": 12188,
+        "count": 164,
+        "mean": 74.3170731707317
+      },
+      "5": {
+        "total": 6332,
+        "count": 90,
+        "mean": 70.35555555555555
+      }
+    },
+    "stddev": {
+      "2": {
+        "total": 2108,
+        "count": 6,
+        "stddev": 18.743887892679396
+      },
+      "3": {
+        "total": 21516.984848484848,
+        "count": 66,
+        "stddev": 18.05588330563587
+      },
+      "4": {
+        "total": 32409.512195121963,
+        "count": 164,
+        "stddev": 14.05770168980421
+      },
+      "5": {
+        "total": 14542.62222222222,
+        "count": 90,
+        "stddev": 12.711596727320478
+      }
+    }
+  }
+}
