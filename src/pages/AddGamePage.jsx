@@ -136,79 +136,103 @@ const gameData = {
     "Vastitas Borealis",
     "Amazonis Planitia",
   ],
-  corporations: [
-    "Beginner",
-    "Credicor",
-    "Ecoline",
-    "Helion",
-    "Interplanetary Cinematics",
-    "Inventrix",
-    "Mining Guild",
-    "Phobolog",
-    "Tharsis Republic",
-    "Thorgate",
-    "UNMI",
-    "Saturn Systems",
-    "Teractor",
-    "Aridor",
-    "Arklight",
-    "Polyphemos",
-    "Poseidon",
-    "Stormcraft Incorporated",
-    "Cheung Shing Mars",
-    "Point Luna",
-    "Robinson Industries",
-    "Valley Trust",
-    "Vitor",
-    "Aphrodite",
-    "Celestic",
-    "Manutech",
-    "Morning Star INC",
-    "Viron",
-    "Arcadian Communities",
-    "Recyclon",
-    "Splice",
-    "Lakefront Resorts",
-    "Pristar",
-    "Septem Tribus",
-    "Terralabs Research",
-    "Utopia Invest",
-    "Factorum",
-    "Mons Insurance",
-    "Philares",
-    "Ecotec",
-    "Tycho Magnetics",
-    "Kuiper Cooperative",
-    "Spire",
-    "Sagitta",
-    "Palladin Shipping",
-    "Nirgal Enterprises",
-    "Astrodrill",
-    "Pharmacy Union",
-  ].sort(),
+  corporationsByExpansion: {
+    "Base Game": [
+      "Beginner",
+      "Credicor",
+      "Ecoline",
+      "Helion",
+      "Mining Guild",
+      "Interplanetarty Cinematics",
+      "Inventrix",
+      "Phobolog",
+      "Tharsis Republic",
+      "Thorgate",
+      "United Nations Mars Initiative",
+    ],
+    "Corporate Era": [
+      "Teractor",
+      "Saturn Systems",
+    ],
+    "Venus Next": [
+      "Aphrodite",
+      "Celestic",
+      "Manutech",
+      "Morning Star Inc.",
+      "Viron"
+    ],
+    "Prelude": [
+      "Cheung Shing Mars",
+      "Point Luna",
+      "Robinson Industries",
+      "Valley Trust",
+      "Vitor",
+      "Ecotec",
+    ],
+    "Prelude 2": [
+      "Spire",
+      "Sagitta",
+      "Palladin Shipping",
+      "Nirgal Enterprises"
+    ],
+    "Colonies": [
+      "Aridor",
+      "Arklight",
+      "Polyphemos",
+      "Poseidon",
+      "Stormcraft Incorporated"
+    ],
+    "Turmoil": [
+      "Lakefront Resorts",
+      "Pristar",
+      "Septem Tribus",
+      "Terralabs Research",
+      "Utopia Invest"
+    ],
+    "Promo": [
+      "Factorum",
+      "Mons Insurance",
+      "Philares",
+      "Arcadian Communities",
+      "Recyclon",
+      "Splice Tactical Genomics",
+      "Astrodrill",
+      "Pharmacy Union",
+      "Tycho Magnetics",
+      "Kuiper Cooperative",
+    ],
+  },
   milestones: {
-    Tharsis: ["Builder", "Gardener", "Mayor", "Planner", "Terraformer"],
-    Hellas: [
+    'Amazonis Planitia': ["Terran", "Landshaper", "Merchant", "Sponsor", "Lobbyist"],
+    'Elysium': ["Generalist", "Specialist", "Ecologist", "Tycoon", "Legend"],
+    'Hellas': [
       "Diversifier",
       "Tactician",
       "Polar Explorer",
       "Energizer",
       "Rim Settler",
     ],
-    Elysium: ["Generalist", "Specialist", "Ecologist", "Tycoon", "Legend"],
-    Venus: ["Hoverlord"],
+    'Terra Cimmeria': ["Planetologist", "Architect", "Coastguard", "Forester", "Investor"],
+    'Tharsis': ["Builder", "Gardener", "Mayor", "Planner", "Terraformer"],
+    'Utopia Planitia': ["Specialist", "Pioneer", "Trader", "Metallurgist", "Researcher"],
+    'Vastitas Borealis': ["Agronomist", "Spacefarer", "Geologist", "Engineer", "Farmer"],
+    'Venus': ["Hoverlord"],
   },
   awards: {
-    Tharsis: ["Landlord", "Scientist", "Banker", "Thermalist", "Miner"],
-    Hellas: ["Cultivator", "Magnate", "Space Baron", "Excentric", "Contractor"],
-    Elysium: [
+    'Amazonis Planitia': ["Collector", "Innovator", "Constructor", "Manufacturer", "Physicist"],
+    'Elysium': [
       "Celebrity",
       "Industrialist",
       "Desert Settler",
       "Estate Dealer",
       "Benefactor",
     ],
-    Venus: ["Venuphile"],
+    'Hellas': ["Cultivator", "Magnate", "Space Baron", "Excentric", "Contractor"],
+    'Terra Cimmeria': ["Electrician", "Founder", "Mogul", "Zoologist", "Forecaster"],
+    'Tharsis': ["Landlord", "Scientist", "Banker", "Thermalist", "Miner"],
+    'Utopia Planitia': ["Suburbian", "Investor", "Botanist", "Incorporator", "Metropolist"],
+    'Vastitas Borealis': ["Traveller", "Landscaper", "Highlander", "Promoter", "Blacksmith"],
+    'Venus': ["Venuphile"],
   },
   colonies: [
     "Callisto",
@@ -238,13 +262,14 @@ function AddGamePage() {
 
   // Expansions
   const [expansions, setExpansions] = useState({
-    Base: true,
-    Draft: true,
+    "Base Game": true,
     "Corporate Era": true,
-    Prelude: true,
-    Venus: false,
-    Colonies: false,
-    Turmoil: false,
+    "Venus Next": true,
+    "Prelude": true,
+    "Prelude 2": false,
+    "Colonies": false,
+    "Turmoil": false,
+    "Promo": false,
   });
   const [showExpansions, setShowExpansions] = useState(true);
 
@@ -341,9 +366,26 @@ function AddGamePage() {
     setExpansions({ ...expansions, [expansion]: !expansions[expansion] });
   };
 
+  const getAvailableCorporations = () => {
+    let availableCorporations = [];
+
+    // Add corporations from each selected expansion
+    Object.entries(expansions).forEach(([expansion, isSelected]) => {
+      if (isSelected && gameData.corporationsByExpansion[expansion]) {
+        availableCorporations = [
+          ...availableCorporations,
+          ...gameData.corporationsByExpansion[expansion]
+        ];
+      }
+    });
+
+    // Remove duplicates and sort
+    return [...new Set(availableCorporations)].sort();
+  };
+
   const getAvailableMilestones = () => {
     let availableMilestones = [...(gameData.milestones[map] || [])];
-    if (expansions.Venus) {
+    if (expansions["Venus Next"]) {
       availableMilestones = [
         ...availableMilestones,
         ...gameData.milestones.Venus,
@@ -360,7 +402,7 @@ function AddGamePage() {
 
   const getAvailableAwards = () => {
     let availableAwards = [...(gameData.awards[map] || [])];
-    if (expansions.Venus) {
+    if (expansions["Venus Next"]) {
       availableAwards = [...availableAwards, ...gameData.awards.Venus];
     }
     return availableAwards.sort();
@@ -588,7 +630,7 @@ function AddGamePage() {
                   <Checkbox
                     key={key}
                     checked={value}
-                    disabled={key === "Base"}
+                    disabled={key === "Base Game"}
                     onChange={() => handleExpansionChange(key)}
                   >
                     {key}
@@ -629,7 +671,7 @@ function AddGamePage() {
                   key={index}
                   index={index}
                   player={player}
-                  corporations={gameData.corporations}
+                  corporations={getAvailableCorporations()}
                   onUpdate={updatePlayerData}
                 />
               ))}
