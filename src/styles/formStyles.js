@@ -29,7 +29,7 @@ export const formStyles = {
     display: 'block',
     lineHeight: '25px',
     height: '25px',
-    width: '250px',
+    width: '300px',
     position: 'relative',
     fontSize: '22px',
     userSelect: 'none',
@@ -49,7 +49,7 @@ export const formStyles = {
   checkmark: {
     position: 'absolute',
     top: 0,
-    left: '225px',
+    left: '275px',
     width: '25px',
     height: '25px'
   },
