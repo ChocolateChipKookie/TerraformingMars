@@ -6,19 +6,80 @@ import { SubContainer, SubContainerElement } from "../components/SubContainer";
 import LinkButton from "../components/LinkButton";
 import { formStyles } from "../styles/formStyles";
 
-// Button styles for increment/decrement
-const incrementButtonStyle = {
-  width: "35px",
-  height: "35px",
-  fontSize: "20px",
-  fontWeight: "bold",
-  border: "1px solid #999",
-  borderRadius: "3px",
-  background: "inherit",
-  cursor: "pointer",
-};
-
 // Local components for this page only
+function AwardButton({ award, playerIndex, awardPlacements, onCyclePlacement, isAwardFunded, getFundedAwardsCount }) {
+  const isDisabled = !award || (!isAwardFunded(award) && getFundedAwardsCount() >= 3);
+  const placement = awardPlacements[award]?.[playerIndex] || 0;
+  
+  const getBackgroundColor = () => {
+    if (isDisabled) return "#666666";
+    if (placement === 1) return "#FFD700"; // Gold
+    if (placement === 2) return "#CCC";    // Silver
+    return "#444";                         // None/Black
+  };
+
+  return (
+    <button
+      style={{
+        width: "30px",
+        height: "30px",
+        border: "2px solid #666",
+        cursor: isDisabled ? "default" : "pointer",
+        backgroundColor: getBackgroundColor(),
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
+        WebkitTouchCallout: "none",
+        WebkitTapHighlightColor: "transparent",
+      }}
+      onClick={() => onCyclePlacement(award, playerIndex)}
+      disabled={isDisabled}
+    />
+  );
+}
+
+function NumericInputWithButtons({ value, onChange, onDecrement, onIncrement }) {
+  const buttonStyle = {
+    width: "35px",
+    height: "35px",
+    fontSize: "20px",
+    fontWeight: "bold",
+    border: "1px solid #999",
+    borderRadius: "3px",
+    background: "inherit",
+    cursor: "pointer",
+  };
+
+  return (
+    <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center" }}>
+      <button style={buttonStyle} onClick={onDecrement}>
+        −
+      </button>
+      <input
+        type="text"
+        style={{
+          textAlign: "center",
+          fontFamily: "inherit",
+          fontSize: "20px",
+          fontWeight: "bold",
+          background: "inherit",
+          height: "35px",
+          width: "95px",
+          boxSizing: "border-box",
+          border: "1px solid #999",
+          borderRadius: "3px",
+        }}
+        value={value}
+        onChange={onChange}
+      />
+      <button style={buttonStyle} onClick={onIncrement}>
+        +
+      </button>
+    </div>
+  );
+}
+
 function PointsRow({
   label,
   players,
@@ -396,19 +457,6 @@ const gameData = {
     "Traveller",
     "Visionary",
     "Zoologist",
-  ],
-  colonies: [
-    "Callisto",
-    "Ceres",
-    "Europa",
-    "Enceladus",
-    "Ganymede",
-    "Io",
-    "Luna",
-    "Miranda",
-    "Pluto",
-    "Titan",
-    "Triton",
   ],
 };
 
@@ -879,76 +927,26 @@ function AddGamePage() {
 
           <SubContainerElement>
             <label>Number of generations:</label>
-            <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center" }}>
-              <button
-                style={incrementButtonStyle}
-                onClick={() => setGenerations(Math.max(1, generations - 1))}
-              >
-                −
-              </button>
-              <input
-                type="text"
-                style={{
-                  textAlign: "center",
-                  fontFamily: "inherit",
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                  background: "inherit",
-                  height: "35px",
-                  width: "95px",
-                  boxSizing: "border-box",
-                  border: "1px solid #999",
-                  borderRadius: "3px",
-                }}
-                value={generations}
-                onChange={(e) => setGenerations(parseInt(e.target.value) || 1)}
-              />
-              <button
-                style={incrementButtonStyle}
-                onClick={() => setGenerations(Math.min(20, generations + 1))}
-              >
-                +
-              </button>
-            </div>
+            <NumericInputWithButtons
+              value={generations}
+              onChange={(e) => setGenerations(parseInt(e.target.value) || 1)}
+              onDecrement={() => setGenerations(Math.max(1, generations - 1))}
+              onIncrement={() => setGenerations(Math.min(20, generations + 1))}
+            />
           </SubContainerElement>
 
           <SubContainerElement>
             <label>Number of players:</label>
-            <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center" }}>
-              <button
-                style={incrementButtonStyle}
-                onClick={() => setPlayerNumber(Math.max(1, playerNumber - 1))}
-              >
-                −
-              </button>
-              <input
-                type="text"
-                style={{
-                  textAlign: "center",
-                  fontFamily: "inherit",
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                  background: "inherit",
-                  height: "35px",
-                  width: "95px",
-                  boxSizing: "border-box",
-                  border: "1px solid #999",
-                  borderRadius: "3px",
-                }}
-                value={playerNumber}
-                onChange={(e) =>
-                  setPlayerNumber(
-                    Math.min(maxPlayers, Math.max(1, parseInt(e.target.value) || 1)),
-                  )
-                }
-              />
-              <button
-                style={incrementButtonStyle}
-                onClick={() => setPlayerNumber(Math.min(maxPlayers, playerNumber + 1))}
-              >
-                +
-              </button>
-            </div>
+            <NumericInputWithButtons
+              value={playerNumber}
+              onChange={(e) =>
+                setPlayerNumber(
+                  Math.min(maxPlayers, Math.max(1, parseInt(e.target.value) || 1)),
+                )
+              }
+              onDecrement={() => setPlayerNumber(Math.max(1, playerNumber - 1))}
+              onIncrement={() => setPlayerNumber(Math.min(maxPlayers, playerNumber + 1))}
+            />
           </SubContainerElement>
 
           <SubContainerElement>
@@ -1132,31 +1130,14 @@ function AddGamePage() {
                       </td>
                       {players.map((player, playerIndex) => (
                         <td key={playerIndex} style={{ padding: "10px", textAlign: "center" }}>
-                          <button
-                            style={{
-                              width: "30px",
-                              height: "30px",
-                              border: "2px solid #666",
-                              cursor: (!award || (!isAwardFunded(award) && getFundedAwardsCount() >= 3)) ? "default" : "pointer",
-                              backgroundColor:
-                                (!award || (!isAwardFunded(award) && getFundedAwardsCount() >= 3)) ? "#666666" : // Much lighter gray when disabled
-                                  awardPlacements[award]?.[playerIndex] === 1 ? "#FFD700" : // Gold
-                                    awardPlacements[award]?.[playerIndex] === 2 ? "#CCC" : // Silver 
-                                      "#444", // None/Black
-                              userSelect: "none",
-                              WebkitUserSelect: "none",
-                              MozUserSelect: "none",
-                              msUserSelect: "none",
-                              WebkitTouchCallout: "none",
-                              WebkitTapHighlightColor: "transparent",
-                            }}
-                            onClick={() => cyclePlacement(award, playerIndex)}
-                            disabled={
-                              !award ||
-                              (!isAwardFunded(award) && getFundedAwardsCount() >= 3)
-                            }
-                          >
-                          </button>
+                          <AwardButton
+                            award={award}
+                            playerIndex={playerIndex}
+                            awardPlacements={awardPlacements}
+                            onCyclePlacement={cyclePlacement}
+                            isAwardFunded={isAwardFunded}
+                            getFundedAwardsCount={getFundedAwardsCount}
+                          />
                         </td>
                       ))}
                     </tr>
