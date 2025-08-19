@@ -6,6 +6,18 @@ import { SubContainer, SubContainerElement } from "../components/SubContainer";
 import LinkButton from "../components/LinkButton";
 import { formStyles } from "../styles/formStyles";
 
+// Button styles for increment/decrement
+const incrementButtonStyle = {
+  width: "35px",
+  height: "35px",
+  fontSize: "20px",
+  fontWeight: "bold",
+  border: "1px solid #999",
+  borderRadius: "3px",
+  background: "inherit",
+  cursor: "pointer",
+};
+
 // Local components for this page only
 function PointsRow({
   label,
@@ -66,25 +78,83 @@ function PointsRow({
   );
 }
 
-function Checkbox({ checked, disabled, onChange, children }) {
-  const checkmarkStyle = {
-    ...formStyles.checkmark,
-    backgroundColor: disabled ? "#777" : "#333",
+function ExpansionIcon({ expansion, checked, disabled, onChange, children }) {
+  const getExpansionConfig = (expansion) => {
+    switch (expansion) {
+      case "Base Game":
+        return {
+          backgroundColor: "transparent",
+          symbol: "",
+          symbolColor: "#000"
+        };
+      case "Corporate Era":
+        return {
+          backgroundColor: "#FF0000",
+          symbol: "⯅",
+          symbolColor: "#000"
+        };
+      case "Venus Next":
+        return {
+          backgroundColor: "#87CEEB",
+          symbol: "⯆",
+          symbolColor: "#FFF"
+        };
+      case "Prelude":
+        return {
+          backgroundColor: "#FFC0CB",
+          symbol: "⯇",
+          symbolColor: "#FFF"
+        };
+      case "Prelude 2":
+        return {
+          backgroundColor: "#FF69B4",
+          symbol: "⯇",
+          symbolColor: "#FFF"
+        };
+      case "Colonies":
+        return {
+          backgroundColor: "#808080",
+          symbol: "⯅",
+          symbolColor: "#000"
+        };
+      case "Turmoil":
+        return {
+          backgroundColor: "#FFA500",
+          symbol: "⯆",
+          symbolColor: "#000"
+        };
+      case "Milestones & Awards":
+        return {
+          backgroundColor: "#FFD700",
+          symbol: "■",
+          symbolColor: "#000"
+        };
+      case "Promo":
+        return {
+          backgroundColor: "#2F2F2F",
+          symbol: "●",
+          symbolColor: "#FFF"
+        };
+      default:
+        return {
+          backgroundColor: "#666",
+          symbol: "?",
+          symbolColor: "#FFF"
+        };
+    }
   };
 
-  const rectangleStyle = {
-    position: "absolute",
-    display: checked ? "block" : "none",
-    left: "50%",
-    top: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "12px",
-    height: "12px",
-    backgroundColor: "white",
-  };
+  const config = getExpansionConfig(expansion);
+  const isShaded = !checked;
 
   return (
-    <label style={formStyles.checkboxLabel}>
+    <label style={{
+      ...formStyles.checkboxLabel,
+      cursor: disabled ? "not-allowed" : "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px"
+    }}>
       <input
         type="checkbox"
         checked={checked}
@@ -92,10 +162,29 @@ function Checkbox({ checked, disabled, onChange, children }) {
         onChange={onChange}
         style={formStyles.hiddenCheckbox}
       />
-      {children}
-      <span style={checkmarkStyle}>
-        {checked && <span style={rectangleStyle} />}
-      </span>
+      <div
+        style={{
+          width: "24px",
+          height: "24px",
+          borderRadius: "50%",
+          border: "2px solid #000",
+          backgroundColor: config.backgroundColor,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "12px",
+          fontWeight: "bold",
+          color: config.symbolColor,
+          opacity: isShaded ? 0.4 : 1,
+          filter: isShaded ? "saturate(0.3)" : "none",
+          userSelect: "none",
+          flexShrink: 0,
+        }}
+        title={expansion}
+      >
+        {config.symbol}
+      </div>
+      <span>{children}</span>
     </label>
   );
 }
@@ -330,7 +419,7 @@ function AddGamePage() {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [map, setMap] = useState("Tharsis");
-  const [generations, setGenerations] = useState(0);
+  const [generations, setGenerations] = useState(1);
   const [playerNumber, setPlayerNumber] = useState(4);
   const [players, setPlayers] = useState([]);
 
@@ -383,6 +472,16 @@ function AddGamePage() {
     }
     setPlayers(newPlayers);
   }, [playerNumber]);
+
+  // Calculate max players based on map
+  const maxPlayers = (map === "Amazonis Planitia" || map === "Vastitas Borealis") ? 6 : 5;
+
+  // Adjust player count when map changes
+  useEffect(() => {
+    if (playerNumber > maxPlayers) {
+      setPlayerNumber(maxPlayers);
+    }
+  }, [map, maxPlayers]);
 
   // Update player scores when number changes
   useEffect(() => {
@@ -712,28 +811,29 @@ function AddGamePage() {
 
       <Container title="Options" titleStyle="banner">
         <SubContainer>
-          <SubContainerElement
-            label="Name:"
-            input={{
-              type: "text",
-              className: "option-input",
-              value: name,
-              onChange: (e) => setName(e.target.value),
-            }}
-          />
+          <SubContainerElement>
+            <label>Name:</label>
+            <input
+              type="text"
+              style={formStyles.optionInput}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </SubContainerElement>
 
-          <SubContainerElement
-            label="Date:"
-            input={{
-              type: "date",
-              className: "option-input",
-              value: date,
-              onChange: (e) => setDate(e.target.value),
-              required: true,
-            }}
-          />
+          <SubContainerElement>
+            <label>Date:</label>
+            <input
+              type="date"
+              style={formStyles.optionInput}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required={true}
+            />
+          </SubContainerElement>
 
-          <SubContainerElement label="Map:">
+          <SubContainerElement>
+            <label>Map:</label>
             <select
               style={formStyles.optionInput}
               value={map}
@@ -763,44 +863,95 @@ function AddGamePage() {
             {showExpansions && (
               <div style={formStyles.subcontainerBox}>
                 {Object.entries(expansions).map(([key, value]) => (
-                  <Checkbox
+                  <ExpansionIcon
                     key={key}
+                    expansion={key}
                     checked={value}
                     disabled={key === "Base Game"}
                     onChange={() => handleExpansionChange(key)}
                   >
                     {key}
-                  </Checkbox>
+                  </ExpansionIcon>
                 ))}
               </div>
             )}
           </SubContainerElement>
 
-          <SubContainerElement
-            label="Number of generations"
-            input={{
-              type: "number",
-              className: "option-input",
-              min: 1,
-              max: 20,
-              value: generations,
-              onChange: (e) => setGenerations(parseInt(e.target.value) || 0),
-            }}
-          />
+          <SubContainerElement>
+            <label>Number of generations:</label>
+            <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center" }}>
+              <button
+                style={incrementButtonStyle}
+                onClick={() => setGenerations(Math.max(1, generations - 1))}
+              >
+                −
+              </button>
+              <input
+                type="text"
+                style={{
+                  textAlign: "center",
+                  fontFamily: "inherit",
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  background: "inherit",
+                  height: "35px",
+                  width: "95px",
+                  boxSizing: "border-box",
+                  border: "1px solid #999",
+                  borderRadius: "3px",
+                }}
+                value={generations}
+                onChange={(e) => setGenerations(parseInt(e.target.value) || 1)}
+              />
+              <button
+                style={incrementButtonStyle}
+                onClick={() => setGenerations(Math.min(20, generations + 1))}
+              >
+                +
+              </button>
+            </div>
+          </SubContainerElement>
 
-          <SubContainerElement
-            label="Number of players"
-            input={{
-              type: "number",
-              min: 1,
-              max: 6,
-              value: playerNumber,
-              onChange: (e) =>
-                setPlayerNumber(
-                  Math.min(5, Math.max(1, parseInt(e.target.value) || 1)),
-                ),
-            }}
-          >
+          <SubContainerElement>
+            <label>Number of players:</label>
+            <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center" }}>
+              <button
+                style={incrementButtonStyle}
+                onClick={() => setPlayerNumber(Math.max(1, playerNumber - 1))}
+              >
+                −
+              </button>
+              <input
+                type="text"
+                style={{
+                  textAlign: "center",
+                  fontFamily: "inherit",
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  background: "inherit",
+                  height: "35px",
+                  width: "95px",
+                  boxSizing: "border-box",
+                  border: "1px solid #999",
+                  borderRadius: "3px",
+                }}
+                value={playerNumber}
+                onChange={(e) =>
+                  setPlayerNumber(
+                    Math.min(maxPlayers, Math.max(1, parseInt(e.target.value) || 1)),
+                  )
+                }
+              />
+              <button
+                style={incrementButtonStyle}
+                onClick={() => setPlayerNumber(Math.min(maxPlayers, playerNumber + 1))}
+              >
+                +
+              </button>
+            </div>
+          </SubContainerElement>
+
+          <SubContainerElement>
             <div style={formStyles.subcontainerBox}>
               {players.map((player, index) => (
                 <PlayerInput
