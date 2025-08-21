@@ -51,7 +51,7 @@ export const formStyles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "22px",
+    fontSize: "28px",
     fontWeight: "bold",
     userSelect: "none",
     flexShrink: 0,
