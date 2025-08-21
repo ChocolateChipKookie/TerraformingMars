@@ -10,7 +10,7 @@ import { formStyles } from "../styles/formStyles";
 function AwardButton({ award, playerIndex, awardPlacements, onCyclePlacement, isAwardFunded, getFundedAwardsCount }) {
   const isDisabled = !award || (!isAwardFunded(award) && getFundedAwardsCount() >= 3);
   const placement = awardPlacements[award]?.[playerIndex] || 0;
-  
+
   const getBackgroundColor = () => {
     if (isDisabled) return "#666666";
     if (placement === 1) return "#FFD700"; // Gold
@@ -41,18 +41,20 @@ function AwardButton({ award, playerIndex, awardPlacements, onCyclePlacement, is
 
 function NumericInputWithButtons({ value, onChange, onDecrement, onIncrement }) {
   const buttonStyle = {
-    width: "35px",
-    height: "35px",
-    fontSize: "20px",
+    width: "3rem",
+    minWidth: "3rem",
+    height: "3rem",
+    fontSize: "2.5rem",
     fontWeight: "bold",
-    border: "1px solid #999",
+    border: "1px solid #777",
     borderRadius: "3px",
     background: "inherit",
     cursor: "pointer",
+    flexShrink: 0,
   };
 
   return (
-    <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center" }}>
+    <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center", width: "50%" }}>
       <button style={buttonStyle} onClick={onDecrement}>
         −
       </button>
@@ -61,13 +63,14 @@ function NumericInputWithButtons({ value, onChange, onDecrement, onIncrement }) 
         style={{
           textAlign: "center",
           fontFamily: "inherit",
-          fontSize: "20px",
+          fontSize: "2rem",
           fontWeight: "bold",
           background: "inherit",
-          height: "35px",
-          width: "95px",
+          height: "3rem",
+          flex: 1,
+          minWidth: 0,
           boxSizing: "border-box",
-          border: "1px solid #999",
+          border: "1px solid #777",
           borderRadius: "3px",
         }}
         value={value}
@@ -139,7 +142,7 @@ function PointsRow({
   );
 }
 
-function ExpansionIcon({ expansion, checked, disabled, onChange, children }) {
+function ExpansionIcon({ expansion, checked, disabled, onChange, children, showText = true }) {
   const getExpansionConfig = (expansion) => {
     switch (expansion) {
       case "Base Game":
@@ -210,11 +213,21 @@ function ExpansionIcon({ expansion, checked, disabled, onChange, children }) {
 
   return (
     <label style={{
-      ...formStyles.checkboxLabel,
+      ...(!showText && {
+        width: "auto",
+        height: "auto",
+        margin: "5px",
+        display: "inline-block",
+        lineHeight: "normal"
+      }),
+      ...(showText && {
+        ...formStyles.checkboxLabel,
+        display: "flex",
+        gap: "8px",
+        justifyContent: "flex-start",
+        marginLeft: "0",
+      }),
       cursor: disabled ? "not-allowed" : "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: "8px"
     }}>
       <input
         type="checkbox"
@@ -225,48 +238,43 @@ function ExpansionIcon({ expansion, checked, disabled, onChange, children }) {
       />
       <div
         style={{
-          width: "24px",
-          height: "24px",
-          borderRadius: "50%",
-          border: "2px solid #000",
+          ...formStyles.expansionIconStyle,
           backgroundColor: config.backgroundColor,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "12px",
-          fontWeight: "bold",
           color: config.symbolColor,
           opacity: isShaded ? 0.4 : 1,
           filter: isShaded ? "saturate(0.3)" : "none",
-          userSelect: "none",
-          flexShrink: 0,
+          cursor: disabled ? "not-allowed" : "pointer",
         }}
         title={expansion}
       >
         {config.symbol}
       </div>
-      <span>{children}</span>
+      {showText && <span>{children}</span>}
     </label>
   );
 }
 
-function PlayerInput({ index, player, corporations, onUpdate }) {
+function PlayerInput({ index, player, corporations, onUpdate, selectedCorporations }) {
+  const availableCorporations = corporations.filter(corp =>
+    corp === "Beginner" || !selectedCorporations.includes(corp) || corp === player.corporation
+  );
+
   return (
     <div style={formStyles.playerInputDiv}>
       <input
         type="text"
-        style={formStyles.playerInput}
+        style={formStyles.containerInput}
         placeholder={`Player ${index + 1} name`}
         value={player.name}
         onChange={(e) => onUpdate(index, "name", e.target.value)}
       />
       <select
-        style={formStyles.playerInput}
+        style={formStyles.containerInput}
         value={player.corporation}
         onChange={(e) => onUpdate(index, "corporation", e.target.value)}
       >
         <option value="">Select Corporation</option>
-        {corporations.map((corp) => (
+        {availableCorporations.map((corp) => (
           <option key={corp} value={corp}>
             {corp}
           </option>
@@ -484,7 +492,7 @@ function AddGamePage() {
     "Milestones & Awards": false,
     "Promo": false,
   });
-  const [showExpansions, setShowExpansions] = useState(true);
+  const [expandedExpansions, setExpandedExpansions] = useState(false);
 
   // Milestones - object with milestone name as key, player index as value (-1 means not claimed)
   const [milestoneWinners, setMilestoneWinners] = useState({});
@@ -896,47 +904,20 @@ function AddGamePage() {
           </SubContainerElement>
 
           <SubContainerElement>
-            <div>
-              <label>Select expansion:</label>
-              <input
-                type="button"
-                value={showExpansions ? "Hide" : "Show"}
-                style={{
-                  ...formStyles.optionInput,
-                  cursor: "pointer",
-                }}
-                onClick={() => setShowExpansions(!showExpansions)}
-              />
-            </div>
-            {showExpansions && (
-              <div style={formStyles.subcontainerBox}>
-                {Object.entries(expansions).map(([key, value]) => (
-                  <ExpansionIcon
-                    key={key}
-                    expansion={key}
-                    checked={value}
-                    disabled={key === "Base Game"}
-                    onChange={() => handleExpansionChange(key)}
-                  >
-                    {key}
-                  </ExpansionIcon>
-                ))}
-              </div>
-            )}
-          </SubContainerElement>
-
-          <SubContainerElement>
-            <label>Number of generations:</label>
+            <label>Generations:</label>
             <NumericInputWithButtons
               value={generations}
-              onChange={(e) => setGenerations(parseInt(e.target.value) || 1)}
+              onChange={(e) => {
+                const val = parseInt(e.target.value) || 1;
+                setGenerations(Math.min(20, Math.max(1, val)));
+              }}
               onDecrement={() => setGenerations(Math.max(1, generations - 1))}
               onIncrement={() => setGenerations(Math.min(20, generations + 1))}
             />
           </SubContainerElement>
 
           <SubContainerElement>
-            <label>Number of players:</label>
+            <label>Players:</label>
             <NumericInputWithButtons
               value={playerNumber}
               onChange={(e) =>
@@ -951,108 +932,154 @@ function AddGamePage() {
 
           <SubContainerElement>
             <div style={formStyles.subcontainerBox}>
-              {players.map((player, index) => (
-                <PlayerInput
-                  key={index}
-                  index={index}
-                  player={player}
-                  corporations={getAvailableCorporations()}
-                  onUpdate={updatePlayerData}
-                />
-              ))}
+              <div style={{
+                display: "flex",
+                alignItems: "flex-start",
+                padding: "15px",
+                gap: "15px"
+              }}>
+                {/* Content container - shared by both bar and list */}
+                <div style={{ flex: 1 }}>
+                  {!expandedExpansions && (
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between"
+                    }}>
+                      {Object.entries(expansions).map(([key, value]) => (
+                        <ExpansionIcon
+                          key={key}
+                          expansion={key}
+                          checked={value}
+                          disabled={key === "Base Game"}
+                          onChange={() => handleExpansionChange(key)}
+                          showText={false}
+                        >
+                          {key}
+                        </ExpansionIcon>
+                      ))}
+                    </div>
+                  )}
+
+                  {expandedExpansions && (
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      margin: "5px"
+                    }}>
+                      {Object.entries(expansions).map(([key, value]) => (
+                        <ExpansionIcon
+                          key={key + "_expanded"}
+                          expansion={key}
+                          checked={value}
+                          disabled={key === "Base Game"}
+                          onChange={() => handleExpansionChange(key)}
+                          showText={true}
+                        >
+                          {key}
+                        </ExpansionIcon>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expand/Collapse button container */}
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  margin: "5px"
+                }}>
+                  <div
+                    style={{
+                      ...formStyles.expansionIconStyle,
+                      backgroundColor: "#333",
+                      color: "#FFF",
+                      userSelect: "none",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setExpandedExpansions(!expandedExpansions)}
+                    title={expandedExpansions ? "Collapse" : "Expand"}
+                  >
+                    ☰
+                  </div>
+                </div>
+              </div>
             </div>
           </SubContainerElement>
         </SubContainer>
       </Container>
 
+      <Container title="Players" titleStyle="banner">
+        <SubContainer>
+          {players.map((player, index) => (
+            <PlayerInput
+              key={index}
+              index={index}
+              player={player}
+              corporations={getAvailableCorporations()}
+              onUpdate={updatePlayerData}
+              selectedCorporations={players.map(p => p.corporation).filter(corp => corp !== "")}
+            />
+          ))}
+        </SubContainer>
+      </Container>
+
       <Container title="Milestones" titleStyle="banner">
         <SubContainer>
-          <SubContainerElement>
-            <div style={formStyles.subcontainerBox}>
-              {(expansions["Milestones & Awards"] ? selectedMilestones : getAvailableMilestones()).map((milestone, index) => (
-                <div
-                  key={index}
+          {(expansions["Milestones & Awards"] ? selectedMilestones : getAvailableMilestones()).map((milestone, index) => (
+            <div
+              key={index}
+              style={{
+                ...formStyles.playerInputDiv
+              }}
+            >
+              {expansions["Milestones & Awards"] ? (
+                <select
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "10px",
+                    ...formStyles.containerInput
+                  }}
+                  value={milestone || ""}
+                  onChange={(e) => updateSelectedMilestone(index, e.target.value)}
+                >
+                  {!milestone && <option value="">Select Milestone</option>}
+                  {getAvailableMilestonesForDropdown(milestone).map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              ) : (
+                <div
+                  style={{
+                    ...formStyles.milestoneLabel,
                   }}
                 >
-                  {expansions["Milestones & Awards"] ? (
-                    <select
-                      style={{
-                        textAlign: "center",
-                        fontFamily: "inherit",
-                        fontSize: "15px",
-                        background: "inherit",
-                        height: "35px",
-                        width: "225px",
-                        boxSizing: "border-box",
-                        margin: "0 5px",
-                        cursor: "pointer",
-                      }}
-                      value={milestone || ""}
-                      onChange={(e) => updateSelectedMilestone(index, e.target.value)}
-                    >
-                      {!milestone && <option value="">Select Milestone</option>}
-                      {getAvailableMilestonesForDropdown(milestone).map(m => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        fontFamily: "inherit",
-                        fontSize: "15px",
-                        height: "35px",
-                        width: "225px",
-                        boxSizing: "border-box",
-                        margin: "0 5px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {milestone}
-                    </div>
-                  )}
-
-                  <select
-                    style={{
-                      textAlign: "center",
-                      fontFamily: "Courier New, Courier, monospace",
-                      fontWeight: "bolder",
-                      fontSize: "15px",
-                      background: "inherit",
-                      height: "35px",
-                      width: "225px",
-                      boxSizing: "border-box",
-                      margin: "0 5px",
-                    }}
-                    value={milestoneWinners[milestone] ?? -1}
-                    onChange={(e) =>
-                      updateMilestoneWinner(milestone, parseInt(e.target.value))
-                    }
-                    disabled={
-                      !milestone ||
-                      (milestoneWinners[milestone] === -1 &&
-                        getSelectedMilestonesCount() >= 3)
-                    }
-                  >
-                    <option value={-1}>Not achieved</option>
-                    {players.map((p, i) => (
-                      <option key={i} value={i}>
-                        {p.name || `Player ${i + 1}`}
-                      </option>
-                    ))}
-                  </select>
+                  {milestone}
                 </div>
-              ))}
+              )}
+
+              <select
+                style={{
+                  ...formStyles.containerInput
+                }}
+                value={milestoneWinners[milestone] ?? -1}
+                onChange={(e) =>
+                  updateMilestoneWinner(milestone, parseInt(e.target.value))
+                }
+                disabled={
+                  !milestone ||
+                  (milestoneWinners[milestone] === -1 &&
+                    getSelectedMilestonesCount() >= 3)
+                }
+              >
+                <option value={-1}>Not achieved</option>
+                {players.map((p, i) => (
+                  <option key={i} value={i}>
+                    {p.name || `Player ${i + 1}`}
+                  </option>
+                ))}
+              </select>
             </div>
-          </SubContainerElement>
+          ))}
         </SubContainer>
       </Container>
 

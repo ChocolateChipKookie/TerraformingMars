@@ -20,7 +20,7 @@ function Container({ children, title, titleStyle = "page-title" }) {
     }}>
       {title && titleStyle === "page-title" && (
         <div style={{
-          fontSize: '60px',
+          fontSize: '4rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
@@ -33,7 +33,7 @@ function Container({ children, title, titleStyle = "page-title" }) {
           marginTop: '10px',
           borderTop: '5px black solid',
           borderBottom: '5px black solid',
-          fontSize: '30px',
+          fontSize: '3rem',
           backgroundColor: 'rgb(240, 240, 240)'
         }}>
           {title}

@@ -5,7 +5,8 @@ function SubContainer({ children }) {
   return (
     <div style={{
       textAlign: 'center',
-      fontSize: '22px'
+      fontSize: '2.5rem',
+      padding: '0.5rem 2rem'
     }}>
       {children}
     </div>
@@ -16,14 +17,13 @@ function SubContainerElement({ children, label, input }) {
   return (
     <div style={{
       maxWidth: '750px',
-      margin: '5px auto',
-      minHeight: '35px',
-      lineHeight: '35px',
+      margin: '0.5rem auto',
+      minHeight: '3rem',
       textAlign: 'left'
     }}>
       {label && <label>{label}</label>}
       {input && (
-        <input 
+        <input
           {...input}
           style={{
             ...formStyles.optionInput,

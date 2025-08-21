@@ -3,11 +3,11 @@ export const formStyles = {
   optionInput: {
     textAlign: 'center',
     fontFamily: 'inherit',
-    fontSize: '15px',
+    fontSize: '1.8rem',
     background: 'inherit',
     float: 'right',
-    height: '35px',
-    width: '175px',
+    height: '3rem',
+    width: '50%',
     boxSizing: 'border-box'
   },
 
@@ -23,12 +23,9 @@ export const formStyles = {
   },
 
   checkboxLabel: {
-    marginTop: '3px',
-    marginBottom: '3px',
-    margin: '10px auto',
     display: 'block',
-    lineHeight: '25px',
-    height: '25px',
+    lineHeight: '3rem',
+    height: '3rem',
     width: '300px',
     position: 'relative',
     fontSize: '22px',
@@ -46,6 +43,20 @@ export const formStyles = {
     width: 0
   },
 
+  expansionIconStyle: {
+    width: "45px",
+    height: "45px",
+    borderRadius: "50%",
+    border: "2px solid #000",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "22px",
+    fontWeight: "bold",
+    userSelect: "none",
+    flexShrink: 0,
+  },
+
   checkmark: {
     position: 'absolute',
     top: 0,
@@ -55,23 +66,37 @@ export const formStyles = {
   },
 
   playerInputDiv: {
-    margin: '10px',
     textAlign: 'center',
-    verticalAlign: 'center'
+    verticalAlign: 'center',
+    display: 'flex',
+    justifyContent: 'space-between',
+    margin: '0.3rem 0'
   },
 
-  playerInput: {
+  containerInput: {
     borderColor: '#666',
     borderRadius: '4px',
     textAlign: 'center',
     fontWeight: 'bolder',
     fontFamily: 'inherit',
-    fontSize: '15px',
+    fontSize: '1.8rem',
     backgroundColor: 'white',
-    margin: '7px',
-    width: '45%',
-    height: '35px',
+    width: '48%',
+    height: '3rem',
     boxSizing: 'border-box',
     display: 'inline-block'
+  },
+
+  milestoneLabel: {
+    borderColor: '#666',
+    textAlign: 'center',
+    fontWeight: 'bolder',
+    fontFamily: 'inherit',
+    fontSize: '1.8rem',
+    width: '48%',
+    height: '3rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 };
