@@ -60,6 +60,8 @@ function NumericInputWithButtons({ value, onChange, onDecrement, onIncrement }) 
       </button>
       <input
         type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         style={{
           textAlign: "center",
           fontFamily: "inherit",
@@ -83,7 +85,7 @@ function NumericInputWithButtons({ value, onChange, onDecrement, onIncrement }) 
   );
 }
 
-function PointsRow({
+function PointInput({
   label,
   players,
   playerScores,
@@ -93,33 +95,55 @@ function PointsRow({
   placeholder = "0",
 }) {
   return (
-    <tr>
-      <td style={{ padding: "5px", fontWeight: "bold" }}>{label}</td>
-      {players.map((_, playerIndex) => (
-        <td key={playerIndex} style={{ padding: "5px" }}>
-          {readOnly ? (
+    <div style={{
+      ...formStyles.playerInputDiv,
+      marginBottom: "10px"
+    }}>
+      <div style={{
+        ...formStyles.milestoneLabel,
+        width: "28%"
+      }}>
+        {label}
+      </div>
+      <div style={{
+        display: "flex",
+        gap: "5px",
+        width: "68%",
+        justifyContent: "space-around"
+      }}>
+        {players.map((_, playerIndex) => (
+          readOnly ? (
             <div
+              key={playerIndex}
               style={{
                 textAlign: "center",
                 fontFamily: "inherit",
-                fontSize: "13px",
-                height: "30px",
-                lineHeight: "30px",
+                fontSize: "1.5rem",
+                height: "3rem",
+                lineHeight: "3rem",
                 fontWeight: "bold",
+                flex: 1,
+                border: "1px solid #999",
+                borderRadius: "3px",
+                backgroundColor: field === "totalPoints" ? "#f0f0f0" : "inherit"
               }}
             >
               {playerScores[playerIndex]?.[field] || 0}
             </div>
           ) : (
             <input
+              key={playerIndex}
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               style={{
                 textAlign: "center",
                 fontFamily: "inherit",
-                fontSize: "13px",
+                fontSize: "1.5rem",
                 background: "inherit",
-                height: "30px",
-                width: "100%",
+                height: "3rem",
+                flex: 1,
+                minWidth: 0,
                 boxSizing: "border-box",
                 borderWidth: "1px",
                 borderStyle: "solid",
@@ -135,10 +159,10 @@ function PointsRow({
               }}
               placeholder={placeholder}
             />
-          )}
-        </td>
-      ))}
-    </tr>
+          )
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -1200,122 +1224,105 @@ function AddGamePage() {
 
       <Container title="Points" titleStyle="banner">
         <SubContainer>
-          <SubContainerElement>
-            <div style={formStyles.subcontainerBox}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  marginTop: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        padding: "5px",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                        borderBottom: "2px solid #999",
-                        textAlign: "left",
-                      }}
-                    >
-                      Player
-                    </th>
-                    {players.map((player, index) => (
-                      <th
-                        key={index}
-                        style={{
-                          padding: "5px",
-                          fontSize: "14px",
-                          fontWeight: "bold",
-                          borderBottom: "2px solid #999",
-                          textAlign: "center",
-                          fontFamily: "Courier New, Courier, monospace",
-                        }}
-                      >
-                        {player.name || `Player ${index + 1}`}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <PointsRow
-                    label="TR"
-                    players={players}
-                    playerScores={playerScores}
-                    field="terraformingRating"
-                    onChange={updatePlayerScore}
-                    placeholder="20"
-                  />
-                  <PointsRow
-                    label="Cities"
-                    players={players}
-                    playerScores={playerScores}
-                    field="cities"
-                    onChange={updatePlayerScore}
-                  />
-                  <PointsRow
-                    label="Greeneries"
-                    players={players}
-                    playerScores={playerScores}
-                    field="greeneries"
-                    onChange={updatePlayerScore}
-                  />
-                  <PointsRow
-                    label="Cards"
-                    players={players}
-                    playerScores={playerScores}
-                    field="cards"
-                    onChange={updatePlayerScore}
-                  />
-                  {expansions.Turmoil && (
-                    <PointsRow
-                      label="Turmoil"
-                      players={players}
-                      playerScores={playerScores}
-                      field="turmoilPoints"
-                      onChange={updatePlayerScore}
-                    />
-                  )}
-                  <tr style={{ borderTop: "2px solid #999" }}>
-                    <td
-                      colSpan={players.length + 1}
-                      style={{ padding: "0px", height: "5px" }}
-                    ></td>
-                  </tr>
-                  <PointsRow
-                    label="Milestones"
-                    players={players}
-                    playerScores={playerScores}
-                    field="milestonePoints"
-                    readOnly={true}
-                  />
-                  <PointsRow
-                    label="Awards"
-                    players={players}
-                    playerScores={playerScores}
-                    field="awardPoints"
-                    readOnly={true}
-                  />
-                  <tr style={{ borderTop: "3px solid #000" }}>
-                    <td
-                      colSpan={players.length + 1}
-                      style={{ padding: "0px", height: "5px" }}
-                    ></td>
-                  </tr>
-                  <PointsRow
-                    label="Total"
-                    players={players}
-                    playerScores={playerScores}
-                    field="totalPoints"
-                    readOnly={true}
-                  />
-                </tbody>
-              </table>
+          {/* Player names header */}
+          <div
+            style={{
+              ...formStyles.playerInputDiv,
+              marginBottom: "15px",
+              borderBottom: "2px solid #999",
+              paddingBottom: "10px"
+            }}
+          >
+            <div style={{ width: "28%" }}>
+              {/* Empty space for alignment */}
             </div>
-          </SubContainerElement>
+            <div style={{
+              display: "flex",
+              gap: "5px",
+              width: "68%",
+              justifyContent: "space-around"
+            }}>
+              {players.map((player, playerIndex) => (
+                <div
+                  key={playerIndex}
+                  style={{
+                    fontSize: "1.2rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    flex: 1
+                  }}
+                >
+                  {player.name || `P${playerIndex + 1}`}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <PointInput
+            label="TR"
+            players={players}
+            playerScores={playerScores}
+            field="terraformingRating"
+            onChange={updatePlayerScore}
+            placeholder="20"
+          />
+          <PointInput
+            label="Cities"
+            players={players}
+            playerScores={playerScores}
+            field="cities"
+            onChange={updatePlayerScore}
+          />
+          <PointInput
+            label="Greeneries"
+            players={players}
+            playerScores={playerScores}
+            field="greeneries"
+            onChange={updatePlayerScore}
+          />
+          <PointInput
+            label="Cards"
+            players={players}
+            playerScores={playerScores}
+            field="cards"
+            onChange={updatePlayerScore}
+          />
+          {expansions.Turmoil && (
+            <PointInput
+              label="Turmoil"
+              players={players}
+              playerScores={playerScores}
+              field="turmoilPoints"
+              onChange={updatePlayerScore}
+            />
+          )}
+
+          <div style={{ borderTop: "2px solid #999", margin: "15px 0", paddingTop: "15px" }}>
+            <PointInput
+              label="Milestones"
+              players={players}
+              playerScores={playerScores}
+              field="milestonePoints"
+              readOnly={true}
+            />
+            <PointInput
+              label="Awards"
+              players={players}
+              playerScores={playerScores}
+              field="awardPoints"
+              readOnly={true}
+            />
+          </div>
+
+          <div style={{ borderTop: "3px solid #000", marginTop: "15px", paddingTop: "15px" }}>
+            <PointInput
+              label="Total"
+              players={players}
+              playerScores={playerScores}
+              field="totalPoints"
+              readOnly={true}
+            />
+          </div>
         </SubContainer>
       </Container>
 
