@@ -21,8 +21,8 @@ function AwardButton({ award, playerIndex, awardPlacements, onCyclePlacement, is
   return (
     <button
       style={{
-        width: "30px",
-        height: "30px",
+        width: "3rem",
+        height: "3rem",
         border: "2px solid #666",
         cursor: isDisabled ? "default" : "pointer",
         backgroundColor: getBackgroundColor(),
@@ -272,9 +272,11 @@ function ExpansionIcon({ expansion, checked, disabled, onChange, children, showT
   );
 }
 
-function PlayerInput({ index, player, corporations, onUpdate, selectedCorporations }) {
-  const availableCorporations = corporations.filter(corp =>
-    corp === "Beginner" || !selectedCorporations.includes(corp) || corp === player.corporation
+const PlayerInput = React.memo(({ index, player, corporations, onUpdate, selectedCorporations }) => {
+  const availableCorporations = React.useMemo(() =>
+    corporations.filter(corp =>
+      corp === "Beginner" || !selectedCorporations.includes(corp) || corp === player.corporation
+    ), [corporations, selectedCorporations, player.corporation]
   );
 
   return (
@@ -300,7 +302,7 @@ function PlayerInput({ index, player, corporations, onUpdate, selectedCorporatio
       </select>
     </div>
   );
-}
+});
 
 const gameData = {
   maps: [
@@ -631,11 +633,13 @@ function AddGamePage() {
     }
   }, [map, expansions["Milestones & Awards"], expansions["Venus Next"]]);
 
-  const updatePlayerData = (index, field, value) => {
-    const newPlayers = [...players];
-    newPlayers[index][field] = value;
-    setPlayers(newPlayers);
-  };
+  const updatePlayerData = React.useCallback((index, field, value) => {
+    setPlayers(prevPlayers => {
+      const newPlayers = [...prevPlayers];
+      newPlayers[index][field] = value;
+      return newPlayers;
+    });
+  }, []);
 
   const handleExpansionChange = (expansion) => {
     setExpansions({ ...expansions, [expansion]: !expansions[expansion] });
@@ -926,10 +930,10 @@ function AddGamePage() {
             <NumericInputWithButtons
               value={generations}
               onChange={(e) => {
-                const val = parseInt(e.target.value) || 1;
-                setGenerations(Math.min(20, Math.max(1, val)));
+                const val = parseInt(e.target.value) || 0;
+                setGenerations(Math.min(20, Math.max(0, val)));
               }}
-              onDecrement={() => setGenerations(Math.max(1, generations - 1))}
+              onDecrement={() => setGenerations(Math.max(0, generations - 1))}
               onIncrement={() => setGenerations(Math.min(20, generations + 1))}
             />
           </SubContainerElement>
@@ -1103,94 +1107,93 @@ function AddGamePage() {
 
       <Container title="Awards" titleStyle="banner">
         <SubContainer>
-          <SubContainerElement>
-            <div style={formStyles.subcontainerBox}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  marginTop: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        padding: "10px",
-                        fontSize: "18px",
-                        fontWeight: "bold",
-                        borderBottom: "2px solid #999",
-                        textAlign: "left",
-                        width: "200px",
-                      }}
-                    >
-                      Award
-                    </th>
-                    {players.map((player, index) => (
-                      <th
-                        key={index}
-                        style={{
-                          padding: "10px",
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                          borderBottom: "2px solid #999",
-                          textAlign: "center",
-                          fontFamily: "Courier New, Courier, monospace",
-                        }}
-                      >
-                        {player.name || `Player ${index + 1}`}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(expansions["Milestones & Awards"] ? selectedAwards : getAvailableAwards()).map((award, awardIndex) => (
-                    <tr key={awardIndex}>
-                      <td style={{ padding: "10px", fontWeight: "bold" }}>
-                        {expansions["Milestones & Awards"] ? (
-                          <select
-                            style={{
-                              textAlign: "center",
-                              fontFamily: "inherit",
-                              fontSize: "15px",
-                              background: "inherit",
-                              height: "35px",
-                              width: "100%",
-                              boxSizing: "border-box",
-                              borderColor: "#999",
-                              borderRadius: "3px",
-                            }}
-                            value={award || ""}
-                            onChange={(e) => updateSelectedAward(awardIndex, e.target.value)}
-                          >
-                            {!award && <option value="">Select Award</option>}
-                            {getAvailableAwardsForDropdown(award).map(a => (
-                              <option key={a} value={a}>{a}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          award
-                        )}
-                      </td>
-                      {players.map((player, playerIndex) => (
-                        <td key={playerIndex} style={{ padding: "10px", textAlign: "center" }}>
-                          <AwardButton
-                            award={award}
-                            playerIndex={playerIndex}
-                            awardPlacements={awardPlacements}
-                            onCyclePlacement={cyclePlacement}
-                            isAwardFunded={isAwardFunded}
-                            getFundedAwardsCount={getFundedAwardsCount}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Player names header */}
+          <div
+            style={{
+              ...formStyles.playerInputDiv,
+              marginBottom: "15px",
+              borderBottom: "2px solid #999",
+              paddingBottom: "10px"
+            }}
+          >
+            <div style={{ width: "28%" }}>
+              {/* Empty space for alignment */}
             </div>
-          </SubContainerElement>
+            <div style={{
+              display: "flex",
+              gap: "5px",
+              width: "68%",
+              justifyContent: "space-around"
+            }}>
+              {players.map((player, playerIndex) => (
+                <div
+                  key={playerIndex}
+                  style={{
+                    fontSize: "1.2rem",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    flex: 1
+                  }}
+                >
+                  {player.name || `P${playerIndex + 1}`}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {(expansions["Milestones & Awards"] ? selectedAwards : getAvailableAwards()).map((award, index) => (
+            <div
+              key={index}
+              style={{
+                ...formStyles.playerInputDiv,
+                marginBottom: "10px"
+              }}
+            >
+              {expansions["Milestones & Awards"] ? (
+                <select
+                  style={{
+                    ...formStyles.containerInput,
+                    width: "28%"
+                  }}
+                  value={award || ""}
+                  onChange={(e) => updateSelectedAward(index, e.target.value)}
+                >
+                  {!award && <option value="">Select Award</option>}
+                  {getAvailableAwardsForDropdown(award).map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              ) : (
+                <div
+                  style={{
+                    ...formStyles.milestoneLabel,
+                    width: "28%"
+                  }}
+                >
+                  {award}
+                </div>
+              )}
+
+              <div style={{
+                display: "flex",
+                gap: "5px",
+                width: "68%",
+                justifyContent: "space-around"
+              }}>
+                {players.map((player, playerIndex) => (
+                  <AwardButton
+                    key={playerIndex}
+                    award={award}
+                    playerIndex={playerIndex}
+                    awardPlacements={awardPlacements}
+                    onCyclePlacement={cyclePlacement}
+                    isAwardFunded={isAwardFunded}
+                    getFundedAwardsCount={getFundedAwardsCount}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </SubContainer>
       </Container>
 
