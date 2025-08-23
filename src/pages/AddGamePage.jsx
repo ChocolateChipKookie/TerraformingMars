@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useReducer } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
@@ -340,6 +340,146 @@ function ExpansionIcon({
   );
 }
 
+// Game configuration reducer
+const gameConfigInitialState = {
+  name: "",
+  date: "",
+  map: "Tharsis",
+  generations: GAME_CONSTANTS.DEFAULT_GENERATIONS,
+  expansions: {
+    "Base Game": true,
+    Draft: true,
+    "Corporate Era": true,
+    Prelude: true,
+    "Prelude 2": true,
+    "Venus Next": false,
+    Colonies: false,
+    Turmoil: false,
+    "Milestones & Awards": false,
+    Promo: false,
+  },
+  expandedExpansions: false,
+};
+
+const gameConfigReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_FIELD':
+      return { ...state, [action.field]: action.value };
+    case 'SET_MAP':
+      return { ...state, map: action.value };
+    case 'TOGGLE_EXPANSION':
+      return {
+        ...state,
+        expansions: {
+          ...state.expansions,
+          [action.expansion]: !state.expansions[action.expansion],
+        },
+      };
+    case 'TOGGLE_EXPANDED_VIEW':
+      return { ...state, expandedExpansions: !state.expandedExpansions };
+    case 'SET_DATE':
+      return { ...state, date: action.value };
+    case 'SET_GENERATIONS':
+      const generations = Math.min(
+        GAME_CONSTANTS.MAX_GENERATIONS,
+        Math.max(GAME_CONSTANTS.MIN_GENERATIONS, action.value)
+      );
+      return { ...state, generations };
+    default:
+      return state;
+  }
+};
+
+// Custom hook for player management
+function usePlayerManagement(initialPlayerCount = GAME_CONSTANTS.DEFAULT_PLAYER_COUNT) {
+  const [playerNumber, setPlayerNumber] = useState(initialPlayerCount);
+  const [players, setPlayers] = useState([]);
+  const [playerScores, setPlayerScores] = useState([]);
+
+  // Initialize/update players when count changes
+  useEffect(() => {
+    setPlayers(prevPlayers => {
+      const newPlayers = [];
+      for (let i = 0; i < playerNumber; i++) {
+        newPlayers.push({
+          name: prevPlayers[i]?.name || "",
+          corporation: prevPlayers[i]?.corporation || "",
+        });
+      }
+      return newPlayers;
+    });
+
+    setPlayerScores(prevScores => {
+      const newScores = [];
+      for (let i = 0; i < playerNumber; i++) {
+        newScores.push({
+          terraformingRating: prevScores[i]?.terraformingRating || "",
+          cities: prevScores[i]?.cities || "",
+          greeneries: prevScores[i]?.greeneries || "",
+          cards: prevScores[i]?.cards || "",
+          turmoilPoints: prevScores[i]?.turmoilPoints || "",
+          milestonePoints: 0,
+          awardPoints: 0,
+          totalPoints: 0,
+        });
+      }
+      return newScores;
+    });
+  }, [playerNumber]);
+
+  const updatePlayerData = useCallback((index, field, value) => {
+    setPlayers(prevPlayers => {
+      const newPlayers = [...prevPlayers];
+      newPlayers[index][field] = value;
+      return newPlayers;
+    });
+  }, []);
+
+  const updatePlayerScore = useCallback((playerIndex, field, value) => {
+    setPlayerScores(currentScores => {
+      const newScores = [...currentScores];
+      newScores[playerIndex][field] = value;
+
+      // Recalculate total for this player
+      const score = newScores[playerIndex];
+      const terraformingRating = parseInt(score.terraformingRating || 0);
+      const cities = parseInt(score.cities || 0);
+      const greeneries = parseInt(score.greeneries || 0);
+      const cards = parseInt(score.cards || 0);
+      const turmoilPoints = parseInt(score.turmoilPoints || 0);
+
+      score.totalPoints =
+        terraformingRating +
+        cities +
+        greeneries +
+        cards +
+        turmoilPoints +
+        (score.milestonePoints || 0) +
+        (score.awardPoints || 0);
+
+      return newScores;
+    });
+  }, []);
+
+  const setPlayerCount = useCallback((count) => {
+    const validCount = Math.max(
+      GAME_CONSTANTS.MIN_PLAYERS,
+      Math.min(count, GAME_CONSTANTS.DEFAULT_MAX_PLAYERS)
+    );
+    setPlayerNumber(validCount);
+  }, []);
+
+  return {
+    playerNumber,
+    players,
+    playerScores,
+    setPlayerNumber: setPlayerCount,
+    setPlayerScores,
+    updatePlayerData,
+    updatePlayerScore,
+  };
+}
+
 // Custom hook for managing game objectives (milestones/awards)
 function useGameObjectives(type, map, expansions, playerNumber) {
   const [selected, setSelected] = useState([]);
@@ -391,32 +531,45 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 
       setSelected(defaultObjectives.slice(0, numSlots));
     } else {
-      const available = getAvailable();
+      // Calculate available items inline to avoid dependency issues
+      let available = [...(gameData[dataKey][map] || [])];
+      if (expansions["Venus Next"]) {
+        available = [...available, ...gameData[dataKey].Venus];
+      }
+      if (expansions["Milestones & Awards"]) {
+        available = [...available, ...gameData[additionalDataKey]];
+      }
+      available = [...new Set(available)];
+      
       setSelected(available);
 
       // Initialize data structure
       if (isAward) {
         const newData = {};
         available.forEach((item) => {
-          newData[item] = data[item] || {};
+          newData[item] = {};
           for (let i = 0; i < playerNumber; i++) {
-            newData[item][i] = newData[item][i] || 0;
+            newData[item][i] = 0;
           }
         });
         setData(newData);
       } else {
         const newData = {};
         available.forEach((item) => {
-          newData[item] = data[item] ?? -1;
+          newData[item] = -1;
         });
         setData(newData);
       }
     }
   }, [
     map,
-    expansions["Milestones & Awards"],
-    expansions["Venus Next"],
+    expansions,
     playerNumber,
+    dataKey,
+    additionalDataKey,
+    venusSlots,
+    defaultSlots,
+    isAward,
   ]);
 
   // Update selected objective at index
@@ -499,44 +652,25 @@ const PlayerInput = React.memo(
 function AddGamePage() {
   const navigate = useNavigate();
 
-  // Basic game options
-  const [name, setName] = useState("");
-  const [date, setDate] = useState("");
-  const [map, setMap] = useState("Tharsis");
-  const [generations, setGenerations] = useState(
-    GAME_CONSTANTS.DEFAULT_GENERATIONS,
-  );
-  const [playerNumber, setPlayerNumber] = useState(
-    GAME_CONSTANTS.DEFAULT_PLAYER_COUNT,
-  );
-  const [players, setPlayers] = useState([]);
+  // Use reducer for game configuration
+  const [gameConfig, dispatch] = useReducer(gameConfigReducer, gameConfigInitialState);
 
-  // Expansions
-  const [expansions, setExpansions] = useState({
-    "Base Game": true,
-    Draft: true,
-    "Corporate Era": true,
-    Prelude: true,
-    "Prelude 2": true,
-    "Venus Next": false,
-    Colonies: false,
-    Turmoil: false,
-    "Milestones & Awards": false,
-    Promo: false,
-  });
-  const [expandedExpansions, setExpandedExpansions] = useState(false);
+  // Use custom hook for player management
+  const playerManager = usePlayerManagement();
 
   // Use custom hooks for milestones and awards
   const milestones = useGameObjectives(
     "milestone",
-    map,
-    expansions,
-    playerNumber,
+    gameConfig.map,
+    gameConfig.expansions,
+    playerManager.playerNumber,
   );
-  const awards = useGameObjectives("award", map, expansions, playerNumber);
-
-  // Points
-  const [playerScores, setPlayerScores] = useState([]);
+  const awards = useGameObjectives(
+    "award", 
+    gameConfig.map, 
+    gameConfig.expansions, 
+    playerManager.playerNumber
+  );
 
   // Set default date on mount
   useEffect(() => {
@@ -544,67 +678,28 @@ function AddGamePage() {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const day = String(today.getDate()).padStart(2, "0");
-    setDate(`${year}-${month}-${day}`);
+    dispatch({ type: 'SET_DATE', value: `${year}-${month}-${day}` });
   }, []);
 
-  // Update players when number changes
-  useEffect(() => {
-    const newPlayers = [];
-    for (let i = 0; i < playerNumber; i++) {
-      newPlayers.push({
-        name: players[i]?.name || "",
-        corporation: players[i]?.corporation || "",
-      });
-    }
-    setPlayers(newPlayers);
-  }, [playerNumber]);
-
-  // Get max players from map data
-  const maxPlayers =
-    gameData.maps[map]?.maxPlayers || GAME_CONSTANTS.DEFAULT_MAX_PLAYERS;
+  // Get max players from map data (memoized to prevent re-renders)
+  const maxPlayers = useMemo(() => 
+    gameData.maps[gameConfig.map]?.maxPlayers || GAME_CONSTANTS.DEFAULT_MAX_PLAYERS,
+    [gameConfig.map]
+  );
 
   // Adjust player count when map changes
   useEffect(() => {
-    if (playerNumber > maxPlayers) {
-      setPlayerNumber(maxPlayers);
+    if (playerManager.playerNumber > maxPlayers) {
+      playerManager.setPlayerNumber(maxPlayers);
     }
-  }, [map, maxPlayers]);
+  }, [maxPlayers, playerManager.playerNumber, playerManager.setPlayerNumber]);
 
-  // Update player scores when number changes
-  useEffect(() => {
-    const newScores = [];
-    for (let i = 0; i < playerNumber; i++) {
-      newScores.push({
-        terraformingRating: playerScores[i]?.terraformingRating || "",
-        cities: playerScores[i]?.cities || "",
-        greeneries: playerScores[i]?.greeneries || "",
-        cards: playerScores[i]?.cards || "",
-        turmoilPoints: playerScores[i]?.turmoilPoints || "",
-        milestonePoints: 0,
-        awardPoints: 0,
-        totalPoints: 0,
-      });
-    }
-    setPlayerScores(newScores);
-  }, [playerNumber]);
 
-  const updatePlayerData = React.useCallback((index, field, value) => {
-    setPlayers((prevPlayers) => {
-      const newPlayers = [...prevPlayers];
-      newPlayers[index][field] = value;
-      return newPlayers;
-    });
-  }, []);
-
-  const handleExpansionChange = (expansion) => {
-    setExpansions({ ...expansions, [expansion]: !expansions[expansion] });
-  };
-
-  const getAvailableCorporations = () => {
+  const getAvailableCorporations = useCallback(() => {
     let availableCorporations = [];
 
     // Add corporations from each selected expansion
-    Object.entries(expansions).forEach(([expansion, isSelected]) => {
+    Object.entries(gameConfig.expansions).forEach(([expansion, isSelected]) => {
       if (isSelected && gameData.corporationsByExpansion[expansion]) {
         availableCorporations = [
           ...availableCorporations,
@@ -615,7 +710,7 @@ function AddGamePage() {
 
     // Remove duplicates and sort
     return [...new Set(availableCorporations)].sort();
-  };
+  }, [gameConfig.expansions]);
 
   const updateMilestoneWinner = (milestone, playerIndex) => {
     // Count how many milestones are currently selected
@@ -685,37 +780,11 @@ function AddGamePage() {
     );
   };
 
-  const updatePlayerScore = (playerIndex, field, value) => {
-    setPlayerScores((currentScores) => {
-      const newScores = [...currentScores];
-      newScores[playerIndex][field] = value;
-
-      // Recalculate total for this player
-      const score = newScores[playerIndex];
-      const terraformingRating = parseInt(score.terraformingRating || 0);
-      const cities = parseInt(score.cities || 0);
-      const greeneries = parseInt(score.greeneries || 0);
-      const cards = parseInt(score.cards || 0);
-      const turmoilPoints = parseInt(score.turmoilPoints || 0);
-
-      score.totalPoints =
-        terraformingRating +
-        cities +
-        greeneries +
-        cards +
-        turmoilPoints +
-        (score.milestonePoints || 0) +
-        (score.awardPoints || 0);
-
-      return newScores;
-    });
-  };
-
   // Calculate points whenever milestones or awards change
   useEffect(() => {
-    if (playerScores.length === 0) return;
+    if (playerManager.playerScores.length === 0) return;
 
-    const newScores = playerScores.map((score, playerIndex) => {
+    const newScores = playerManager.playerScores.map((score, playerIndex) => {
       // Calculate milestone points
       let milestonePoints = 0;
       Object.values(milestones.data).forEach((winnerIndex) => {
@@ -734,6 +803,11 @@ function AddGamePage() {
           awardPoints += GAME_CONSTANTS.AWARD_POINTS.SILVER;
         }
       });
+
+      // Only update if milestone or award points changed
+      if (score.milestonePoints === milestonePoints && score.awardPoints === awardPoints) {
+        return score;
+      }
 
       // Calculate total points
       const terraformingRating = parseInt(score.terraformingRating || 0);
@@ -759,7 +833,17 @@ function AddGamePage() {
       };
     });
 
-    setPlayerScores(newScores);
+    // Only update if scores actually changed
+    const hasChanged = newScores.some((newScore, index) => {
+      const oldScore = playerManager.playerScores[index];
+      return newScore.milestonePoints !== oldScore.milestonePoints || 
+             newScore.awardPoints !== oldScore.awardPoints ||
+             newScore.totalPoints !== oldScore.totalPoints;
+    });
+
+    if (hasChanged) {
+      playerManager.setPlayerScores(newScores);
+    }
   }, [milestones.data, awards.data]);
 
   return (
@@ -773,8 +857,8 @@ function AddGamePage() {
             <input
               type="text"
               style={formStyles.optionInput}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={gameConfig.name}
+              onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'name', value: e.target.value })}
             />
           </SubContainerElement>
 
@@ -783,8 +867,8 @@ function AddGamePage() {
             <input
               type="date"
               style={formStyles.optionInput}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={gameConfig.date}
+              onChange={(e) => dispatch({ type: 'SET_DATE', value: e.target.value })}
               required={true}
             />
           </SubContainerElement>
@@ -793,8 +877,8 @@ function AddGamePage() {
             <label>Map:</label>
             <select
               style={formStyles.optionInput}
-              value={map}
-              onChange={(e) => setMap(e.target.value)}
+              value={gameConfig.map}
+              onChange={(e) => dispatch({ type: 'SET_MAP', value: e.target.value })}
             >
               {Object.keys(gameData.maps).map((m) => (
                 <option key={m} value={m}>
@@ -807,25 +891,16 @@ function AddGamePage() {
           <SubContainerElement>
             <label>Generations:</label>
             <NumericInputWithButtons
-              value={generations}
+              value={gameConfig.generations}
               onChange={(e) => {
                 const val = parseInt(e.target.value) || 0;
-                setGenerations(
-                  Math.min(
-                    GAME_CONSTANTS.MAX_GENERATIONS,
-                    Math.max(GAME_CONSTANTS.MIN_GENERATIONS, val),
-                  ),
-                );
+                dispatch({ type: 'SET_GENERATIONS', value: val });
               }}
               onDecrement={() =>
-                setGenerations(
-                  Math.max(GAME_CONSTANTS.MIN_GENERATIONS, generations - 1),
-                )
+                dispatch({ type: 'SET_GENERATIONS', value: gameConfig.generations - 1 })
               }
               onIncrement={() =>
-                setGenerations(
-                  Math.min(GAME_CONSTANTS.MAX_GENERATIONS, generations + 1),
-                )
+                dispatch({ type: 'SET_GENERATIONS', value: gameConfig.generations + 1 })
               }
             />
           </SubContainerElement>
@@ -833,25 +908,16 @@ function AddGamePage() {
           <SubContainerElement>
             <label>Players:</label>
             <NumericInputWithButtons
-              value={playerNumber}
-              onChange={(e) =>
-                setPlayerNumber(
-                  Math.min(
-                    maxPlayers,
-                    Math.max(
-                      GAME_CONSTANTS.MIN_PLAYERS,
-                      parseInt(e.target.value) || GAME_CONSTANTS.MIN_PLAYERS,
-                    ),
-                  ),
-                )
-              }
+              value={playerManager.playerNumber}
+              onChange={(e) => {
+                const val = parseInt(e.target.value) || GAME_CONSTANTS.MIN_PLAYERS;
+                playerManager.setPlayerNumber(Math.min(maxPlayers, val));
+              }}
               onDecrement={() =>
-                setPlayerNumber(
-                  Math.max(GAME_CONSTANTS.MIN_PLAYERS, playerNumber - 1),
-                )
+                playerManager.setPlayerNumber(Math.max(GAME_CONSTANTS.MIN_PLAYERS, playerManager.playerNumber - 1))
               }
               onIncrement={() =>
-                setPlayerNumber(Math.min(maxPlayers, playerNumber + 1))
+                playerManager.setPlayerNumber(Math.min(maxPlayers, playerManager.playerNumber + 1))
               }
             />
           </SubContainerElement>
@@ -868,7 +934,7 @@ function AddGamePage() {
               >
                 {/* Content container - shared by both bar and list */}
                 <div style={{ flex: 1 }}>
-                  {!expandedExpansions && (
+                  {!gameConfig.expandedExpansions && (
                     <div
                       style={{
                         display: "flex",
@@ -876,13 +942,13 @@ function AddGamePage() {
                         justifyContent: "space-between",
                       }}
                     >
-                      {Object.entries(expansions).map(([key, value]) => (
+                      {Object.entries(gameConfig.expansions).map(([key, value]) => (
                         <ExpansionIcon
                           key={key}
                           expansion={key}
                           checked={value}
                           disabled={key === "Base Game"}
-                          onChange={() => handleExpansionChange(key)}
+                          onChange={() => dispatch({ type: 'TOGGLE_EXPANSION', expansion: key })}
                           showText={false}
                         >
                           {key}
@@ -891,7 +957,7 @@ function AddGamePage() {
                     </div>
                   )}
 
-                  {expandedExpansions && (
+                  {gameConfig.expandedExpansions && (
                     <div
                       style={{
                         display: "flex",
@@ -900,13 +966,13 @@ function AddGamePage() {
                         margin: "5px",
                       }}
                     >
-                      {Object.entries(expansions).map(([key, value]) => (
+                      {Object.entries(gameConfig.expansions).map(([key, value]) => (
                         <ExpansionIcon
                           key={key + "_expanded"}
                           expansion={key}
                           checked={value}
                           disabled={key === "Base Game"}
-                          onChange={() => handleExpansionChange(key)}
+                          onChange={() => dispatch({ type: 'TOGGLE_EXPANSION', expansion: key })}
                           showText={true}
                         >
                           {key}
@@ -932,8 +998,8 @@ function AddGamePage() {
                       userSelect: "none",
                       cursor: "pointer",
                     }}
-                    onClick={() => setExpandedExpansions(!expandedExpansions)}
-                    title={expandedExpansions ? "Collapse" : "Expand"}
+                    onClick={() => dispatch({ type: 'TOGGLE_EXPANDED_VIEW' })}
+                    title={gameConfig.expandedExpansions ? "Collapse" : "Expand"}
                   >
                     ☰
                   </div>
@@ -946,14 +1012,14 @@ function AddGamePage() {
 
       <Container title="Players" titleStyle="banner">
         <SubContainer>
-          {players.map((player, index) => (
+          {playerManager.players.map((player, index) => (
             <PlayerInput
               key={index}
               index={index}
               player={player}
               corporations={getAvailableCorporations()}
-              onUpdate={updatePlayerData}
-              selectedCorporations={players
+              onUpdate={playerManager.updatePlayerData}
+              selectedCorporations={playerManager.players
                 .map((p) => p.corporation)
                 .filter((corp) => corp !== "")}
             />
@@ -970,7 +1036,7 @@ function AddGamePage() {
                 ...formStyles.playerInputDiv,
               }}
             >
-              {expansions["Milestones & Awards"] ? (
+              {gameConfig.expansions["Milestones & Awards"] ? (
                 <select
                   style={{
                     ...formStyles.containerInput,
@@ -1013,7 +1079,7 @@ function AddGamePage() {
                 }
               >
                 <option value={-1}>Not achieved</option>
-                {players.map((p, i) => (
+                {playerManager.players.map((p, i) => (
                   <option key={i} value={i}>
                     {p.name || `Player ${i + 1}`}
                   </option>
@@ -1046,7 +1112,7 @@ function AddGamePage() {
                 justifyContent: "space-around",
               }}
             >
-              {players.map((player, playerIndex) => (
+              {playerManager.players.map((player, playerIndex) => (
                 <div
                   key={playerIndex}
                   style={{
@@ -1070,7 +1136,7 @@ function AddGamePage() {
                 marginBottom: "10px",
               }}
             >
-              {expansions["Milestones & Awards"] ? (
+              {gameConfig.expansions["Milestones & Awards"] ? (
                 <select
                   style={{
                     ...formStyles.containerInput,
@@ -1105,7 +1171,7 @@ function AddGamePage() {
                   justifyContent: "space-around",
                 }}
               >
-                {players.map((player, playerIndex) => (
+                {playerManager.players.map((player, playerIndex) => (
                   <AwardButton
                     key={playerIndex}
                     award={award}
@@ -1144,7 +1210,7 @@ function AddGamePage() {
                 justifyContent: "space-around",
               }}
             >
-              {players.map((player, playerIndex) => (
+              {playerManager.players.map((player, playerIndex) => (
                 <div
                   key={playerIndex}
                   style={{
@@ -1162,40 +1228,40 @@ function AddGamePage() {
 
           <PointInput
             label="TR"
-            players={players}
-            playerScores={playerScores}
+            players={playerManager.players}
+            playerScores={playerManager.playerScores}
             field="terraformingRating"
-            onChange={updatePlayerScore}
+            onChange={playerManager.updatePlayerScore}
             placeholder={GAME_CONSTANTS.DEFAULT_TR.toString()}
           />
           <PointInput
             label="Cities"
-            players={players}
-            playerScores={playerScores}
+            players={playerManager.players}
+            playerScores={playerManager.playerScores}
             field="cities"
-            onChange={updatePlayerScore}
+            onChange={playerManager.updatePlayerScore}
           />
           <PointInput
             label="Greeneries"
-            players={players}
-            playerScores={playerScores}
+            players={playerManager.players}
+            playerScores={playerManager.playerScores}
             field="greeneries"
-            onChange={updatePlayerScore}
+            onChange={playerManager.updatePlayerScore}
           />
           <PointInput
             label="Cards"
-            players={players}
-            playerScores={playerScores}
+            players={playerManager.players}
+            playerScores={playerManager.playerScores}
             field="cards"
-            onChange={updatePlayerScore}
+            onChange={playerManager.updatePlayerScore}
           />
-          {expansions.Turmoil && (
+          {gameConfig.expansions.Turmoil && (
             <PointInput
               label="Turmoil"
-              players={players}
-              playerScores={playerScores}
+              players={playerManager.players}
+              playerScores={playerManager.playerScores}
               field="turmoilPoints"
-              onChange={updatePlayerScore}
+              onChange={playerManager.updatePlayerScore}
             />
           )}
 
@@ -1208,15 +1274,15 @@ function AddGamePage() {
           >
             <PointInput
               label="Milestones"
-              players={players}
-              playerScores={playerScores}
+              players={playerManager.players}
+              playerScores={playerManager.playerScores}
               field="milestonePoints"
               readOnly={true}
             />
             <PointInput
               label="Awards"
-              players={players}
-              playerScores={playerScores}
+              players={playerManager.players}
+              playerScores={playerManager.playerScores}
               field="awardPoints"
               readOnly={true}
             />
@@ -1231,8 +1297,8 @@ function AddGamePage() {
           >
             <PointInput
               label="Total"
-              players={players}
-              playerScores={playerScores}
+              players={playerManager.players}
+              playerScores={playerManager.playerScores}
               field="totalPoints"
               readOnly={true}
             />
