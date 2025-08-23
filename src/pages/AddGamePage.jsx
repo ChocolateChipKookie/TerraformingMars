@@ -116,7 +116,7 @@ function NumericInputWithButtons({
 }
 
 // Helper component for read-only score display
-function ReadOnlyScoreCell({ playerIndex, playerScores, field }) {
+const ReadOnlyScoreCell = React.memo(({ playerIndex, playerScores, field }) => {
   const isTotal = field === "totalPoints";
 
   return (
@@ -138,49 +138,48 @@ function ReadOnlyScoreCell({ playerIndex, playerScores, field }) {
       {playerScores[playerIndex]?.[field] || 0}
     </div>
   );
-}
+});
 
 // Helper component for editable score input
-function EditableScoreInput({
-  playerIndex,
-  playerScores,
-  field,
-  onChange,
-  placeholder,
-}) {
-  const handleChange = (e) => {
-    const value = e.target.value;
-    if (value === "" || /^\d+$/.test(value)) {
-      onChange(playerIndex, field, value);
-    }
-  };
+const EditableScoreInput = React.memo(
+  ({ playerIndex, playerScores, field, onChange, placeholder }) => {
+    const handleChange = useCallback(
+      (e) => {
+        const value = e.target.value;
+        if (value === "" || /^\d+$/.test(value)) {
+          onChange(playerIndex, field, value);
+        }
+      },
+      [onChange, playerIndex, field],
+    );
 
-  return (
-    <input
-      key={playerIndex}
-      type="text"
-      inputMode="numeric"
-      pattern="[0-9]*"
-      style={{
-        textAlign: "center",
-        fontFamily: "inherit",
-        fontSize: "1.5rem",
-        background: "inherit",
-        height: "3rem",
-        flex: 1,
-        minWidth: 0,
-        boxSizing: "border-box",
-        borderWidth: "1px",
-        borderStyle: "solid",
-        borderColor: "#999",
-        borderRadius: "3px",
-      }}
-      value={playerScores[playerIndex]?.[field] || ""}
-      onChange={handleChange}
-      placeholder={placeholder}
-    />
-  );
-}
+    return (
+      <input
+        key={playerIndex}
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        style={{
+          textAlign: "center",
+          fontFamily: "inherit",
+          fontSize: "1.5rem",
+          background: "inherit",
+          height: "3rem",
+          flex: 1,
+          minWidth: 0,
+          boxSizing: "border-box",
+          borderWidth: "1px",
+          borderStyle: "solid",
+          borderColor: "#999",
+          borderRadius: "3px",
+        }}
+        value={playerScores[playerIndex]?.[field] || ""}
+        onChange={handleChange}
+        placeholder={placeholder}
+      />
+    );
+  },
+);
 
 function PointInput({
   label,
@@ -524,32 +523,41 @@ function usePlayerManagement(
 }
 
 // Helper component for milestone/award selection dropdown
-function ObjectiveSelector({
-  value,
-  onUpdate,
-  getAvailableOptions,
-  placeholder = "Select...",
-}) {
-  return (
-    <select
-      style={{
-        ...formStyles.containerInput,
-      }}
-      value={value || ""}
-      onChange={(e) => onUpdate(e.target.value)}
-    >
-      {!value && <option value="">{placeholder}</option>}
-      {getAvailableOptions().map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-}
+const ObjectiveSelector = React.memo(
+  ({ value, onUpdate, getAvailableOptions, placeholder = "Select..." }) => {
+    const availableOptions = useMemo(
+      () => getAvailableOptions(),
+      [getAvailableOptions],
+    );
+
+    const handleChange = useCallback(
+      (e) => {
+        onUpdate(e.target.value);
+      },
+      [onUpdate],
+    );
+
+    return (
+      <select
+        style={{
+          ...formStyles.containerInput,
+        }}
+        value={value || ""}
+        onChange={handleChange}
+      >
+        {!value && <option value="">{placeholder}</option>}
+        {availableOptions.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  },
+);
 
 // Helper component for milestone/award label display
-function ObjectiveLabel({ value }) {
+const ObjectiveLabel = React.memo(({ value }) => {
   return (
     <div
       style={{
@@ -559,66 +567,84 @@ function ObjectiveLabel({ value }) {
       {value}
     </div>
   );
-}
+});
 
 // Helper component for milestone row
-function MilestoneRow({
-  milestone,
-  index,
-  isCustomizable,
-  milestones,
-  players,
-  updateMilestoneWinner,
-  getSelectedMilestonesCount,
-}) {
-  const isMilestoneDisabled =
-    !milestone ||
-    (milestones.data[milestone] === -1 &&
-      getSelectedMilestonesCount() >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED);
+const MilestoneRow = React.memo(
+  ({
+    milestone,
+    index,
+    isCustomizable,
+    milestones,
+    players,
+    updateMilestoneWinner,
+    getSelectedMilestonesCount,
+  }) => {
+    const isMilestoneDisabled = useMemo(
+      () =>
+        !milestone ||
+        (milestones.data[milestone] === -1 &&
+          getSelectedMilestonesCount >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED),
+      [milestone, milestones.data, getSelectedMilestonesCount],
+    );
 
-  return (
-    <div
-      key={index}
-      style={{
-        ...formStyles.playerInputDiv,
-      }}
-    >
-      {isCustomizable ? (
-        <ObjectiveSelector
-          value={milestone}
-          onUpdate={(newValue) => milestones.updateSelected(index, newValue)}
-          getAvailableOptions={() =>
-            milestones.getAvailableForDropdown(milestone)
-          }
-          placeholder="Select Milestone"
-        />
-      ) : (
-        <ObjectiveLabel value={milestone} />
-      )}
+    const handleUpdate = useCallback(
+      (newValue) => {
+        milestones.updateSelected(index, newValue);
+      },
+      [milestones.updateSelected, index],
+    );
 
-      <select
+    const handleWinnerChange = useCallback(
+      (e) => {
+        updateMilestoneWinner(milestone, parseInt(e.target.value));
+      },
+      [updateMilestoneWinner, milestone],
+    );
+
+    const getDropdownOptions = useCallback(() => {
+      return milestones.getAvailableForDropdown(milestone);
+    }, [milestones.getAvailableForDropdown, milestone]);
+
+    return (
+      <div
         style={{
-          ...formStyles.containerInput,
+          ...formStyles.playerInputDiv,
         }}
-        value={milestones.data[milestone] ?? -1}
-        onChange={(e) =>
-          updateMilestoneWinner(milestone, parseInt(e.target.value))
-        }
-        disabled={isMilestoneDisabled}
       >
-        <option value={-1}>Not achieved</option>
-        {players.map((p, i) => (
-          <option key={i} value={i}>
-            {p.name || `Player ${i + 1}`}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
+        {isCustomizable ? (
+          <ObjectiveSelector
+            value={milestone}
+            onUpdate={handleUpdate}
+            getAvailableOptions={getDropdownOptions}
+            placeholder="Select Milestone"
+          />
+        ) : (
+          <ObjectiveLabel value={milestone} />
+        )}
+
+        <select
+          style={{
+            ...formStyles.containerInput,
+          }}
+          value={milestones.data[milestone] ?? -1}
+          onChange={handleWinnerChange}
+          disabled={isMilestoneDisabled}
+        >
+          <option value={-1}>Not achieved</option>
+          {players.map((p, i) => (
+            <option key={i} value={i}>
+              {p.name || `Player ${i + 1}`}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  },
+);
 
 // Helper component for player names header
-function PlayerNamesHeader({ players }) {
+const PlayerNamesHeader = React.memo(({ players }) => {
   return (
     <div
       style={{
@@ -653,68 +679,80 @@ function PlayerNamesHeader({ players }) {
       </div>
     </div>
   );
-}
+});
 
 // Helper component for award row
-function AwardRow({
-  award,
-  index,
-  isCustomizable,
-  awards,
-  players,
-  cyclePlacement,
-  isAwardFunded,
-  getFundedAwardsCount,
-}) {
-  return (
-    <div
-      key={index}
-      style={{
-        ...formStyles.playerInputDiv,
-        marginBottom: "10px",
-      }}
-    >
-      {isCustomizable ? (
-        <ObjectiveSelector
-          value={award}
-          onUpdate={(newValue) => awards.updateSelected(index, newValue)}
-          getAvailableOptions={() => awards.getAvailableForDropdown(award)}
-          placeholder="Select Award"
-        />
-      ) : (
-        <div
-          style={{
-            ...formStyles.milestoneLabel,
-            width: "28%",
-          }}
-        >
-          {award}
-        </div>
-      )}
+const AwardRow = React.memo(
+  ({
+    award,
+    index,
+    isCustomizable,
+    awards,
+    players,
+    cyclePlacement,
+    isAwardFunded,
+    getFundedAwardsCount,
+  }) => {
+    const handleUpdate = useCallback(
+      (newValue) => {
+        awards.updateSelected(index, newValue);
+      },
+      [awards.updateSelected, index],
+    );
 
+    const getDropdownOptions = useCallback(() => {
+      return awards.getAvailableForDropdown(award);
+    }, [awards.getAvailableForDropdown, award]);
+
+    return (
       <div
         style={{
-          display: "flex",
-          gap: "5px",
-          width: "68%",
-          justifyContent: "space-around",
+          ...formStyles.playerInputDiv,
+          marginBottom: "10px",
         }}
       >
-        {players.map((player, playerIndex) => (
-          <AwardButton
-            key={playerIndex}
-            award={award}
-            playerIndex={playerIndex}
-            awardPlacements={awards.data}
-            onCyclePlacement={cyclePlacement}
-            isAwardFunded={isAwardFunded}
-            getFundedAwardsCount={getFundedAwardsCount}
+        {isCustomizable ? (
+          <ObjectiveSelector
+            value={award}
+            onUpdate={handleUpdate}
+            getAvailableOptions={getDropdownOptions}
+            placeholder="Select Award"
           />
-        ))}
+        ) : (
+          <div
+            style={{
+              ...formStyles.milestoneLabel,
+              width: "28%",
+            }}
+          >
+            {award}
+          </div>
+        )}
+
+        <div
+          style={{
+            display: "flex",
+            gap: "5px",
+            width: "68%",
+            justifyContent: "space-around",
+          }}
+        >
+          {players.map((player, playerIndex) => (
+            <AwardButton
+              key={playerIndex}
+              award={award}
+              playerIndex={playerIndex}
+              awardPlacements={awards.data}
+              onCyclePlacement={cyclePlacement}
+              isAwardFunded={isAwardFunded}
+              getFundedAwardsCount={getFundedAwardsCount}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  },
+);
 
 // Custom hook for managing game objectives (milestones/awards)
 function useGameObjectives(type, map, expansions, playerNumber) {
@@ -952,97 +990,127 @@ function AddGamePage() {
     return [...new Set(availableCorporations)].sort();
   }, [gameConfig.expansions]);
 
-  const updateMilestoneWinner = (milestone, playerIndex) => {
-    // Count how many milestones are currently selected
-    const currentlySelected = Object.values(milestones.data).filter(
-      (idx) => idx !== -1,
-    ).length;
-
-    // If trying to select a new milestone and already have max claimed, don't allow
-    if (
-      playerIndex !== -1 &&
-      milestones.data[milestone] === -1 &&
-      currentlySelected >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED
-    ) {
-      return;
-    }
-
-    milestones.setData({
-      ...milestones.data,
-      [milestone]: playerIndex,
-    });
-  };
-
-  const getSelectedMilestonesCount = () => {
+  const getSelectedMilestonesCount = useMemo(() => {
     return Object.values(milestones.data).filter((idx) => idx !== -1).length;
-  };
+  }, [milestones.data]);
 
-  const cyclePlacement = (award, playerIndex) => {
-    // Check if this award has any placements, if not and we already have max funded awards, don't allow
-    const currentAwardHasPlacements =
-      awards.data[award] &&
-      Object.values(awards.data[award]).some((placement) => placement > 0);
-    const fundedAwardsCount = getFundedAwardsCount();
+  const updateMilestoneWinner = useCallback(
+    (milestone, playerIndex) => {
+      // If trying to select a new milestone and already have max claimed, don't allow
+      if (
+        playerIndex !== -1 &&
+        milestones.data[milestone] === -1 &&
+        getSelectedMilestonesCount >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED
+      ) {
+        return;
+      }
 
-    if (
-      !currentAwardHasPlacements &&
-      fundedAwardsCount >= GAME_CONSTANTS.MAX_AWARDS_FUNDED
-    ) {
-      return; // Can't add new award if already have max funded
-    }
+      milestones.setData({
+        ...milestones.data,
+        [milestone]: playerIndex,
+      });
+    },
+    [milestones.data, milestones.setData, getSelectedMilestonesCount],
+  );
 
-    const newPlacements = { ...awards.data };
-    if (!newPlacements[award]) {
-      newPlacements[award] = {};
-    }
+  // Memoized calculations for performance
+  const mapOptions = useMemo(() => {
+    return Object.keys(gameData.maps).map((m) => (
+      <option key={m} value={m}>
+        {m}
+      </option>
+    ));
+  }, []);
 
-    const currentPlacement =
-      newPlacements[award][playerIndex] || GAME_CONSTANTS.AWARD_PLACEMENT.NONE;
-    // Cycle through placements: none -> gold -> silver -> none
-    const placementCount = Object.keys(GAME_CONSTANTS.AWARD_PLACEMENT).length;
-    newPlacements[award][playerIndex] = (currentPlacement + 1) % placementCount;
+  const selectedCorporations = useMemo(() => {
+    return playerManager.players
+      .map((p) => p.corporation)
+      .filter((corp) => corp !== "");
+  }, [playerManager.players]);
 
-    awards.setData(newPlacements);
-  };
+  const expansionEntries = useMemo(() => {
+    return Object.entries(gameConfig.expansions);
+  }, [gameConfig.expansions]);
 
-  const getFundedAwardsCount = () => {
+  const getFundedAwardsCount = useCallback(() => {
     return Object.keys(awards.data).filter(
       (award) =>
         awards.data[award] &&
         Object.values(awards.data[award]).some((placement) => placement > 0),
     ).length;
-  };
+  }, [awards.data]);
 
-  const isAwardFunded = (award) => {
-    return (
-      awards.data[award] &&
-      Object.values(awards.data[award]).some((placement) => placement > 0)
-    );
-  };
+  const isAwardFunded = useCallback(
+    (award) => {
+      return (
+        awards.data[award] &&
+        Object.values(awards.data[award]).some((placement) => placement > 0)
+      );
+    },
+    [awards.data],
+  );
+
+  const cyclePlacement = useCallback(
+    (award, playerIndex) => {
+      // Check if this award has any placements, if not and we already have max funded awards, don't allow
+      const currentAwardHasPlacements =
+        awards.data[award] &&
+        Object.values(awards.data[award]).some((placement) => placement > 0);
+      const fundedAwardsCount = getFundedAwardsCount();
+
+      if (
+        !currentAwardHasPlacements &&
+        fundedAwardsCount >= GAME_CONSTANTS.MAX_AWARDS_FUNDED
+      ) {
+        return; // Can't add new award if already have max funded
+      }
+
+      const newPlacements = { ...awards.data };
+      if (!newPlacements[award]) {
+        newPlacements[award] = {};
+      }
+
+      const currentPlacement =
+        newPlacements[award][playerIndex] ||
+        GAME_CONSTANTS.AWARD_PLACEMENT.NONE;
+      // Cycle through placements: none -> gold -> silver -> none
+      const placementCount = Object.keys(GAME_CONSTANTS.AWARD_PLACEMENT).length;
+      newPlacements[award][playerIndex] =
+        (currentPlacement + 1) % placementCount;
+
+      awards.setData(newPlacements);
+    },
+    [awards.data, awards.setData, getFundedAwardsCount],
+  );
 
   // Calculate points whenever milestones or awards change
   useEffect(() => {
     if (playerManager.playerScores.length === 0) return;
 
     const newScores = playerManager.playerScores.map((score, playerIndex) => {
-      // Calculate milestone points
-      let milestonePoints = 0;
-      Object.values(milestones.data).forEach((winnerIndex) => {
-        if (winnerIndex === playerIndex) {
-          milestonePoints += GAME_CONSTANTS.MILESTONE_POINTS;
-        }
-      });
+      // Calculate milestone points - memoized for performance
+      const milestonePoints = Object.values(milestones.data).reduce(
+        (points, winnerIndex) => {
+          return winnerIndex === playerIndex
+            ? points + GAME_CONSTANTS.MILESTONE_POINTS
+            : points;
+        },
+        0,
+      );
 
-      // Calculate award points based on placement
-      let awardPoints = 0;
-      Object.keys(awards.data).forEach((award) => {
-        const placement = awards.data[award]?.[playerIndex];
-        if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD) {
-          awardPoints += GAME_CONSTANTS.AWARD_POINTS.GOLD;
-        } else if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER) {
-          awardPoints += GAME_CONSTANTS.AWARD_POINTS.SILVER;
-        }
-      });
+      // Calculate award points based on placement - memoized for performance
+      const awardPoints = Object.entries(awards.data).reduce(
+        (points, [award, placements]) => {
+          const placement = placements?.[playerIndex];
+          if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD) {
+            return points + GAME_CONSTANTS.AWARD_POINTS.GOLD;
+          } else if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER) {
+            return points + GAME_CONSTANTS.AWARD_POINTS.SILVER;
+          }
+          return points;
+        },
+        0,
+      );
 
       // Only update if milestone or award points changed
       if (
@@ -1135,11 +1203,7 @@ function AddGamePage() {
                 dispatch({ type: "SET_MAP", value: e.target.value })
               }
             >
-              {Object.keys(gameData.maps).map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
+              {mapOptions}
             </select>
           </SubContainerElement>
 
@@ -1211,25 +1275,23 @@ function AddGamePage() {
                         justifyContent: "space-between",
                       }}
                     >
-                      {Object.entries(gameConfig.expansions).map(
-                        ([key, value]) => (
-                          <ExpansionIcon
-                            key={key}
-                            expansion={key}
-                            checked={value}
-                            disabled={key === "Base Game"}
-                            onChange={() =>
-                              dispatch({
-                                type: "TOGGLE_EXPANSION",
-                                expansion: key,
-                              })
-                            }
-                            showText={false}
-                          >
-                            {key}
-                          </ExpansionIcon>
-                        ),
-                      )}
+                      {expansionEntries.map(([key, value]) => (
+                        <ExpansionIcon
+                          key={key}
+                          expansion={key}
+                          checked={value}
+                          disabled={key === "Base Game"}
+                          onChange={() =>
+                            dispatch({
+                              type: "TOGGLE_EXPANSION",
+                              expansion: key,
+                            })
+                          }
+                          showText={false}
+                        >
+                          {key}
+                        </ExpansionIcon>
+                      ))}
                     </div>
                   )}
 
@@ -1242,25 +1304,23 @@ function AddGamePage() {
                         margin: "5px",
                       }}
                     >
-                      {Object.entries(gameConfig.expansions).map(
-                        ([key, value]) => (
-                          <ExpansionIcon
-                            key={key + "_expanded"}
-                            expansion={key}
-                            checked={value}
-                            disabled={key === "Base Game"}
-                            onChange={() =>
-                              dispatch({
-                                type: "TOGGLE_EXPANSION",
-                                expansion: key,
-                              })
-                            }
-                            showText={true}
-                          >
-                            {key}
-                          </ExpansionIcon>
-                        ),
-                      )}
+                      {expansionEntries.map(([key, value]) => (
+                        <ExpansionIcon
+                          key={key + "_expanded"}
+                          expansion={key}
+                          checked={value}
+                          disabled={key === "Base Game"}
+                          onChange={() =>
+                            dispatch({
+                              type: "TOGGLE_EXPANSION",
+                              expansion: key,
+                            })
+                          }
+                          showText={true}
+                        >
+                          {key}
+                        </ExpansionIcon>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -1304,9 +1364,7 @@ function AddGamePage() {
               player={player}
               corporations={getAvailableCorporations()}
               onUpdate={playerManager.updatePlayerData}
-              selectedCorporations={playerManager.players
-                .map((p) => p.corporation)
-                .filter((corp) => corp !== "")}
+              selectedCorporations={selectedCorporations}
             />
           ))}
         </SubContainer>
