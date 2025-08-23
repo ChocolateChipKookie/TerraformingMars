@@ -14,14 +14,10 @@ import styles from "../styles/AddGamePage.module.css";
 import { gameData, GAME_CONSTANTS } from "../data/gameData";
 
 // Local components for this page only
-function AwardButton({
-  award,
-  playerIndex,
-  awardPlacements,
-  onCyclePlacement,
-  isAwardFunded,
-  getFundedAwardsCount,
-}) {
+function AwardButton({ awardConfig, playerIndex, handlers }) {
+  const { award, awardPlacements } = awardConfig;
+  const { onCyclePlacement, isAwardFunded, getFundedAwardsCount } = handlers;
+
   const isDisabled =
     !award ||
     (!isAwardFunded(award) &&
@@ -121,15 +117,10 @@ const EditableScoreInput = React.memo(
   },
 );
 
-function PointInput({
-  label,
-  players,
-  playerScores,
-  field,
-  onChange,
-  readOnly = false,
-  placeholder = "0",
-}) {
+function PointInput({ config, gameState, options = {} }) {
+  const { label, field } = config;
+  const { players, playerScores } = gameState;
+  const { onChange, readOnly = false, placeholder = "0" } = options;
   return (
     <div className={styles.pointInputContainer}>
       <div className={styles.pointInputLabel}>{label}</div>
@@ -475,72 +466,65 @@ const ObjectiveLabel = React.memo(({ value }) => {
 });
 
 // Helper component for milestone row
-const MilestoneRow = React.memo(
-  ({
-    milestone,
-    index,
-    isCustomizable,
-    milestones,
-    players,
-    updateMilestoneWinner,
-    getSelectedMilestonesCount,
-  }) => {
-    const isMilestoneDisabled = useMemo(
-      () =>
-        !milestone ||
-        (milestones.data[milestone] === -1 &&
-          getSelectedMilestonesCount >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED),
-      [milestone, milestones.data, getSelectedMilestonesCount],
-    );
+const MilestoneRow = React.memo(({ config, gameState, handlers }) => {
+  const { milestone, index, isCustomizable } = config;
+  const { milestones, players, getSelectedMilestonesCount } = gameState;
+  const { updateMilestoneWinner } = handlers;
+  const isMilestoneDisabled = useMemo(
+    () =>
+      !milestone ||
+      (milestones.data[milestone] === -1 &&
+        getSelectedMilestonesCount >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED),
+    [milestone, milestones.data, getSelectedMilestonesCount],
+  );
 
-    const handleUpdate = useCallback(
-      (newValue) => {
-        milestones.updateSelected(index, newValue);
-      },
-      [milestones.updateSelected, index],
-    );
+  const handleUpdate = useCallback(
+    (newValue) => {
+      milestones.updateSelected(index, newValue);
+    },
+    [milestones.updateSelected, index],
+  );
 
-    const handleWinnerChange = useCallback(
-      (e) => {
-        updateMilestoneWinner(milestone, parseInt(e.target.value));
-      },
-      [updateMilestoneWinner, milestone],
-    );
+  const handleWinnerChange = useCallback(
+    (e) => {
+      updateMilestoneWinner(milestone, parseInt(e.target.value));
+    },
+    [updateMilestoneWinner, milestone],
+  );
 
-    const getDropdownOptions = useCallback(() => {
-      return milestones.getAvailableForDropdown(milestone);
-    }, [milestones.getAvailableForDropdown, milestone]);
+  const getDropdownOptions = useCallback(() => {
+    return milestones.getAvailableForDropdown(milestone);
+  }, [milestones.getAvailableForDropdown, milestone]);
 
-    return (
-      <div className={styles.playerInputDiv}>
-        {isCustomizable ? (
-          <ObjectiveSelector
-            value={milestone}
-            onUpdate={handleUpdate}
-            getAvailableOptions={getDropdownOptions}
-            placeholder="Select Milestone"
-          />
-        ) : (
-          <ObjectiveLabel value={milestone} />
-        )}
+  return (
+    <div className={styles.playerInputDiv}>
+      {isCustomizable ? (
+        <ObjectiveSelector
+          value={milestone}
+          onUpdate={handleUpdate}
+          getAvailableOptions={getDropdownOptions}
+          placeholder="Select Milestone"
+        />
+      ) : (
+        <ObjectiveLabel value={milestone} />
+      )}
 
-        <select
-          className={styles.containerInput}
-          value={milestones.data[milestone] ?? -1}
-          onChange={handleWinnerChange}
-          disabled={isMilestoneDisabled}
-        >
-          <option value={-1}>Not achieved</option>
-          {players.map((p, i) => (
-            <option key={i} value={i}>
-              {p.name || `Player ${i + 1}`}
-            </option>
-          ))}
-        </select>
-      </div>
-    );
-  },
-);
+      <select
+        className={styles.containerInput}
+        value={milestones.data[milestone] ?? -1}
+        onChange={handleWinnerChange}
+        disabled={isMilestoneDisabled}
+      >
+        <option value={-1}>Not achieved</option>
+        {players.map((p, i) => (
+          <option key={i} value={i}>
+            {p.name || `Player ${i + 1}`}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+});
 
 // Helper component for player names header
 const PlayerNamesHeader = React.memo(({ players }) => {
@@ -561,58 +545,51 @@ const PlayerNamesHeader = React.memo(({ players }) => {
 });
 
 // Helper component for award row
-const AwardRow = React.memo(
-  ({
-    award,
-    index,
-    isCustomizable,
-    awards,
-    players,
-    cyclePlacement,
-    isAwardFunded,
-    getFundedAwardsCount,
-  }) => {
-    const handleUpdate = useCallback(
-      (newValue) => {
-        awards.updateSelected(index, newValue);
-      },
-      [awards.updateSelected, index],
-    );
+const AwardRow = React.memo(({ config, gameState, handlers }) => {
+  const { award, index, isCustomizable } = config;
+  const { awards, players } = gameState;
+  const { cyclePlacement, isAwardFunded, getFundedAwardsCount } = handlers;
+  const handleUpdate = useCallback(
+    (newValue) => {
+      awards.updateSelected(index, newValue);
+    },
+    [awards.updateSelected, index],
+  );
 
-    const getDropdownOptions = useCallback(() => {
-      return awards.getAvailableForDropdown(award);
-    }, [awards.getAvailableForDropdown, award]);
+  const getDropdownOptions = useCallback(() => {
+    return awards.getAvailableForDropdown(award);
+  }, [awards.getAvailableForDropdown, award]);
 
-    return (
-      <div className={styles.pointInputContainer}>
-        {isCustomizable ? (
-          <ObjectiveSelector
-            value={award}
-            onUpdate={handleUpdate}
-            getAvailableOptions={getDropdownOptions}
-            placeholder="Select Award"
+  return (
+    <div className={styles.pointInputContainer}>
+      {isCustomizable ? (
+        <ObjectiveSelector
+          value={award}
+          onUpdate={handleUpdate}
+          getAvailableOptions={getDropdownOptions}
+          placeholder="Select Award"
+        />
+      ) : (
+        <div className={styles.pointInputLabel}>{award}</div>
+      )}
+
+      <div className={styles.playerFieldsContainer}>
+        {players.map((player, playerIndex) => (
+          <AwardButton
+            key={playerIndex}
+            awardConfig={{ award, awardPlacements: awards.data }}
+            playerIndex={playerIndex}
+            handlers={{
+              onCyclePlacement: cyclePlacement,
+              isAwardFunded,
+              getFundedAwardsCount,
+            }}
           />
-        ) : (
-          <div className={styles.pointInputLabel}>{award}</div>
-        )}
-
-        <div className={styles.playerFieldsContainer}>
-          {players.map((player, playerIndex) => (
-            <AwardButton
-              key={playerIndex}
-              award={award}
-              playerIndex={playerIndex}
-              awardPlacements={awards.data}
-              onCyclePlacement={cyclePlacement}
-              isAwardFunded={isAwardFunded}
-              getFundedAwardsCount={getFundedAwardsCount}
-            />
-          ))}
-        </div>
+        ))}
       </div>
-    );
-  },
-);
+    </div>
+  );
+});
 
 // Custom hook for managing game objectives (milestones/awards)
 function useGameObjectives(type, map, expansions, playerNumber) {
@@ -1203,13 +1180,17 @@ function AddGamePage() {
           {milestones.selected.map((milestone, index) => (
             <MilestoneRow
               key={index}
-              milestone={milestone}
-              index={index}
-              isCustomizable={gameConfig.expansions["Milestones & Awards"]}
-              milestones={milestones}
-              players={playerManager.players}
-              updateMilestoneWinner={updateMilestoneWinner}
-              getSelectedMilestonesCount={getSelectedMilestonesCount}
+              config={{
+                milestone,
+                index,
+                isCustomizable: gameConfig.expansions["Milestones & Awards"],
+              }}
+              gameState={{
+                milestones,
+                players: playerManager.players,
+                getSelectedMilestonesCount,
+              }}
+              handlers={{ updateMilestoneWinner }}
             />
           ))}
         </SubContainer>
@@ -1222,14 +1203,16 @@ function AddGamePage() {
           {awards.selected.map((award, index) => (
             <AwardRow
               key={index}
-              award={award}
-              index={index}
-              isCustomizable={gameConfig.expansions["Milestones & Awards"]}
-              awards={awards}
-              players={playerManager.players}
-              cyclePlacement={cyclePlacement}
-              isAwardFunded={isAwardFunded}
-              getFundedAwardsCount={getFundedAwardsCount}
+              config={{
+                award,
+                index,
+                isCustomizable: gameConfig.expansions["Milestones & Awards"],
+              }}
+              gameState={{
+                awards,
+                players: playerManager.players,
+              }}
+              handlers={{ cyclePlacement, isAwardFunded, getFundedAwardsCount }}
             />
           ))}
         </SubContainer>
@@ -1239,71 +1222,72 @@ function AddGamePage() {
         <SubContainer>
           <PlayerNamesHeader players={playerManager.players} />
 
-          <PointInput
-            label="TR"
-            players={playerManager.players}
-            playerScores={playerManager.playerScores}
-            field="terraformingRating"
-            onChange={playerManager.updatePlayerScore}
-            placeholder={GAME_CONSTANTS.DEFAULT_TR.toString()}
-          />
-          <PointInput
-            label="Cities"
-            players={playerManager.players}
-            playerScores={playerManager.playerScores}
-            field="cities"
-            onChange={playerManager.updatePlayerScore}
-          />
-          <PointInput
-            label="Greeneries"
-            players={playerManager.players}
-            playerScores={playerManager.playerScores}
-            field="greeneries"
-            onChange={playerManager.updatePlayerScore}
-          />
-          <PointInput
-            label="Cards"
-            players={playerManager.players}
-            playerScores={playerManager.playerScores}
-            field="cards"
-            onChange={playerManager.updatePlayerScore}
-          />
-          {gameConfig.expansions.Turmoil && (
-            <PointInput
-              label="Turmoil"
-              players={playerManager.players}
-              playerScores={playerManager.playerScores}
-              field="turmoilPoints"
-              onChange={playerManager.updatePlayerScore}
-            />
-          )}
+          {(() => {
+            const sharedGameState = {
+              players: playerManager.players,
+              playerScores: playerManager.playerScores,
+            };
+            const editableOptions = {
+              onChange: playerManager.updatePlayerScore,
+            };
+            const readOnlyOptions = { readOnly: true };
 
-          <div className={styles.scoreSeparator}>
-            <PointInput
-              label="Milestones"
-              players={playerManager.players}
-              playerScores={playerManager.playerScores}
-              field="milestonePoints"
-              readOnly={true}
-            />
-            <PointInput
-              label="Awards"
-              players={playerManager.players}
-              playerScores={playerManager.playerScores}
-              field="awardPoints"
-              readOnly={true}
-            />
-          </div>
+            return (
+              <>
+                <PointInput
+                  config={{ label: "TR", field: "terraformingRating" }}
+                  gameState={sharedGameState}
+                  options={{
+                    ...editableOptions,
+                    placeholder: GAME_CONSTANTS.DEFAULT_TR.toString(),
+                  }}
+                />
+                <PointInput
+                  config={{ label: "Cities", field: "cities" }}
+                  gameState={sharedGameState}
+                  options={editableOptions}
+                />
+                <PointInput
+                  config={{ label: "Greeneries", field: "greeneries" }}
+                  gameState={sharedGameState}
+                  options={editableOptions}
+                />
+                <PointInput
+                  config={{ label: "Cards", field: "cards" }}
+                  gameState={sharedGameState}
+                  options={editableOptions}
+                />
+                {gameConfig.expansions.Turmoil && (
+                  <PointInput
+                    config={{ label: "Turmoil", field: "turmoilPoints" }}
+                    gameState={sharedGameState}
+                    options={editableOptions}
+                  />
+                )}
 
-          <div className={styles.scoreSeparatorFinal}>
-            <PointInput
-              label="Total"
-              players={playerManager.players}
-              playerScores={playerManager.playerScores}
-              field="totalPoints"
-              readOnly={true}
-            />
-          </div>
+                <div className={styles.scoreSeparator}>
+                  <PointInput
+                    config={{ label: "Milestones", field: "milestonePoints" }}
+                    gameState={sharedGameState}
+                    options={readOnlyOptions}
+                  />
+                  <PointInput
+                    config={{ label: "Awards", field: "awardPoints" }}
+                    gameState={sharedGameState}
+                    options={readOnlyOptions}
+                  />
+                </div>
+
+                <div className={styles.scoreSeparatorFinal}>
+                  <PointInput
+                    config={{ label: "Total", field: "totalPoints" }}
+                    gameState={sharedGameState}
+                    options={readOnlyOptions}
+                  />
+                </div>
+              </>
+            );
+          })()}
         </SubContainer>
       </Container>
 
