@@ -1,41 +1,17 @@
 import React from 'react';
+import { formStyles } from '../styles/formStyles';
+import styles from '../styles/Container.module.css';
 
 function Container({ children, title, titleStyle = "page-title" }) {
   return (
-    <div style={{
-      background: 'linear-gradient(145deg, #787776, #f5f5f5, #aaaaaa, #ebebeb, #f5f5f5)',
-      borderStyle: 'solid',
-      borderWidth: '5px',
-      borderColor: '#cccccc',
-      borderRadius: '20px',
-      maxWidth: '900px',
-      fontFamily: 'tm-default',
-      marginLeft: 'auto',
-      marginRight: 'auto',
-      marginTop: '1%',
-      marginBottom: '1%',
-      textAlign: 'center',
-      textTransform: 'uppercase',
-      color: 'black'
-    }}>
+    <div className={styles.container}>
       {title && titleStyle === "page-title" && (
-        <div style={{
-          fontSize: '4rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        <div className={styles.pageTitle}>
           {title}
         </div>
       )}
       {title && titleStyle === "banner" && (
-        <div style={{
-          marginTop: '10px',
-          borderTop: '5px black solid',
-          borderBottom: '5px black solid',
-          fontSize: '3rem',
-          backgroundColor: 'rgb(240, 240, 240)'
-        }}>
+        <div className={styles.bannerTitle}>
           {title}
         </div>
       )}
@@ -44,4 +20,31 @@ function Container({ children, title, titleStyle = "page-title" }) {
   );
 }
 
+function SubContainer({ children }) {
+  return (
+    <div className={styles.subContainer}>
+      {children}
+    </div>
+  );
+}
+
+function SubContainerElement({ children, label, input }) {
+  return (
+    <div className={styles.subContainerElement}>
+      {label && <label>{label}</label>}
+      {input && (
+        <input
+          {...input}
+          style={{
+            ...formStyles.optionInput,
+            ...input.style
+          }}
+        />
+      )}
+      {children}
+    </div>
+  );
+}
+
 export default Container;
+export { SubContainer, SubContainerElement };

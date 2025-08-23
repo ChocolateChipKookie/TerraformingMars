@@ -8,7 +8,7 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
-import { SubContainer, SubContainerElement } from "../components/SubContainer";
+import { SubContainer, SubContainerElement } from "../components/Container";
 import LinkButton from "../components/LinkButton";
 import styles from "../styles/AddGamePage.module.css";
 import { gameData, GAME_CONSTANTS } from "../data/gameData";

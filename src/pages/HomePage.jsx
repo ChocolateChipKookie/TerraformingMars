@@ -2,36 +2,62 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import LinkButton from '../components/LinkButton';
+import styles from '../styles/HomePage.module.css';
+import { ROUTES } from '../constants/routes';
+
+// Navigation button configuration
+const NAVIGATION_BUTTONS = [
+  {
+    id: 'add-game',
+    label: 'Add game',
+    route: ROUTES.ADD_GAME,
+    enabled: true,
+    description: 'Track a new Terraforming Mars game',
+  },
+  {
+    id: 'player-stats',
+    label: 'Player stats',
+    route: ROUTES.PLAYER_STATS,
+    enabled: false,
+    description: 'View player statistics and performance',
+  },
+  {
+    id: 'played-games',
+    label: 'Played games',
+    route: ROUTES.PLAYED_GAMES,
+    enabled: false,
+    description: 'Browse game history and results',
+  },
+  {
+    id: 'game-timer',
+    label: 'Game timer',
+    route: ROUTES.GAME_TIMER,
+    enabled: false,
+    description: 'Time your game sessions',
+  },
+];
 
 function HomePage() {
   const navigate = useNavigate();
 
+  const handleNavigation = (route) => {
+    navigate(route);
+  };
+
   return (
     <Layout>
-      <div style={{
-        display: 'flex',
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0
-      }}>
-        <div style={{ margin: 'auto' }}>
-          <LinkButton onClick={() => navigate('/add-game')}>
-            Add game
-          </LinkButton>
-          
-          <LinkButton disabled>
-            Player stats
-          </LinkButton>
-          
-          <LinkButton disabled>
-            Played games
-          </LinkButton>
-          
-          <LinkButton disabled>
-            Game timer
-          </LinkButton>
+      <div className={styles.container}>
+        <div className={styles.buttonGrid}>
+          {NAVIGATION_BUTTONS.map((button) => (
+            <LinkButton
+              key={button.id}
+              onClick={button.enabled ? () => handleNavigation(button.route) : undefined}
+              disabled={!button.enabled}
+              title={button.description}
+            >
+              {button.label}
+            </LinkButton>
+          ))}
         </div>
       </div>
     </Layout>
