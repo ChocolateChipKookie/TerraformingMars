@@ -1,0 +1,354 @@
+/* AddGamePage Component Styles - Consolidated without duplication */
+
+/* Base Form Styles */
+.optionInput {
+  text-align: center;
+  font-family: inherit;
+  font-size: 1.8rem;
+  background: inherit;
+  float: right;
+  height: 3rem;
+  width: 50%;
+  box-sizing: border-box;
+}
+
+.subcontainerBox {
+  border-style: solid;
+  border-width: 5px;
+  border-color: black;
+  border-radius: 25px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  background-color: rgb(240, 240, 240);
+  display: block;
+}
+
+.hiddenCheckbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Base Layout Patterns */
+.flexRow {
+  display: flex;
+}
+
+.flexRowCentered {
+  composes: flexRow;
+  align-items: center;
+}
+
+.flexRowSpaceBetween {
+  composes: flexRow;
+  justify-content: space-between;
+}
+
+.playerInputDiv {
+  composes: flexRowSpaceBetween;
+  text-align: center;
+  vertical-align: center;
+  margin: 0.3rem 0;
+}
+
+/* Base Typography */
+.inheritFont {
+  font-family: inherit;
+}
+
+.centeredText {
+  text-align: center;
+}
+
+.boldText {
+  font-weight: bolder;
+}
+
+.standardText {
+  composes: inheritFont centeredText boldText;
+  font-size: 1.8rem;
+}
+
+/* Base Input Styling */
+.baseInput {
+  composes: standardText;
+  height: 3rem;
+  box-sizing: border-box;
+}
+
+.containerInput {
+  composes: baseInput;
+  border-color: #666;
+  border-radius: 4px;
+  background-color: white;
+  width: 48%;
+  display: inline-block;
+}
+
+/* Base Label Styling */
+.baseLabel {
+  composes: standardText flexRowCentered;
+  height: 3rem;
+  justify-content: center;
+}
+
+.milestoneLabel {
+  composes: baseLabel;
+  border-color: #666;
+  width: 48%;
+}
+
+/* Award Button States */
+.awardButton {
+  width: 3rem;
+  height: 3rem;
+  border: 2px solid #666;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.awardButtonDisabled {
+  composes: awardButton;
+  cursor: default;
+  background-color: #666666;
+}
+
+.awardButtonGold {
+  composes: awardButton;
+  background-color: #FFD700;
+}
+
+.awardButtonSilver {
+  composes: awardButton;
+  background-color: #CCC;
+}
+
+.awardButtonNone {
+  composes: awardButton;
+  background-color: #444;
+}
+
+/* Numeric Input Styles */
+.numericInputContainer {
+  composes: flexRowCentered;
+  float: right;
+  gap: 5px;
+  width: 50%;
+}
+
+.numericInputButton {
+  width: 3rem;
+  min-width: 3rem;
+  height: 3rem;
+  font-size: 2.5rem;
+  font-weight: bold;
+  border: 1px solid #777;
+  border-radius: 3px;
+  background: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.numericInput {
+  composes: centeredText inheritFont;
+  font-size: 2rem;
+  font-weight: bold;
+  background: inherit;
+  height: 3rem;
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #777;
+  border-radius: 3px;
+}
+
+/* Score Cell Styles */
+.scoreCell {
+  composes: centeredText inheritFont;
+  font-size: 1.5rem;
+  height: 3rem;
+  line-height: 3rem;
+  font-weight: bold;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #999;
+  border-radius: 3px;
+}
+
+.scoreCellTotal {
+  composes: scoreCell;
+  background-color: #f0f0f0;
+}
+
+.scoreInput {
+  composes: scoreCell;
+  background: inherit;
+  line-height: normal;
+  box-sizing: border-box;
+}
+
+/* Layout Pattern Consolidation */
+.playerFieldsContainer {
+  composes: flexRow;
+  gap: 5px;
+  width: 68%;
+  justify-content: space-around;
+}
+
+.pointInputContainer {
+  composes: playerInputDiv;
+  margin-bottom: 10px;
+}
+
+.pointInputLabel {
+  composes: baseLabel;
+  border-color: #666;
+  width: 28%;
+}
+
+.playerNamesHeader {
+  composes: playerInputDiv;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #999;
+  padding-bottom: 10px;
+}
+
+.playerNamesEmpty {
+  width: 28%;
+}
+
+.playerNameCell {
+  composes: centeredText;
+  font-size: 1.2rem;
+  font-weight: bold;
+  flex: 1;
+}
+
+/* Expansion Base Styles - Consolidated */
+.expansionCircle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.expansionsContainer {
+  composes: flexRow;
+  align-items: flex-start;
+  padding: 15px;
+  gap: 15px;
+}
+
+.expansionsContent {
+  flex: 1;
+}
+
+.expansionsCompactView {
+  composes: flexRowCentered;
+  justify-content: space-between;
+}
+
+.expansionsExpandedView {
+  composes: flexRow;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 5px;
+}
+
+.expansionsToggleContainer {
+  composes: flexRowCentered;
+  margin: 5px;
+}
+
+.expansionsToggleButton {
+  composes: expansionCircle;
+  background-color: #333;
+  color: #FFF;
+  cursor: pointer;
+}
+
+/* Expansion Label Variants */
+.expansionLabelCompact {
+  width: auto;
+  height: auto;
+  margin: 5px;
+  display: inline-block;
+  line-height: normal;
+  cursor: pointer;
+}
+
+.expansionLabelCompactDisabled {
+  composes: expansionLabelCompact;
+  cursor: not-allowed;
+}
+
+.expansionLabelExpanded {
+  composes: flexRow;
+  line-height: 3rem;
+  height: 3rem;
+  width: 300px;
+  position: relative;
+  font-size: 22px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  gap: 8px;
+  justify-content: flex-start;
+  margin-left: 0;
+  cursor: pointer;
+}
+
+.expansionLabelExpandedDisabled {
+  composes: expansionLabelExpanded;
+  cursor: not-allowed;
+}
+
+/* Expansion Icon States */
+.expansionIcon {
+  composes: expansionCircle;
+  cursor: pointer;
+}
+
+.expansionIconShaded {
+  composes: expansionIcon;
+  opacity: 0.4;
+  filter: saturate(0.3);
+}
+
+.expansionIconDisabled {
+  composes: expansionIcon;
+  cursor: not-allowed;
+}
+
+.expansionIconSvg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Score Separators */
+.scoreSeparator {
+  border-top: 2px solid #999;
+  margin: 15px 0;
+  padding-top: 15px;
+}
+
+.scoreSeparatorFinal {
+  border-top: 3px solid #000;
+  margin-top: 15px;
+  padding-top: 15px;
+}

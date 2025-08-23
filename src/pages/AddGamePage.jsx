@@ -10,7 +10,7 @@ import Layout from "../components/Layout";
 import Container from "../components/Container";
 import { SubContainer, SubContainerElement } from "../components/SubContainer";
 import LinkButton from "../components/LinkButton";
-import { formStyles } from "../styles/formStyles";
+import styles from "../styles/AddGamePage.module.css";
 import { gameData, GAME_CONSTANTS } from "../data/gameData";
 
 // Local components for this page only
@@ -35,21 +35,18 @@ function AwardButton({
     return "#444"; // None/Black
   };
 
+  const getButtonClass = () => {
+    if (isDisabled) return styles.awardButtonDisabled;
+    if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD)
+      return styles.awardButtonGold;
+    if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER)
+      return styles.awardButtonSilver;
+    return styles.awardButtonNone;
+  };
+
   return (
     <button
-      style={{
-        width: "3rem",
-        height: "3rem",
-        border: "2px solid #666",
-        cursor: isDisabled ? "default" : "pointer",
-        backgroundColor: getBackgroundColor(),
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        MozUserSelect: "none",
-        msUserSelect: "none",
-        WebkitTouchCallout: "none",
-        WebkitTapHighlightColor: "transparent",
-      }}
+      className={getButtonClass()}
       onClick={() => onCyclePlacement(award, playerIndex)}
       disabled={isDisabled}
     />
@@ -62,53 +59,20 @@ function NumericInputWithButtons({
   onDecrement,
   onIncrement,
 }) {
-  const buttonStyle = {
-    width: "3rem",
-    minWidth: "3rem",
-    height: "3rem",
-    fontSize: "2.5rem",
-    fontWeight: "bold",
-    border: "1px solid #777",
-    borderRadius: "3px",
-    background: "inherit",
-    cursor: "pointer",
-    flexShrink: 0,
-  };
-
   return (
-    <div
-      style={{
-        float: "right",
-        display: "flex",
-        gap: "5px",
-        alignItems: "center",
-        width: "50%",
-      }}
-    >
-      <button style={buttonStyle} onClick={onDecrement}>
+    <div className={styles.numericInputContainer}>
+      <button className={styles.numericInputButton} onClick={onDecrement}>
         −
       </button>
       <input
         type="text"
         inputMode="numeric"
         pattern="[0-9]*"
-        style={{
-          textAlign: "center",
-          fontFamily: "inherit",
-          fontSize: "2rem",
-          fontWeight: "bold",
-          background: "inherit",
-          height: "3rem",
-          flex: 1,
-          minWidth: 0,
-          boxSizing: "border-box",
-          border: "1px solid #777",
-          borderRadius: "3px",
-        }}
+        className={styles.numericInput}
         value={value}
         onChange={onChange}
       />
-      <button style={buttonStyle} onClick={onIncrement}>
+      <button className={styles.numericInputButton} onClick={onIncrement}>
         +
       </button>
     </div>
@@ -122,18 +86,7 @@ const ReadOnlyScoreCell = React.memo(({ playerIndex, playerScores, field }) => {
   return (
     <div
       key={playerIndex}
-      style={{
-        textAlign: "center",
-        fontFamily: "inherit",
-        fontSize: "1.5rem",
-        height: "3rem",
-        lineHeight: "3rem",
-        fontWeight: "bold",
-        flex: 1,
-        border: "1px solid #999",
-        borderRadius: "3px",
-        backgroundColor: isTotal ? "#f0f0f0" : "inherit",
-      }}
+      className={isTotal ? styles.scoreCellTotal : styles.scoreCell}
     >
       {playerScores[playerIndex]?.[field] || 0}
     </div>
@@ -159,20 +112,7 @@ const EditableScoreInput = React.memo(
         type="text"
         inputMode="numeric"
         pattern="[0-9]*"
-        style={{
-          textAlign: "center",
-          fontFamily: "inherit",
-          fontSize: "1.5rem",
-          background: "inherit",
-          height: "3rem",
-          flex: 1,
-          minWidth: 0,
-          boxSizing: "border-box",
-          borderWidth: "1px",
-          borderStyle: "solid",
-          borderColor: "#999",
-          borderRadius: "3px",
-        }}
+        className={styles.scoreInput}
         value={playerScores[playerIndex]?.[field] || ""}
         onChange={handleChange}
         placeholder={placeholder}
@@ -191,28 +131,9 @@ function PointInput({
   placeholder = "0",
 }) {
   return (
-    <div
-      style={{
-        ...formStyles.playerInputDiv,
-        marginBottom: "10px",
-      }}
-    >
-      <div
-        style={{
-          ...formStyles.milestoneLabel,
-          width: "28%",
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          display: "flex",
-          gap: "5px",
-          width: "68%",
-          justifyContent: "space-around",
-        }}
-      >
+    <div className={styles.pointInputContainer}>
+      <div className={styles.pointInputLabel}>{label}</div>
+      <div className={styles.playerFieldsContainer}>
         {players.map((_, playerIndex) =>
           readOnly ? (
             <ReadOnlyScoreCell
@@ -322,46 +243,40 @@ function ExpansionIcon({
 
   return (
     <label
-      style={{
-        ...(!showText && {
-          width: "auto",
-          height: "auto",
-          margin: "5px",
-          display: "inline-block",
-          lineHeight: "normal",
-        }),
-        ...(showText && {
-          ...formStyles.checkboxLabel,
-          display: "flex",
-          gap: "8px",
-          justifyContent: "flex-start",
-          marginLeft: "0",
-        }),
-        cursor: disabled ? "not-allowed" : "pointer",
-      }}
+      className={
+        showText
+          ? disabled
+            ? styles.expansionLabelExpandedDisabled
+            : styles.expansionLabelExpanded
+          : disabled
+            ? styles.expansionLabelCompactDisabled
+            : styles.expansionLabelCompact
+      }
     >
       <input
         type="checkbox"
         checked={checked}
         disabled={disabled}
         onChange={onChange}
-        style={formStyles.hiddenCheckbox}
+        className={styles.hiddenCheckbox}
       />
       <div
+        className={
+          isShaded
+            ? styles.expansionIconShaded
+            : disabled
+              ? styles.expansionIconDisabled
+              : styles.expansionIcon
+        }
         style={{
-          ...formStyles.expansionIconStyle,
           backgroundColor: config.backgroundColor,
           color: config.symbolColor,
-          opacity: isShaded ? 0.4 : 1,
-          filter: isShaded ? "saturate(0.3)" : "none",
-          cursor: disabled ? "not-allowed" : "pointer",
         }}
         title={expansion}
       >
         {config.svg ? (
           <svg
-            width="28"
-            height="28"
+            className={styles.expansionIconSvg}
             viewBox="0 0 24 24"
             style={{
               transform: config.rotation
@@ -539,9 +454,7 @@ const ObjectiveSelector = React.memo(
 
     return (
       <select
-        style={{
-          ...formStyles.containerInput,
-        }}
+        className={styles.containerInput}
         value={value || ""}
         onChange={handleChange}
       >
@@ -558,15 +471,7 @@ const ObjectiveSelector = React.memo(
 
 // Helper component for milestone/award label display
 const ObjectiveLabel = React.memo(({ value }) => {
-  return (
-    <div
-      style={{
-        ...formStyles.milestoneLabel,
-      }}
-    >
-      {value}
-    </div>
-  );
+  return <div className={styles.milestoneLabel}>{value}</div>;
 });
 
 // Helper component for milestone row
@@ -607,11 +512,7 @@ const MilestoneRow = React.memo(
     }, [milestones.getAvailableForDropdown, milestone]);
 
     return (
-      <div
-        style={{
-          ...formStyles.playerInputDiv,
-        }}
-      >
+      <div className={styles.playerInputDiv}>
         {isCustomizable ? (
           <ObjectiveSelector
             value={milestone}
@@ -624,9 +525,7 @@ const MilestoneRow = React.memo(
         )}
 
         <select
-          style={{
-            ...formStyles.containerInput,
-          }}
+          className={styles.containerInput}
           value={milestones.data[milestone] ?? -1}
           onChange={handleWinnerChange}
           disabled={isMilestoneDisabled}
@@ -646,33 +545,13 @@ const MilestoneRow = React.memo(
 // Helper component for player names header
 const PlayerNamesHeader = React.memo(({ players }) => {
   return (
-    <div
-      style={{
-        ...formStyles.playerInputDiv,
-        marginBottom: "15px",
-        borderBottom: "2px solid #999",
-        paddingBottom: "10px",
-      }}
-    >
-      <div style={{ width: "28%" }}>{/* Empty space for alignment */}</div>
-      <div
-        style={{
-          display: "flex",
-          gap: "5px",
-          width: "68%",
-          justifyContent: "space-around",
-        }}
-      >
+    <div className={styles.playerNamesHeader}>
+      <div className={styles.playerNamesEmpty}>
+        {/* Empty space for alignment */}
+      </div>
+      <div className={styles.playerFieldsContainer}>
         {players.map((player, playerIndex) => (
-          <div
-            key={playerIndex}
-            style={{
-              fontSize: "1.2rem",
-              fontWeight: "bold",
-              textAlign: "center",
-              flex: 1,
-            }}
-          >
+          <div key={playerIndex} className={styles.playerNameCell}>
             {player.name || `P${playerIndex + 1}`}
           </div>
         ))}
@@ -705,12 +584,7 @@ const AwardRow = React.memo(
     }, [awards.getAvailableForDropdown, award]);
 
     return (
-      <div
-        style={{
-          ...formStyles.playerInputDiv,
-          marginBottom: "10px",
-        }}
-      >
+      <div className={styles.pointInputContainer}>
         {isCustomizable ? (
           <ObjectiveSelector
             value={award}
@@ -719,24 +593,10 @@ const AwardRow = React.memo(
             placeholder="Select Award"
           />
         ) : (
-          <div
-            style={{
-              ...formStyles.milestoneLabel,
-              width: "28%",
-            }}
-          >
-            {award}
-          </div>
+          <div className={styles.pointInputLabel}>{award}</div>
         )}
 
-        <div
-          style={{
-            display: "flex",
-            gap: "5px",
-            width: "68%",
-            justifyContent: "space-around",
-          }}
-        >
+        <div className={styles.playerFieldsContainer}>
           {players.map((player, playerIndex) => (
             <AwardButton
               key={playerIndex}
@@ -898,16 +758,16 @@ const PlayerInput = React.memo(
     );
 
     return (
-      <div style={formStyles.playerInputDiv}>
+      <div className={styles.playerInputDiv}>
         <input
           type="text"
-          style={formStyles.containerInput}
+          className={styles.containerInput}
           placeholder={`Player ${index + 1} name`}
           value={player.name}
           onChange={(e) => onUpdate(index, "name", e.target.value)}
         />
         <select
-          style={formStyles.containerInput}
+          className={styles.containerInput}
           value={player.corporation}
           onChange={(e) => onUpdate(index, "corporation", e.target.value)}
         >
@@ -1169,7 +1029,7 @@ function AddGamePage() {
             <label>Name:</label>
             <input
               type="text"
-              style={formStyles.optionInput}
+              className={styles.optionInput}
               value={gameConfig.name}
               onChange={(e) =>
                 dispatch({
@@ -1185,7 +1045,7 @@ function AddGamePage() {
             <label>Date:</label>
             <input
               type="date"
-              style={formStyles.optionInput}
+              className={styles.optionInput}
               value={gameConfig.date}
               onChange={(e) =>
                 dispatch({ type: "SET_DATE", value: e.target.value })
@@ -1197,7 +1057,7 @@ function AddGamePage() {
           <SubContainerElement>
             <label>Map:</label>
             <select
-              style={formStyles.optionInput}
+              className={styles.optionInput}
               value={gameConfig.map}
               onChange={(e) =>
                 dispatch({ type: "SET_MAP", value: e.target.value })
@@ -1256,25 +1116,12 @@ function AddGamePage() {
           </SubContainerElement>
 
           <SubContainerElement>
-            <div style={formStyles.subcontainerBox}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  padding: "15px",
-                  gap: "15px",
-                }}
-              >
+            <div className={styles.subcontainerBox}>
+              <div className={styles.expansionsContainer}>
                 {/* Content container - shared by both bar and list */}
-                <div style={{ flex: 1 }}>
+                <div className={styles.expansionsContent}>
                   {!gameConfig.expandedExpansions && (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
+                    <div className={styles.expansionsCompactView}>
                       {expansionEntries.map(([key, value]) => (
                         <ExpansionIcon
                           key={key}
@@ -1296,14 +1143,7 @@ function AddGamePage() {
                   )}
 
                   {gameConfig.expandedExpansions && (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-start",
-                        margin: "5px",
-                      }}
-                    >
+                    <div className={styles.expansionsExpandedView}>
                       {expansionEntries.map(([key, value]) => (
                         <ExpansionIcon
                           key={key + "_expanded"}
@@ -1326,21 +1166,9 @@ function AddGamePage() {
                 </div>
 
                 {/* Expand/Collapse button container */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    margin: "5px",
-                  }}
-                >
+                <div className={styles.expansionsToggleContainer}>
                   <div
-                    style={{
-                      ...formStyles.expansionIconStyle,
-                      backgroundColor: "#333",
-                      color: "#FFF",
-                      userSelect: "none",
-                      cursor: "pointer",
-                    }}
+                    className={styles.expansionsToggleButton}
                     onClick={() => dispatch({ type: "TOGGLE_EXPANDED_VIEW" })}
                     title={
                       gameConfig.expandedExpansions ? "Collapse" : "Expand"
@@ -1450,13 +1278,7 @@ function AddGamePage() {
             />
           )}
 
-          <div
-            style={{
-              borderTop: "2px solid #999",
-              margin: "15px 0",
-              paddingTop: "15px",
-            }}
-          >
+          <div className={styles.scoreSeparator}>
             <PointInput
               label="Milestones"
               players={playerManager.players}
@@ -1473,13 +1295,7 @@ function AddGamePage() {
             />
           </div>
 
-          <div
-            style={{
-              borderTop: "3px solid #000",
-              marginTop: "15px",
-              paddingTop: "15px",
-            }}
-          >
+          <div className={styles.scoreSeparatorFinal}>
             <PointInput
               label="Total"
               players={playerManager.players}
