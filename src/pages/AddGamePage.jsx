@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
@@ -17,7 +17,9 @@ function AwardButton({
   getFundedAwardsCount,
 }) {
   const isDisabled =
-    !award || (!isAwardFunded(award) && getFundedAwardsCount() >= GAME_CONSTANTS.MAX_AWARDS_FUNDED);
+    !award ||
+    (!isAwardFunded(award) &&
+      getFundedAwardsCount() >= GAME_CONSTANTS.MAX_AWARDS_FUNDED);
   const placement = awardPlacements[award]?.[playerIndex] || 0;
 
   const getBackgroundColor = () => {
@@ -338,6 +340,123 @@ function ExpansionIcon({
   );
 }
 
+// Custom hook for managing game objectives (milestones/awards)
+function useGameObjectives(type, map, expansions, playerNumber) {
+  const [selected, setSelected] = useState([]);
+  const [data, setData] = useState({});
+
+  const isAward = type === "award";
+  const dataKey = isAward ? "awards" : "milestones";
+  const additionalDataKey = isAward
+    ? "additionalAwards"
+    : "additionalMilestones";
+  const venusSlots = isAward
+    ? GAME_CONSTANTS.VENUS_AWARD_SLOTS
+    : GAME_CONSTANTS.VENUS_MILESTONE_SLOTS;
+  const defaultSlots = isAward
+    ? GAME_CONSTANTS.DEFAULT_AWARD_SLOTS
+    : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS;
+
+  // Get available objectives based on expansions
+  const getAvailable = useCallback(() => {
+    let available = [...(gameData[dataKey][map] || [])];
+    if (expansions["Venus Next"]) {
+      available = [...available, ...gameData[dataKey].Venus];
+    }
+    if (expansions["Milestones & Awards"]) {
+      available = [...available, ...gameData[additionalDataKey]];
+    }
+    return [...new Set(available)];
+  }, [map, expansions, dataKey, additionalDataKey]);
+
+  // Get available objectives for dropdown (excluding already selected)
+  const getAvailableForDropdown = useCallback(
+    (current) => {
+      const all = getAvailable();
+      return all.filter((item) => item === current || !selected.includes(item));
+    },
+    [getAvailable, selected],
+  );
+
+  // Initialize objectives when map or expansions change
+  useEffect(() => {
+    if (expansions["Milestones & Awards"]) {
+      const mapObjectives = gameData[dataKey][map] || [];
+      const numSlots = expansions["Venus Next"] ? venusSlots : defaultSlots;
+
+      const defaultObjectives = [...mapObjectives];
+      if (expansions["Venus Next"]) {
+        defaultObjectives.push(...gameData[dataKey].Venus);
+      }
+
+      setSelected(defaultObjectives.slice(0, numSlots));
+    } else {
+      const available = getAvailable();
+      setSelected(available);
+
+      // Initialize data structure
+      if (isAward) {
+        const newData = {};
+        available.forEach((item) => {
+          newData[item] = data[item] || {};
+          for (let i = 0; i < playerNumber; i++) {
+            newData[item][i] = newData[item][i] || 0;
+          }
+        });
+        setData(newData);
+      } else {
+        const newData = {};
+        available.forEach((item) => {
+          newData[item] = data[item] ?? -1;
+        });
+        setData(newData);
+      }
+    }
+  }, [
+    map,
+    expansions["Milestones & Awards"],
+    expansions["Venus Next"],
+    playerNumber,
+  ]);
+
+  // Update selected objective at index
+  const updateSelected = useCallback(
+    (index, newValue) => {
+      const newSelected = [...selected];
+      const oldValue = newSelected[index];
+      newSelected[index] = newValue;
+      setSelected(newSelected);
+
+      // Update data structure
+      const newData = { ...data };
+      if (oldValue) {
+        delete newData[oldValue];
+      }
+      if (newValue) {
+        if (isAward) {
+          newData[newValue] = {};
+          for (let i = 0; i < playerNumber; i++) {
+            newData[newValue][i] = 0;
+          }
+        } else {
+          newData[newValue] = -1;
+        }
+      }
+      setData(newData);
+    },
+    [selected, data, playerNumber, isAward],
+  );
+
+  return {
+    selected,
+    data,
+    setData,
+    getAvailable,
+    getAvailableForDropdown,
+    updateSelected,
+  };
+}
+
 const PlayerInput = React.memo(
   ({ index, player, corporations, onUpdate, selectedCorporations }) => {
     const availableCorporations = React.useMemo(
@@ -384,8 +503,12 @@ function AddGamePage() {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [map, setMap] = useState("Tharsis");
-  const [generations, setGenerations] = useState(GAME_CONSTANTS.DEFAULT_GENERATIONS);
-  const [playerNumber, setPlayerNumber] = useState(GAME_CONSTANTS.DEFAULT_PLAYER_COUNT);
+  const [generations, setGenerations] = useState(
+    GAME_CONSTANTS.DEFAULT_GENERATIONS,
+  );
+  const [playerNumber, setPlayerNumber] = useState(
+    GAME_CONSTANTS.DEFAULT_PLAYER_COUNT,
+  );
   const [players, setPlayers] = useState([]);
 
   // Expansions
@@ -403,15 +526,14 @@ function AddGamePage() {
   });
   const [expandedExpansions, setExpandedExpansions] = useState(false);
 
-  // Milestones - object with milestone name as key, player index as value (-1 means not claimed)
-  const [milestoneWinners, setMilestoneWinners] = useState({});
-  // When Milestones & Awards expansion is enabled, track which milestones are selected
-  const [selectedMilestones, setSelectedMilestones] = useState([]);
-
-  // Awards - object with award name as key, and player placements (0=none, 1=gold, 2=silver)
-  const [awardPlacements, setAwardPlacements] = useState({});
-  // When Milestones & Awards expansion is enabled, track which awards are selected
-  const [selectedAwards, setSelectedAwards] = useState([]);
+  // Use custom hooks for milestones and awards
+  const milestones = useGameObjectives(
+    "milestone",
+    map,
+    expansions,
+    playerNumber,
+  );
+  const awards = useGameObjectives("award", map, expansions, playerNumber);
 
   // Points
   const [playerScores, setPlayerScores] = useState([]);
@@ -438,7 +560,8 @@ function AddGamePage() {
   }, [playerNumber]);
 
   // Get max players from map data
-  const maxPlayers = gameData.maps[map]?.maxPlayers || GAME_CONSTANTS.DEFAULT_MAX_PLAYERS;
+  const maxPlayers =
+    gameData.maps[map]?.maxPlayers || GAME_CONSTANTS.DEFAULT_MAX_PLAYERS;
 
   // Adjust player count when map changes
   useEffect(() => {
@@ -464,62 +587,6 @@ function AddGamePage() {
     }
     setPlayerScores(newScores);
   }, [playerNumber]);
-
-  // Initialize milestones when map or expansions change
-  useEffect(() => {
-    if (expansions["Milestones & Awards"]) {
-      // When Milestones & Awards is enabled, show slots based on Venus Next expansion
-      const mapMilestones = gameData.milestones[map] || [];
-      const numSlots = expansions["Venus Next"] ? GAME_CONSTANTS.VENUS_MILESTONE_SLOTS : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS;
-
-      // Initialize with the first milestones from the map
-      const defaultMilestones = [...mapMilestones];
-      if (expansions["Venus Next"]) {
-        defaultMilestones.push(...gameData.milestones.Venus);
-      }
-
-      setSelectedMilestones(defaultMilestones.slice(0, numSlots));
-    } else {
-      // When Milestones & Awards is disabled, use standard milestones for the map
-      const availableMilestones = getAvailableMilestones();
-      const newMilestoneWinners = {};
-      availableMilestones.forEach((milestone) => {
-        newMilestoneWinners[milestone] = milestoneWinners[milestone] ?? -1;
-      });
-      setMilestoneWinners(newMilestoneWinners);
-      setSelectedMilestones(availableMilestones);
-    }
-  }, [map, expansions["Milestones & Awards"], expansions["Venus Next"]]);
-
-  // Initialize awards when map or expansions change
-  useEffect(() => {
-    if (expansions["Milestones & Awards"]) {
-      // When Milestones & Awards is enabled, show slots based on Venus Next expansion
-      const mapAwards = gameData.awards[map] || [];
-      const numSlots = expansions["Venus Next"] ? GAME_CONSTANTS.VENUS_AWARD_SLOTS : GAME_CONSTANTS.DEFAULT_AWARD_SLOTS;
-
-      // Initialize with the first awards from the map
-      const defaultAwards = [...mapAwards];
-      if (expansions["Venus Next"]) {
-        defaultAwards.push(...gameData.awards.Venus);
-      }
-
-      setSelectedAwards(defaultAwards.slice(0, numSlots));
-    } else {
-      // When Milestones & Awards is disabled, use standard awards for the map
-      const availableAwards = getAvailableAwards();
-      const newAwardPlacements = {};
-      availableAwards.forEach((award) => {
-        newAwardPlacements[award] = awardPlacements[award] || {};
-        // Initialize all players to 0 (no medal) for this award
-        for (let i = 0; i < playerNumber; i++) {
-          newAwardPlacements[award][i] = newAwardPlacements[award][i] || 0;
-        }
-      });
-      setAwardPlacements(newAwardPlacements);
-      setSelectedAwards(availableAwards);
-    }
-  }, [map, expansions["Milestones & Awards"], expansions["Venus Next"]]);
 
   const updatePlayerData = React.useCallback((index, field, value) => {
     setPlayers((prevPlayers) => {
@@ -550,159 +617,71 @@ function AddGamePage() {
     return [...new Set(availableCorporations)].sort();
   };
 
-  const getAvailableMilestones = () => {
-    let availableMilestones = [...(gameData.milestones[map] || [])];
-    if (expansions["Venus Next"]) {
-      availableMilestones = [
-        ...availableMilestones,
-        ...gameData.milestones.Venus,
-      ];
-    }
-    if (expansions["Milestones & Awards"]) {
-      // When Milestones & Awards expansion is enabled, add additional milestones to choose from
-      availableMilestones = [
-        ...availableMilestones,
-        ...gameData.additionalMilestones,
-      ];
-    }
-    // Remove duplicates
-    return [...new Set(availableMilestones)];
-  };
-
   const updateMilestoneWinner = (milestone, playerIndex) => {
     // Count how many milestones are currently selected
-    const currentlySelected = Object.values(milestoneWinners).filter(
+    const currentlySelected = Object.values(milestones.data).filter(
       (idx) => idx !== -1,
     ).length;
 
     // If trying to select a new milestone and already have max claimed, don't allow
     if (
       playerIndex !== -1 &&
-      milestoneWinners[milestone] === -1 &&
+      milestones.data[milestone] === -1 &&
       currentlySelected >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED
     ) {
       return;
     }
 
-    setMilestoneWinners({
-      ...milestoneWinners,
+    milestones.setData({
+      ...milestones.data,
       [milestone]: playerIndex,
     });
   };
 
   const getSelectedMilestonesCount = () => {
-    return Object.values(milestoneWinners).filter((idx) => idx !== -1).length;
-  };
-
-  const updateSelectedMilestone = (index, newMilestone) => {
-    // When using Milestones & Awards expansion, allow changing which milestones are used
-    const newSelectedMilestones = [...selectedMilestones];
-    const oldMilestone = newSelectedMilestones[index];
-    newSelectedMilestones[index] = newMilestone;
-    setSelectedMilestones(newSelectedMilestones);
-
-    // Clear the winner for this milestone when it changes
-    const newMilestoneWinners = { ...milestoneWinners };
-    if (oldMilestone) {
-      delete newMilestoneWinners[oldMilestone];
-    }
-    if (newMilestone) {
-      newMilestoneWinners[newMilestone] = -1;
-    }
-    setMilestoneWinners(newMilestoneWinners);
-  };
-
-  const getAvailableMilestonesForDropdown = (currentMilestone) => {
-    // Get all available milestones
-    const allMilestones = getAvailableMilestones();
-    // Filter out milestones that are already selected (except the current one)
-    return allMilestones.filter(
-      (m) => m === currentMilestone || !selectedMilestones.includes(m),
-    );
-  };
-
-  const getAvailableAwards = () => {
-    let availableAwards = [...(gameData.awards[map] || [])];
-    if (expansions["Venus Next"]) {
-      availableAwards = [...availableAwards, ...gameData.awards.Venus];
-    }
-    if (expansions["Milestones & Awards"]) {
-      // When Milestones & Awards expansion is enabled, add additional awards to choose from
-      availableAwards = [...availableAwards, ...gameData.additionalAwards];
-    }
-    // Remove duplicates
-    return [...new Set(availableAwards)];
+    return Object.values(milestones.data).filter((idx) => idx !== -1).length;
   };
 
   const cyclePlacement = (award, playerIndex) => {
     // Check if this award has any placements, if not and we already have max funded awards, don't allow
     const currentAwardHasPlacements =
-      awardPlacements[award] &&
-      Object.values(awardPlacements[award]).some((placement) => placement > 0);
+      awards.data[award] &&
+      Object.values(awards.data[award]).some((placement) => placement > 0);
     const fundedAwardsCount = getFundedAwardsCount();
 
-    if (!currentAwardHasPlacements && fundedAwardsCount >= GAME_CONSTANTS.MAX_AWARDS_FUNDED) {
+    if (
+      !currentAwardHasPlacements &&
+      fundedAwardsCount >= GAME_CONSTANTS.MAX_AWARDS_FUNDED
+    ) {
       return; // Can't add new award if already have max funded
     }
 
-    const newPlacements = { ...awardPlacements };
+    const newPlacements = { ...awards.data };
     if (!newPlacements[award]) {
       newPlacements[award] = {};
     }
 
-    const currentPlacement = newPlacements[award][playerIndex] || GAME_CONSTANTS.AWARD_PLACEMENT.NONE;
+    const currentPlacement =
+      newPlacements[award][playerIndex] || GAME_CONSTANTS.AWARD_PLACEMENT.NONE;
     // Cycle through placements: none -> gold -> silver -> none
     const placementCount = Object.keys(GAME_CONSTANTS.AWARD_PLACEMENT).length;
     newPlacements[award][playerIndex] = (currentPlacement + 1) % placementCount;
 
-    setAwardPlacements(newPlacements);
+    awards.setData(newPlacements);
   };
 
   const getFundedAwardsCount = () => {
-    return Object.keys(awardPlacements).filter(
+    return Object.keys(awards.data).filter(
       (award) =>
-        awardPlacements[award] &&
-        Object.values(awardPlacements[award]).some(
-          (placement) => placement > 0,
-        ),
+        awards.data[award] &&
+        Object.values(awards.data[award]).some((placement) => placement > 0),
     ).length;
   };
 
   const isAwardFunded = (award) => {
     return (
-      awardPlacements[award] &&
-      Object.values(awardPlacements[award]).some((placement) => placement > 0)
-    );
-  };
-
-  const updateSelectedAward = (index, newAward) => {
-    // When using Milestones & Awards expansion, allow changing which awards are used
-    const newSelectedAwards = [...selectedAwards];
-    const oldAward = newSelectedAwards[index];
-    newSelectedAwards[index] = newAward;
-    setSelectedAwards(newSelectedAwards);
-
-    // Clear the placements for this award when it changes
-    const newAwardPlacements = { ...awardPlacements };
-    if (oldAward) {
-      delete newAwardPlacements[oldAward];
-    }
-    if (newAward) {
-      newAwardPlacements[newAward] = {};
-      // Initialize all players to 0 (no medal) for this award
-      for (let i = 0; i < playerNumber; i++) {
-        newAwardPlacements[newAward][i] = 0;
-      }
-    }
-    setAwardPlacements(newAwardPlacements);
-  };
-
-  const getAvailableAwardsForDropdown = (currentAward) => {
-    // Get all available awards
-    const allAwards = getAvailableAwards();
-    // Filter out awards that are already selected (except the current one)
-    return allAwards.filter(
-      (a) => a === currentAward || !selectedAwards.includes(a),
+      awards.data[award] &&
+      Object.values(awards.data[award]).some((placement) => placement > 0)
     );
   };
 
@@ -739,7 +718,7 @@ function AddGamePage() {
     const newScores = playerScores.map((score, playerIndex) => {
       // Calculate milestone points
       let milestonePoints = 0;
-      Object.values(milestoneWinners).forEach((winnerIndex) => {
+      Object.values(milestones.data).forEach((winnerIndex) => {
         if (winnerIndex === playerIndex) {
           milestonePoints += GAME_CONSTANTS.MILESTONE_POINTS;
         }
@@ -747,8 +726,8 @@ function AddGamePage() {
 
       // Calculate award points based on placement
       let awardPoints = 0;
-      Object.keys(awardPlacements).forEach((award) => {
-        const placement = awardPlacements[award]?.[playerIndex];
+      Object.keys(awards.data).forEach((award) => {
+        const placement = awards.data[award]?.[playerIndex];
         if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD) {
           awardPoints += GAME_CONSTANTS.AWARD_POINTS.GOLD;
         } else if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER) {
@@ -781,7 +760,7 @@ function AddGamePage() {
     });
 
     setPlayerScores(newScores);
-  }, [milestoneWinners, awardPlacements]);
+  }, [milestones.data, awards.data]);
 
   return (
     <Layout>
@@ -831,10 +810,23 @@ function AddGamePage() {
               value={generations}
               onChange={(e) => {
                 const val = parseInt(e.target.value) || 0;
-                setGenerations(Math.min(GAME_CONSTANTS.MAX_GENERATIONS, Math.max(GAME_CONSTANTS.MIN_GENERATIONS, val)));
+                setGenerations(
+                  Math.min(
+                    GAME_CONSTANTS.MAX_GENERATIONS,
+                    Math.max(GAME_CONSTANTS.MIN_GENERATIONS, val),
+                  ),
+                );
               }}
-              onDecrement={() => setGenerations(Math.max(GAME_CONSTANTS.MIN_GENERATIONS, generations - 1))}
-              onIncrement={() => setGenerations(Math.min(GAME_CONSTANTS.MAX_GENERATIONS, generations + 1))}
+              onDecrement={() =>
+                setGenerations(
+                  Math.max(GAME_CONSTANTS.MIN_GENERATIONS, generations - 1),
+                )
+              }
+              onIncrement={() =>
+                setGenerations(
+                  Math.min(GAME_CONSTANTS.MAX_GENERATIONS, generations + 1),
+                )
+              }
             />
           </SubContainerElement>
 
@@ -846,11 +838,18 @@ function AddGamePage() {
                 setPlayerNumber(
                   Math.min(
                     maxPlayers,
-                    Math.max(GAME_CONSTANTS.MIN_PLAYERS, parseInt(e.target.value) || GAME_CONSTANTS.MIN_PLAYERS),
+                    Math.max(
+                      GAME_CONSTANTS.MIN_PLAYERS,
+                      parseInt(e.target.value) || GAME_CONSTANTS.MIN_PLAYERS,
+                    ),
                   ),
                 )
               }
-              onDecrement={() => setPlayerNumber(Math.max(GAME_CONSTANTS.MIN_PLAYERS, playerNumber - 1))}
+              onDecrement={() =>
+                setPlayerNumber(
+                  Math.max(GAME_CONSTANTS.MIN_PLAYERS, playerNumber - 1),
+                )
+              }
               onIncrement={() =>
                 setPlayerNumber(Math.min(maxPlayers, playerNumber + 1))
               }
@@ -964,10 +963,7 @@ function AddGamePage() {
 
       <Container title="Milestones" titleStyle="banner">
         <SubContainer>
-          {(expansions["Milestones & Awards"]
-            ? selectedMilestones
-            : getAvailableMilestones()
-          ).map((milestone, index) => (
+          {milestones.selected.map((milestone, index) => (
             <div
               key={index}
               style={{
@@ -981,11 +977,11 @@ function AddGamePage() {
                   }}
                   value={milestone || ""}
                   onChange={(e) =>
-                    updateSelectedMilestone(index, e.target.value)
+                    milestones.updateSelected(index, e.target.value)
                   }
                 >
                   {!milestone && <option value="">Select Milestone</option>}
-                  {getAvailableMilestonesForDropdown(milestone).map((m) => (
+                  {milestones.getAvailableForDropdown(milestone).map((m) => (
                     <option key={m} value={m}>
                       {m}
                     </option>
@@ -1005,14 +1001,15 @@ function AddGamePage() {
                 style={{
                   ...formStyles.containerInput,
                 }}
-                value={milestoneWinners[milestone] ?? -1}
+                value={milestones.data[milestone] ?? -1}
                 onChange={(e) =>
                   updateMilestoneWinner(milestone, parseInt(e.target.value))
                 }
                 disabled={
                   !milestone ||
-                  (milestoneWinners[milestone] === -1 &&
-                    getSelectedMilestonesCount() >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED)
+                  (milestones.data[milestone] === -1 &&
+                    getSelectedMilestonesCount() >=
+                      GAME_CONSTANTS.MAX_MILESTONES_CLAIMED)
                 }
               >
                 <option value={-1}>Not achieved</option>
@@ -1065,10 +1062,7 @@ function AddGamePage() {
             </div>
           </div>
 
-          {(expansions["Milestones & Awards"]
-            ? selectedAwards
-            : getAvailableAwards()
-          ).map((award, index) => (
+          {awards.selected.map((award, index) => (
             <div
               key={index}
               style={{
@@ -1083,10 +1077,10 @@ function AddGamePage() {
                     width: "28%",
                   }}
                   value={award || ""}
-                  onChange={(e) => updateSelectedAward(index, e.target.value)}
+                  onChange={(e) => awards.updateSelected(index, e.target.value)}
                 >
                   {!award && <option value="">Select Award</option>}
-                  {getAvailableAwardsForDropdown(award).map((a) => (
+                  {awards.getAvailableForDropdown(award).map((a) => (
                     <option key={a} value={a}>
                       {a}
                     </option>
@@ -1116,7 +1110,7 @@ function AddGamePage() {
                     key={playerIndex}
                     award={award}
                     playerIndex={playerIndex}
-                    awardPlacements={awardPlacements}
+                    awardPlacements={awards.data}
                     onCyclePlacement={cyclePlacement}
                     isAwardFunded={isAwardFunded}
                     getFundedAwardsCount={getFundedAwardsCount}
