@@ -5,17 +5,26 @@ import Container from "../components/Container";
 import { SubContainer, SubContainerElement } from "../components/SubContainer";
 import LinkButton from "../components/LinkButton";
 import { formStyles } from "../styles/formStyles";
+import { gameData, GAME_CONSTANTS } from "../data/gameData";
 
 // Local components for this page only
-function AwardButton({ award, playerIndex, awardPlacements, onCyclePlacement, isAwardFunded, getFundedAwardsCount }) {
-  const isDisabled = !award || (!isAwardFunded(award) && getFundedAwardsCount() >= 3);
+function AwardButton({
+  award,
+  playerIndex,
+  awardPlacements,
+  onCyclePlacement,
+  isAwardFunded,
+  getFundedAwardsCount,
+}) {
+  const isDisabled =
+    !award || (!isAwardFunded(award) && getFundedAwardsCount() >= GAME_CONSTANTS.MAX_AWARDS_FUNDED);
   const placement = awardPlacements[award]?.[playerIndex] || 0;
 
   const getBackgroundColor = () => {
     if (isDisabled) return "#666666";
-    if (placement === 1) return "#FFD700"; // Gold
-    if (placement === 2) return "#CCC";    // Silver
-    return "#444";                         // None/Black
+    if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD) return "#FFD700"; // Gold
+    if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER) return "#CCC"; // Silver
+    return "#444"; // None/Black
   };
 
   return (
@@ -39,7 +48,12 @@ function AwardButton({ award, playerIndex, awardPlacements, onCyclePlacement, is
   );
 }
 
-function NumericInputWithButtons({ value, onChange, onDecrement, onIncrement }) {
+function NumericInputWithButtons({
+  value,
+  onChange,
+  onDecrement,
+  onIncrement,
+}) {
   const buttonStyle = {
     width: "3rem",
     minWidth: "3rem",
@@ -54,7 +68,15 @@ function NumericInputWithButtons({ value, onChange, onDecrement, onIncrement }) 
   };
 
   return (
-    <div style={{ float: "right", display: "flex", gap: "5px", alignItems: "center", width: "50%" }}>
+    <div
+      style={{
+        float: "right",
+        display: "flex",
+        gap: "5px",
+        alignItems: "center",
+        width: "50%",
+      }}
+    >
       <button style={buttonStyle} onClick={onDecrement}>
         −
       </button>
@@ -95,23 +117,29 @@ function PointInput({
   placeholder = "0",
 }) {
   return (
-    <div style={{
-      ...formStyles.playerInputDiv,
-      marginBottom: "10px"
-    }}>
-      <div style={{
-        ...formStyles.milestoneLabel,
-        width: "28%"
-      }}>
+    <div
+      style={{
+        ...formStyles.playerInputDiv,
+        marginBottom: "10px",
+      }}
+    >
+      <div
+        style={{
+          ...formStyles.milestoneLabel,
+          width: "28%",
+        }}
+      >
         {label}
       </div>
-      <div style={{
-        display: "flex",
-        gap: "5px",
-        width: "68%",
-        justifyContent: "space-around"
-      }}>
-        {players.map((_, playerIndex) => (
+      <div
+        style={{
+          display: "flex",
+          gap: "5px",
+          width: "68%",
+          justifyContent: "space-around",
+        }}
+      >
+        {players.map((_, playerIndex) =>
           readOnly ? (
             <div
               key={playerIndex}
@@ -125,7 +153,8 @@ function PointInput({
                 flex: 1,
                 border: "1px solid #999",
                 borderRadius: "3px",
-                backgroundColor: field === "totalPoints" ? "#f0f0f0" : "inherit"
+                backgroundColor:
+                  field === "totalPoints" ? "#f0f0f0" : "inherit",
               }}
             >
               {playerScores[playerIndex]?.[field] || 0}
@@ -159,82 +188,89 @@ function PointInput({
               }}
               placeholder={placeholder}
             />
-          )
-        ))}
+          ),
+        )}
       </div>
     </div>
   );
 }
 
-function ExpansionIcon({ expansion, checked, disabled, onChange, children, showText = true }) {
+function ExpansionIcon({
+  expansion,
+  checked,
+  disabled,
+  onChange,
+  children,
+  showText = true,
+}) {
   const getExpansionConfig = (expansion) => {
     switch (expansion) {
       case "Base Game":
         return {
           backgroundColor: "transparent",
           symbolColor: "#000",
-          svg: null
+          svg: null,
         };
       case "Corporate Era":
         return {
           backgroundColor: "#FF0000",
           symbolColor: "#000",
           svg: <polygon points="12,4 20,18 4,18" fill="currentColor" />,
-          rotation: "0deg"
+          rotation: "0deg",
         };
       case "Venus Next":
         return {
           backgroundColor: "#87CEEB",
           symbolColor: "#FFF",
           svg: <polygon points="12,4 20,18 4,18" fill="currentColor" />,
-          rotation: "180deg"
+          rotation: "180deg",
         };
       case "Prelude":
         return {
           backgroundColor: "#FFC0CB",
           symbolColor: "#FFF",
           svg: <polygon points="12,4 20,18 4,18" fill="currentColor" />,
-          rotation: "270deg"
+          rotation: "270deg",
         };
       case "Prelude 2":
         return {
           backgroundColor: "#FF69B4",
           symbolColor: "#FFF",
           svg: <polygon points="12,4 20,18 4,18" fill="currentColor" />,
-          rotation: "270deg"
+          rotation: "270deg",
         };
       case "Colonies":
         return {
           backgroundColor: "#808080",
           symbolColor: "#000",
           svg: <polygon points="12,4 20,18 4,18" fill="currentColor" />,
-          rotation: "0deg"
+          rotation: "0deg",
         };
       case "Turmoil":
         return {
           backgroundColor: "#FFA500",
           symbolColor: "#000",
           svg: <polygon points="12,4 20,18 4,18" fill="currentColor" />,
-          rotation: "180deg"
+          rotation: "180deg",
         };
       case "Milestones & Awards":
         return {
           backgroundColor: "#FFD700",
           symbolColor: "#000",
-          svg: <rect x="6" y="6" width="12" height="12" fill="currentColor" />
+          svg: <rect x="6" y="6" width="12" height="12" fill="currentColor" />,
         };
       case "Promo":
         return {
           backgroundColor: "#2F2F2F",
           symbolColor: "#FFF",
-          svg: <circle cx="12" cy="12" r="8" fill="currentColor" />
+          svg: <circle cx="12" cy="12" r="8" fill="currentColor" />,
         };
       default:
         return {
           backgroundColor: "#666",
           symbolColor: "#FFF",
           svg: null,
-          fallbackSymbol: "?"
+          fallbackSymbol: "?",
         };
     }
   };
@@ -243,23 +279,25 @@ function ExpansionIcon({ expansion, checked, disabled, onChange, children, showT
   const isShaded = !checked;
 
   return (
-    <label style={{
-      ...(!showText && {
-        width: "auto",
-        height: "auto",
-        margin: "5px",
-        display: "inline-block",
-        lineHeight: "normal"
-      }),
-      ...(showText && {
-        ...formStyles.checkboxLabel,
-        display: "flex",
-        gap: "8px",
-        justifyContent: "flex-start",
-        marginLeft: "0",
-      }),
-      cursor: disabled ? "not-allowed" : "pointer",
-    }}>
+    <label
+      style={{
+        ...(!showText && {
+          width: "auto",
+          height: "auto",
+          margin: "5px",
+          display: "inline-block",
+          lineHeight: "normal",
+        }),
+        ...(showText && {
+          ...formStyles.checkboxLabel,
+          display: "flex",
+          gap: "8px",
+          justifyContent: "flex-start",
+          marginLeft: "0",
+        }),
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+    >
       <input
         type="checkbox"
         checked={checked}
@@ -283,7 +321,11 @@ function ExpansionIcon({ expansion, checked, disabled, onChange, children, showT
             width="28"
             height="28"
             viewBox="0 0 24 24"
-            style={{ transform: config.rotation ? `rotate(${config.rotation})` : undefined }}
+            style={{
+              transform: config.rotation
+                ? `rotate(${config.rotation})`
+                : undefined,
+            }}
           >
             {config.svg}
           </svg>
@@ -296,221 +338,44 @@ function ExpansionIcon({ expansion, checked, disabled, onChange, children, showT
   );
 }
 
-const PlayerInput = React.memo(({ index, player, corporations, onUpdate, selectedCorporations }) => {
-  const availableCorporations = React.useMemo(() =>
-    corporations.filter(corp =>
-      corp === "Beginner" || !selectedCorporations.includes(corp) || corp === player.corporation
-    ), [corporations, selectedCorporations, player.corporation]
-  );
+const PlayerInput = React.memo(
+  ({ index, player, corporations, onUpdate, selectedCorporations }) => {
+    const availableCorporations = React.useMemo(
+      () =>
+        corporations.filter(
+          (corp) =>
+            corp === "Beginner" ||
+            !selectedCorporations.includes(corp) ||
+            corp === player.corporation,
+        ),
+      [corporations, selectedCorporations, player.corporation],
+    );
 
-  return (
-    <div style={formStyles.playerInputDiv}>
-      <input
-        type="text"
-        style={formStyles.containerInput}
-        placeholder={`Player ${index + 1} name`}
-        value={player.name}
-        onChange={(e) => onUpdate(index, "name", e.target.value)}
-      />
-      <select
-        style={formStyles.containerInput}
-        value={player.corporation}
-        onChange={(e) => onUpdate(index, "corporation", e.target.value)}
-      >
-        <option value="">Select Corporation</option>
-        {availableCorporations.map((corp) => (
-          <option key={corp} value={corp}>
-            {corp}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-});
-
-const gameData = {
-  maps: [
-    "Tharsis",
-    "Hellas",
-    "Elysium",
-    "Utopia Planitia",
-    "Terra Cimmeria",
-    "Vastitas Borealis",
-    "Amazonis Planitia",
-  ],
-  corporationsByExpansion: {
-    "Base Game": [
-      "Beginner",
-      "Credicor",
-      "Ecoline",
-      "Helion",
-      "Mining Guild",
-      "Interplanetarty Cinematics",
-      "Inventrix",
-      "Phobolog",
-      "Tharsis Republic",
-      "Thorgate",
-      "United Nations Mars Initiative",
-    ],
-    "Corporate Era": [
-      "Teractor",
-      "Saturn Systems",
-    ],
-    "Venus Next": [
-      "Aphrodite",
-      "Celestic",
-      "Manutech",
-      "Morning Star Inc.",
-      "Viron"
-    ],
-    "Prelude": [
-      "Cheung Shing Mars",
-      "Point Luna",
-      "Robinson Industries",
-      "Valley Trust",
-      "Vitor",
-      "Ecotec",
-    ],
-    "Prelude 2": [
-      "Spire",
-      "Sagitta",
-      "Palladin Shipping",
-      "Nirgal Enterprises"
-    ],
-    "Colonies": [
-      "Aridor",
-      "Arklight",
-      "Polyphemos",
-      "Poseidon",
-      "Stormcraft Incorporated"
-    ],
-    "Turmoil": [
-      "Lakefront Resorts",
-      "Pristar",
-      "Septem Tribus",
-      "Terralabs Research",
-      "Utopia Invest"
-    ],
-    "Promo": [
-      "Factorum",
-      "Mons Insurance",
-      "Philares",
-      "Arcadian Communities",
-      "Recyclon",
-      "Splice Tactical Genomics",
-      "Astrodrill",
-      "Pharmacy Union",
-      "Tycho Magnetics",
-      "Kuiper Cooperative",
-    ],
+    return (
+      <div style={formStyles.playerInputDiv}>
+        <input
+          type="text"
+          style={formStyles.containerInput}
+          placeholder={`Player ${index + 1} name`}
+          value={player.name}
+          onChange={(e) => onUpdate(index, "name", e.target.value)}
+        />
+        <select
+          style={formStyles.containerInput}
+          value={player.corporation}
+          onChange={(e) => onUpdate(index, "corporation", e.target.value)}
+        >
+          <option value="">Select Corporation</option>
+          {availableCorporations.map((corp) => (
+            <option key={corp} value={corp}>
+              {corp}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
   },
-  milestones: {
-    'Amazonis Planitia': ["Terran", "Landshaper", "Merchant", "Sponsor", "Lobbyist"],
-    'Elysium': ["Generalist", "Specialist", "Ecologist", "Tycoon", "Legend"],
-    'Hellas': [
-      "Diversifier",
-      "Tactician",
-      "Polar Explorer",
-      "Energizer",
-      "Rim Settler",
-    ],
-    'Terra Cimmeria': ["Planetologist", "Architect", "Coastguard", "Forester", "Investor"],
-    'Tharsis': ["Builder", "Gardener", "Mayor", "Planner", "Terraformer"],
-    'Utopia Planitia': ["Specialist", "Pioneer", "Trader", "Metallurgist", "Researcher"],
-    'Vastitas Borealis': ["Agronomist", "Spacefarer", "Geologist", "Engineer", "Farmer"],
-    'Venus': ["Hoverlord"],
-  },
-  additionalMilestones: [
-    "Briber",
-    "Builder",
-    "Coastguard",
-    "Diversifier",
-    "Ecologist",
-    "Energizer",
-    "Engineer",
-    "Farmer",
-    "Forester",
-    "Fundraiser",
-    "Gardener",
-    "Generalist",
-    "Geologist",
-    "Hydrologist",
-    "Landshaper",
-    "Legend",
-    "Lobbyist",
-    "Mayor",
-    "Merchant",
-    "Metallurgist",
-    "Philantropist",
-    "Pioneer",
-    "Planetologist",
-    "Planner",
-    "Producer",
-    "Researcher",
-    "Rim Settler",
-    "Spacefarer",
-    "Sponsor",
-    "Tactician",
-    "Terraformer",
-    "Terran",
-    "Thawer",
-    "Trader",
-    "Tycoon",
-  ],
-  awards: {
-    'Amazonis Planitia': ["Collector", "Innovator", "Constructor", "Manufacturer", "Physicist"],
-    'Elysium': [
-      "Celebrity",
-      "Industrialist",
-      "Desert Settler",
-      "Estate Dealer",
-      "Benefactor",
-    ],
-    'Hellas': ["Cultivator", "Magnate", "Space Baron", "Excentric", "Contractor"],
-    'Terra Cimmeria': ["Electrician", "Founder", "Mogul", "Zoologist", "Forecaster"],
-    'Tharsis': ["Landlord", "Scientist", "Banker", "Thermalist", "Miner"],
-    'Utopia Planitia': ["Suburbian", "Investor", "Botanist", "Incorporator", "Metropolist"],
-    'Vastitas Borealis': ["Traveller", "Landscaper", "Highlander", "Promoter", "Blacksmith"],
-    'Venus': ["Venuphile"],
-  },
-  additionalAwards: [
-    "Administrator",
-    "Banker",
-    "Benefactor",
-    "Biologist",
-    "Botanist",
-    "Celebrity",
-    "Collector",
-    "Constructor",
-    "Contractor",
-    "Cultivator",
-    "Electrician",
-    "Estate Dealer",
-    "Excentric",
-    "Forecaster",
-    "Founder",
-    "Highlander",
-    "Industrialist",
-    "Incorporator",
-    "Investor",
-    "Landlord",
-    "Landscaper",
-    "Magnate",
-    "Manufacturer",
-    "Metropolist",
-    "Miner",
-    "Mogul",
-    "Politician",
-    "Promoter",
-    "Scientist",
-    "Space Baron",
-    "Suburbian",
-    "Thermalist",
-    "Traveller",
-    "Visionary",
-    "Zoologist",
-  ],
-};
+);
 
 function AddGamePage() {
   const navigate = useNavigate();
@@ -519,22 +384,22 @@ function AddGamePage() {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [map, setMap] = useState("Tharsis");
-  const [generations, setGenerations] = useState(1);
-  const [playerNumber, setPlayerNumber] = useState(4);
+  const [generations, setGenerations] = useState(GAME_CONSTANTS.DEFAULT_GENERATIONS);
+  const [playerNumber, setPlayerNumber] = useState(GAME_CONSTANTS.DEFAULT_PLAYER_COUNT);
   const [players, setPlayers] = useState([]);
 
   // Expansions
   const [expansions, setExpansions] = useState({
     "Base Game": true,
-    "Draft": true,
+    Draft: true,
     "Corporate Era": true,
-    "Prelude": true,
+    Prelude: true,
     "Prelude 2": true,
     "Venus Next": false,
-    "Colonies": false,
-    "Turmoil": false,
+    Colonies: false,
+    Turmoil: false,
     "Milestones & Awards": false,
-    "Promo": false,
+    Promo: false,
   });
   const [expandedExpansions, setExpandedExpansions] = useState(false);
 
@@ -547,7 +412,6 @@ function AddGamePage() {
   const [awardPlacements, setAwardPlacements] = useState({});
   // When Milestones & Awards expansion is enabled, track which awards are selected
   const [selectedAwards, setSelectedAwards] = useState([]);
-
 
   // Points
   const [playerScores, setPlayerScores] = useState([]);
@@ -573,8 +437,8 @@ function AddGamePage() {
     setPlayers(newPlayers);
   }, [playerNumber]);
 
-  // Calculate max players based on map
-  const maxPlayers = (map === "Amazonis Planitia" || map === "Vastitas Borealis") ? 6 : 5;
+  // Get max players from map data
+  const maxPlayers = gameData.maps[map]?.maxPlayers || GAME_CONSTANTS.DEFAULT_MAX_PLAYERS;
 
   // Adjust player count when map changes
   useEffect(() => {
@@ -604,9 +468,9 @@ function AddGamePage() {
   // Initialize milestones when map or expansions change
   useEffect(() => {
     if (expansions["Milestones & Awards"]) {
-      // When Milestones & Awards is enabled, show 5 slots (or 6 with Venus Next)
+      // When Milestones & Awards is enabled, show slots based on Venus Next expansion
       const mapMilestones = gameData.milestones[map] || [];
-      const numSlots = expansions["Venus Next"] ? 6 : 5;
+      const numSlots = expansions["Venus Next"] ? GAME_CONSTANTS.VENUS_MILESTONE_SLOTS : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS;
 
       // Initialize with the first milestones from the map
       const defaultMilestones = [...mapMilestones];
@@ -619,7 +483,7 @@ function AddGamePage() {
       // When Milestones & Awards is disabled, use standard milestones for the map
       const availableMilestones = getAvailableMilestones();
       const newMilestoneWinners = {};
-      availableMilestones.forEach(milestone => {
+      availableMilestones.forEach((milestone) => {
         newMilestoneWinners[milestone] = milestoneWinners[milestone] ?? -1;
       });
       setMilestoneWinners(newMilestoneWinners);
@@ -630,9 +494,9 @@ function AddGamePage() {
   // Initialize awards when map or expansions change
   useEffect(() => {
     if (expansions["Milestones & Awards"]) {
-      // When Milestones & Awards is enabled, show 5 slots (or 6 with Venus Next)
+      // When Milestones & Awards is enabled, show slots based on Venus Next expansion
       const mapAwards = gameData.awards[map] || [];
-      const numSlots = expansions["Venus Next"] ? 6 : 5;
+      const numSlots = expansions["Venus Next"] ? GAME_CONSTANTS.VENUS_AWARD_SLOTS : GAME_CONSTANTS.DEFAULT_AWARD_SLOTS;
 
       // Initialize with the first awards from the map
       const defaultAwards = [...mapAwards];
@@ -645,7 +509,7 @@ function AddGamePage() {
       // When Milestones & Awards is disabled, use standard awards for the map
       const availableAwards = getAvailableAwards();
       const newAwardPlacements = {};
-      availableAwards.forEach(award => {
+      availableAwards.forEach((award) => {
         newAwardPlacements[award] = awardPlacements[award] || {};
         // Initialize all players to 0 (no medal) for this award
         for (let i = 0; i < playerNumber; i++) {
@@ -658,7 +522,7 @@ function AddGamePage() {
   }, [map, expansions["Milestones & Awards"], expansions["Venus Next"]]);
 
   const updatePlayerData = React.useCallback((index, field, value) => {
-    setPlayers(prevPlayers => {
+    setPlayers((prevPlayers) => {
       const newPlayers = [...prevPlayers];
       newPlayers[index][field] = value;
       return newPlayers;
@@ -677,7 +541,7 @@ function AddGamePage() {
       if (isSelected && gameData.corporationsByExpansion[expansion]) {
         availableCorporations = [
           ...availableCorporations,
-          ...gameData.corporationsByExpansion[expansion]
+          ...gameData.corporationsByExpansion[expansion],
         ];
       }
     });
@@ -707,21 +571,27 @@ function AddGamePage() {
 
   const updateMilestoneWinner = (milestone, playerIndex) => {
     // Count how many milestones are currently selected
-    const currentlySelected = Object.values(milestoneWinners).filter(idx => idx !== -1).length;
+    const currentlySelected = Object.values(milestoneWinners).filter(
+      (idx) => idx !== -1,
+    ).length;
 
-    // If trying to select a new milestone and already have 3, don't allow
-    if (playerIndex !== -1 && milestoneWinners[milestone] === -1 && currentlySelected >= 3) {
+    // If trying to select a new milestone and already have max claimed, don't allow
+    if (
+      playerIndex !== -1 &&
+      milestoneWinners[milestone] === -1 &&
+      currentlySelected >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED
+    ) {
       return;
     }
 
     setMilestoneWinners({
       ...milestoneWinners,
-      [milestone]: playerIndex
+      [milestone]: playerIndex,
     });
   };
 
   const getSelectedMilestonesCount = () => {
-    return Object.values(milestoneWinners).filter(idx => idx !== -1).length;
+    return Object.values(milestoneWinners).filter((idx) => idx !== -1).length;
   };
 
   const updateSelectedMilestone = (index, newMilestone) => {
@@ -746,8 +616,8 @@ function AddGamePage() {
     // Get all available milestones
     const allMilestones = getAvailableMilestones();
     // Filter out milestones that are already selected (except the current one)
-    return allMilestones.filter(m =>
-      m === currentMilestone || !selectedMilestones.includes(m)
+    return allMilestones.filter(
+      (m) => m === currentMilestone || !selectedMilestones.includes(m),
     );
   };
 
@@ -758,22 +628,21 @@ function AddGamePage() {
     }
     if (expansions["Milestones & Awards"]) {
       // When Milestones & Awards expansion is enabled, add additional awards to choose from
-      availableAwards = [
-        ...availableAwards,
-        ...gameData.additionalAwards,
-      ];
+      availableAwards = [...availableAwards, ...gameData.additionalAwards];
     }
     // Remove duplicates
     return [...new Set(availableAwards)];
   };
 
   const cyclePlacement = (award, playerIndex) => {
-    // Check if this award has any placements, if not and we already have 3 funded awards, don't allow
-    const currentAwardHasPlacements = awardPlacements[award] && Object.values(awardPlacements[award]).some(placement => placement > 0);
+    // Check if this award has any placements, if not and we already have max funded awards, don't allow
+    const currentAwardHasPlacements =
+      awardPlacements[award] &&
+      Object.values(awardPlacements[award]).some((placement) => placement > 0);
     const fundedAwardsCount = getFundedAwardsCount();
 
-    if (!currentAwardHasPlacements && fundedAwardsCount >= 3) {
-      return; // Can't add new award if already have 3 funded
+    if (!currentAwardHasPlacements && fundedAwardsCount >= GAME_CONSTANTS.MAX_AWARDS_FUNDED) {
+      return; // Can't add new award if already have max funded
     }
 
     const newPlacements = { ...awardPlacements };
@@ -781,21 +650,29 @@ function AddGamePage() {
       newPlacements[award] = {};
     }
 
-    const currentPlacement = newPlacements[award][playerIndex] || 0;
-    // Cycle: 0 (none) -> 1 (gold) -> 2 (silver) -> 0 (none)
-    newPlacements[award][playerIndex] = (currentPlacement + 1) % 3;
+    const currentPlacement = newPlacements[award][playerIndex] || GAME_CONSTANTS.AWARD_PLACEMENT.NONE;
+    // Cycle through placements: none -> gold -> silver -> none
+    const placementCount = Object.keys(GAME_CONSTANTS.AWARD_PLACEMENT).length;
+    newPlacements[award][playerIndex] = (currentPlacement + 1) % placementCount;
 
     setAwardPlacements(newPlacements);
   };
 
   const getFundedAwardsCount = () => {
-    return Object.keys(awardPlacements).filter(award =>
-      awardPlacements[award] && Object.values(awardPlacements[award]).some(placement => placement > 0)
+    return Object.keys(awardPlacements).filter(
+      (award) =>
+        awardPlacements[award] &&
+        Object.values(awardPlacements[award]).some(
+          (placement) => placement > 0,
+        ),
     ).length;
   };
 
   const isAwardFunded = (award) => {
-    return awardPlacements[award] && Object.values(awardPlacements[award]).some(placement => placement > 0);
+    return (
+      awardPlacements[award] &&
+      Object.values(awardPlacements[award]).some((placement) => placement > 0)
+    );
   };
 
   const updateSelectedAward = (index, newAward) => {
@@ -824,11 +701,10 @@ function AddGamePage() {
     // Get all available awards
     const allAwards = getAvailableAwards();
     // Filter out awards that are already selected (except the current one)
-    return allAwards.filter(a =>
-      a === currentAward || !selectedAwards.includes(a)
+    return allAwards.filter(
+      (a) => a === currentAward || !selectedAwards.includes(a),
     );
   };
-
 
   const updatePlayerScore = (playerIndex, field, value) => {
     setPlayerScores((currentScores) => {
@@ -865,24 +741,24 @@ function AddGamePage() {
       let milestonePoints = 0;
       Object.values(milestoneWinners).forEach((winnerIndex) => {
         if (winnerIndex === playerIndex) {
-          milestonePoints += 5;
+          milestonePoints += GAME_CONSTANTS.MILESTONE_POINTS;
         }
       });
 
-      // Calculate award points - gold = 5 points, silver = 2 points
+      // Calculate award points based on placement
       let awardPoints = 0;
       Object.keys(awardPlacements).forEach((award) => {
         const placement = awardPlacements[award]?.[playerIndex];
-        if (placement === 1) { // Gold
-          awardPoints += 5;
-        } else if (placement === 2) { // Silver
-          awardPoints += 2;
+        if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD) {
+          awardPoints += GAME_CONSTANTS.AWARD_POINTS.GOLD;
+        } else if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER) {
+          awardPoints += GAME_CONSTANTS.AWARD_POINTS.SILVER;
         }
       });
 
       // Calculate total points
       const terraformingRating = parseInt(score.terraformingRating || 0);
-      const cities = parseInt(score.cities || 0) * 2;
+      const cities = parseInt(score.cities || 0);
       const greeneries = parseInt(score.greeneries || 0);
       const cards = parseInt(score.cards || 0);
       const turmoilPoints = parseInt(score.turmoilPoints || 0);
@@ -941,7 +817,7 @@ function AddGamePage() {
               value={map}
               onChange={(e) => setMap(e.target.value)}
             >
-              {gameData.maps.map((m) => (
+              {Object.keys(gameData.maps).map((m) => (
                 <option key={m} value={m}>
                   {m}
                 </option>
@@ -955,10 +831,10 @@ function AddGamePage() {
               value={generations}
               onChange={(e) => {
                 const val = parseInt(e.target.value) || 0;
-                setGenerations(Math.min(20, Math.max(0, val)));
+                setGenerations(Math.min(GAME_CONSTANTS.MAX_GENERATIONS, Math.max(GAME_CONSTANTS.MIN_GENERATIONS, val)));
               }}
-              onDecrement={() => setGenerations(Math.max(0, generations - 1))}
-              onIncrement={() => setGenerations(Math.min(20, generations + 1))}
+              onDecrement={() => setGenerations(Math.max(GAME_CONSTANTS.MIN_GENERATIONS, generations - 1))}
+              onIncrement={() => setGenerations(Math.min(GAME_CONSTANTS.MAX_GENERATIONS, generations + 1))}
             />
           </SubContainerElement>
 
@@ -968,30 +844,39 @@ function AddGamePage() {
               value={playerNumber}
               onChange={(e) =>
                 setPlayerNumber(
-                  Math.min(maxPlayers, Math.max(1, parseInt(e.target.value) || 1)),
+                  Math.min(
+                    maxPlayers,
+                    Math.max(GAME_CONSTANTS.MIN_PLAYERS, parseInt(e.target.value) || GAME_CONSTANTS.MIN_PLAYERS),
+                  ),
                 )
               }
-              onDecrement={() => setPlayerNumber(Math.max(1, playerNumber - 1))}
-              onIncrement={() => setPlayerNumber(Math.min(maxPlayers, playerNumber + 1))}
+              onDecrement={() => setPlayerNumber(Math.max(GAME_CONSTANTS.MIN_PLAYERS, playerNumber - 1))}
+              onIncrement={() =>
+                setPlayerNumber(Math.min(maxPlayers, playerNumber + 1))
+              }
             />
           </SubContainerElement>
 
           <SubContainerElement>
             <div style={formStyles.subcontainerBox}>
-              <div style={{
-                display: "flex",
-                alignItems: "flex-start",
-                padding: "15px",
-                gap: "15px"
-              }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  padding: "15px",
+                  gap: "15px",
+                }}
+              >
                 {/* Content container - shared by both bar and list */}
                 <div style={{ flex: 1 }}>
                   {!expandedExpansions && (
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between"
-                    }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
                       {Object.entries(expansions).map(([key, value]) => (
                         <ExpansionIcon
                           key={key}
@@ -1008,12 +893,14 @@ function AddGamePage() {
                   )}
 
                   {expandedExpansions && (
-                    <div style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                      margin: "5px"
-                    }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                        margin: "5px",
+                      }}
+                    >
                       {Object.entries(expansions).map(([key, value]) => (
                         <ExpansionIcon
                           key={key + "_expanded"}
@@ -1031,11 +918,13 @@ function AddGamePage() {
                 </div>
 
                 {/* Expand/Collapse button container */}
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  margin: "5px"
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    margin: "5px",
+                  }}
+                >
                   <div
                     style={{
                       ...formStyles.expansionIconStyle,
@@ -1065,7 +954,9 @@ function AddGamePage() {
               player={player}
               corporations={getAvailableCorporations()}
               onUpdate={updatePlayerData}
-              selectedCorporations={players.map(p => p.corporation).filter(corp => corp !== "")}
+              selectedCorporations={players
+                .map((p) => p.corporation)
+                .filter((corp) => corp !== "")}
             />
           ))}
         </SubContainer>
@@ -1073,24 +964,31 @@ function AddGamePage() {
 
       <Container title="Milestones" titleStyle="banner">
         <SubContainer>
-          {(expansions["Milestones & Awards"] ? selectedMilestones : getAvailableMilestones()).map((milestone, index) => (
+          {(expansions["Milestones & Awards"]
+            ? selectedMilestones
+            : getAvailableMilestones()
+          ).map((milestone, index) => (
             <div
               key={index}
               style={{
-                ...formStyles.playerInputDiv
+                ...formStyles.playerInputDiv,
               }}
             >
               {expansions["Milestones & Awards"] ? (
                 <select
                   style={{
-                    ...formStyles.containerInput
+                    ...formStyles.containerInput,
                   }}
                   value={milestone || ""}
-                  onChange={(e) => updateSelectedMilestone(index, e.target.value)}
+                  onChange={(e) =>
+                    updateSelectedMilestone(index, e.target.value)
+                  }
                 >
                   {!milestone && <option value="">Select Milestone</option>}
-                  {getAvailableMilestonesForDropdown(milestone).map(m => (
-                    <option key={m} value={m}>{m}</option>
+                  {getAvailableMilestonesForDropdown(milestone).map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -1105,7 +1003,7 @@ function AddGamePage() {
 
               <select
                 style={{
-                  ...formStyles.containerInput
+                  ...formStyles.containerInput,
                 }}
                 value={milestoneWinners[milestone] ?? -1}
                 onChange={(e) =>
@@ -1114,7 +1012,7 @@ function AddGamePage() {
                 disabled={
                   !milestone ||
                   (milestoneWinners[milestone] === -1 &&
-                    getSelectedMilestonesCount() >= 3)
+                    getSelectedMilestonesCount() >= GAME_CONSTANTS.MAX_MILESTONES_CLAIMED)
                 }
               >
                 <option value={-1}>Not achieved</option>
@@ -1137,18 +1035,20 @@ function AddGamePage() {
               ...formStyles.playerInputDiv,
               marginBottom: "15px",
               borderBottom: "2px solid #999",
-              paddingBottom: "10px"
+              paddingBottom: "10px",
             }}
           >
             <div style={{ width: "28%" }}>
               {/* Empty space for alignment */}
             </div>
-            <div style={{
-              display: "flex",
-              gap: "5px",
-              width: "68%",
-              justifyContent: "space-around"
-            }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "5px",
+                width: "68%",
+                justifyContent: "space-around",
+              }}
+            >
               {players.map((player, playerIndex) => (
                 <div
                   key={playerIndex}
@@ -1156,7 +1056,7 @@ function AddGamePage() {
                     fontSize: "1.2rem",
                     fontWeight: "bold",
                     textAlign: "center",
-                    flex: 1
+                    flex: 1,
                   }}
                 >
                   {player.name || `P${playerIndex + 1}`}
@@ -1165,45 +1065,52 @@ function AddGamePage() {
             </div>
           </div>
 
-          {(expansions["Milestones & Awards"] ? selectedAwards : getAvailableAwards()).map((award, index) => (
+          {(expansions["Milestones & Awards"]
+            ? selectedAwards
+            : getAvailableAwards()
+          ).map((award, index) => (
             <div
               key={index}
               style={{
                 ...formStyles.playerInputDiv,
-                marginBottom: "10px"
+                marginBottom: "10px",
               }}
             >
               {expansions["Milestones & Awards"] ? (
                 <select
                   style={{
                     ...formStyles.containerInput,
-                    width: "28%"
+                    width: "28%",
                   }}
                   value={award || ""}
                   onChange={(e) => updateSelectedAward(index, e.target.value)}
                 >
                   {!award && <option value="">Select Award</option>}
-                  {getAvailableAwardsForDropdown(award).map(a => (
-                    <option key={a} value={a}>{a}</option>
+                  {getAvailableAwardsForDropdown(award).map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
                   ))}
                 </select>
               ) : (
                 <div
                   style={{
                     ...formStyles.milestoneLabel,
-                    width: "28%"
+                    width: "28%",
                   }}
                 >
                   {award}
                 </div>
               )}
 
-              <div style={{
-                display: "flex",
-                gap: "5px",
-                width: "68%",
-                justifyContent: "space-around"
-              }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "5px",
+                  width: "68%",
+                  justifyContent: "space-around",
+                }}
+              >
                 {players.map((player, playerIndex) => (
                   <AwardButton
                     key={playerIndex}
@@ -1221,7 +1128,6 @@ function AddGamePage() {
         </SubContainer>
       </Container>
 
-
       <Container title="Points" titleStyle="banner">
         <SubContainer>
           {/* Player names header */}
@@ -1230,18 +1136,20 @@ function AddGamePage() {
               ...formStyles.playerInputDiv,
               marginBottom: "15px",
               borderBottom: "2px solid #999",
-              paddingBottom: "10px"
+              paddingBottom: "10px",
             }}
           >
             <div style={{ width: "28%" }}>
               {/* Empty space for alignment */}
             </div>
-            <div style={{
-              display: "flex",
-              gap: "5px",
-              width: "68%",
-              justifyContent: "space-around"
-            }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "5px",
+                width: "68%",
+                justifyContent: "space-around",
+              }}
+            >
               {players.map((player, playerIndex) => (
                 <div
                   key={playerIndex}
@@ -1249,7 +1157,7 @@ function AddGamePage() {
                     fontSize: "1.2rem",
                     fontWeight: "bold",
                     textAlign: "center",
-                    flex: 1
+                    flex: 1,
                   }}
                 >
                   {player.name || `P${playerIndex + 1}`}
@@ -1264,7 +1172,7 @@ function AddGamePage() {
             playerScores={playerScores}
             field="terraformingRating"
             onChange={updatePlayerScore}
-            placeholder="20"
+            placeholder={GAME_CONSTANTS.DEFAULT_TR.toString()}
           />
           <PointInput
             label="Cities"
@@ -1297,7 +1205,13 @@ function AddGamePage() {
             />
           )}
 
-          <div style={{ borderTop: "2px solid #999", margin: "15px 0", paddingTop: "15px" }}>
+          <div
+            style={{
+              borderTop: "2px solid #999",
+              margin: "15px 0",
+              paddingTop: "15px",
+            }}
+          >
             <PointInput
               label="Milestones"
               players={players}
@@ -1314,7 +1228,13 @@ function AddGamePage() {
             />
           </div>
 
-          <div style={{ borderTop: "3px solid #000", marginTop: "15px", paddingTop: "15px" }}>
+          <div
+            style={{
+              borderTop: "3px solid #000",
+              marginTop: "15px",
+              paddingTop: "15px",
+            }}
+          >
             <PointInput
               label="Total"
               players={players}
