@@ -2,22 +2,14 @@ package database
 
 import (
 	"database/sql"
-	"os"
-	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func Init() (*sql.DB, error) {
-	// Create data directory if it doesn't exist
-	dataDir := "data"
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		return nil, err
-	}
-
-	// Open SQLite database
-	dbPath := filepath.Join(dataDir, "terraforming_mars.db")
-	db, err := sql.Open("sqlite3", dbPath)
+func Init(connectionString string) (*sql.DB, error) {
+	// Open SQLite database with provided connection string
+	// Can be ":memory:" for in-memory, or a file path
+	db, err := sql.Open("sqlite3", connectionString)
 	if err != nil {
 		return nil, err
 	}
@@ -25,6 +17,18 @@ func Init() (*sql.DB, error) {
 	// Test connection
 	if err := db.Ping(); err != nil {
 		return nil, err
+	}
+
+	// Enable foreign keys
+	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, err
+	}
+
+	// Set WAL mode (except for in-memory databases)
+	if connectionString != ":memory:" {
+		if _, err := db.Exec("PRAGMA journal_mode = WAL"); err != nil {
+			return nil, err
+		}
 	}
 
 	// Run migrations
@@ -37,83 +41,90 @@ func Init() (*sql.DB, error) {
 
 func migrate(db *sql.DB) error {
 	queries := []string{
-		// Players table (simple, additive only)
-		`CREATE TABLE IF NOT EXISTS players (
+		// Player table (simple, additive only)
+		`CREATE TABLE IF NOT EXISTS player (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL UNIQUE,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)`,
+			password_hash TEXT,
+			role TEXT NOT NULL DEFAULT 'player' CHECK (role IN ('admin', 'user', 'player')),
+			created_by INTEGER,
+			created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (created_by) REFERENCES player(id) ON DELETE SET NULL
+		) STRICT`,
 
-		// Games table with revision system
-		`CREATE TABLE IF NOT EXISTS games (
+		// Game table with revision system
+		`CREATE TABLE IF NOT EXISTS game (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			game_uuid TEXT NOT NULL, -- groups all revisions of the same game
+			game_uuid TEXT NOT NULL,
 			revision INTEGER NOT NULL DEFAULT 1,
 			name TEXT NOT NULL,
-			date DATE NOT NULL,
+			date TEXT NOT NULL,
 			map TEXT NOT NULL,
 			generations INTEGER NOT NULL,
-			expansions TEXT NOT NULL, -- JSON
-			is_latest BOOLEAN DEFAULT TRUE,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)`,
+			expansions TEXT NOT NULL,
+			is_latest INTEGER NOT NULL DEFAULT TRUE CHECK (is_latest IN (TRUE, FALSE)),
+			created_by INTEGER NOT NULL,
+			created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (created_by) REFERENCES player(id) ON DELETE CASCADE
+		) STRICT`,
 
-		// Game players table (linked to specific game revision)
-		`CREATE TABLE IF NOT EXISTS game_players (
+		// Game player table (linked to specific game revision)
+		`CREATE TABLE IF NOT EXISTS game_player (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			game_id INTEGER NOT NULL, -- references specific games.id revision
+			game_id INTEGER NOT NULL,
 			player_id INTEGER NOT NULL,
 			corporation TEXT NOT NULL,
-			terraforming_rating INTEGER DEFAULT 0,
-			cities INTEGER DEFAULT 0,
-			greeneries INTEGER DEFAULT 0,
-			cards INTEGER DEFAULT 0,
-			turmoil_points INTEGER DEFAULT 0,
-			milestone_points INTEGER DEFAULT 0,
-			award_points INTEGER DEFAULT 0,
-			total_points INTEGER DEFAULT 0,
-			FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
-			FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
-		)`,
+			terraforming_rating INTEGER NOT NULL DEFAULT 0,
+			cities INTEGER NOT NULL DEFAULT 0,
+			greeneries INTEGER NOT NULL DEFAULT 0,
+			cards INTEGER NOT NULL DEFAULT 0,
+			turmoil_points INTEGER NOT NULL DEFAULT 0,
+			milestone_points INTEGER NOT NULL DEFAULT 0,
+			award_points INTEGER NOT NULL DEFAULT 0,
+			total_points INTEGER NOT NULL DEFAULT 0,
+			FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE,
+			FOREIGN KEY (player_id) REFERENCES player(id) ON DELETE CASCADE
+		) STRICT`,
 
-		// Milestones table (linked to specific game revision)
-		`CREATE TABLE IF NOT EXISTS milestones (
+		// Milestone table (linked to specific game revision)
+		`CREATE TABLE IF NOT EXISTS milestone (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			game_id INTEGER NOT NULL,
 			name TEXT NOT NULL,
-			winner_game_player_id INTEGER NULL, -- references game_players.id
-			FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
-			FOREIGN KEY (winner_game_player_id) REFERENCES game_players(id) ON DELETE SET NULL
-		)`,
+			winner_game_player_id INTEGER,
+			FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE,
+			FOREIGN KEY (winner_game_player_id) REFERENCES game_player(id) ON DELETE SET NULL
+		) STRICT`,
 
-		// Awards table (linked to specific game revision)
-		`CREATE TABLE IF NOT EXISTS awards (
+		// Award table (linked to specific game revision)
+		`CREATE TABLE IF NOT EXISTS award (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			game_id INTEGER NOT NULL,
 			name TEXT NOT NULL,
-			FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
-		)`,
+			FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE
+		) STRICT`,
 
-		// Award placements table (linked to specific game revision)
-		`CREATE TABLE IF NOT EXISTS award_placements (
+		// Award placement table (linked to specific game revision)
+		`CREATE TABLE IF NOT EXISTS award_placement (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			award_id INTEGER NOT NULL,
 			game_player_id INTEGER NOT NULL,
-			placement INTEGER NOT NULL, -- 0=none, 1=gold, 2=silver
-			FOREIGN KEY (award_id) REFERENCES awards(id) ON DELETE CASCADE,
-			FOREIGN KEY (game_player_id) REFERENCES game_players(id) ON DELETE CASCADE
-		)`,
+			placement INTEGER NOT NULL CHECK (placement IN (1, 2)),
+			FOREIGN KEY (award_id) REFERENCES award(id) ON DELETE CASCADE,
+			FOREIGN KEY (game_player_id) REFERENCES game_player(id) ON DELETE CASCADE
+		) STRICT`,
 
 		// Create indexes for better performance
-		`CREATE INDEX IF NOT EXISTS idx_games_uuid ON games(game_uuid)`,
-		`CREATE INDEX IF NOT EXISTS idx_games_is_latest ON games(is_latest)`,
-		`CREATE INDEX IF NOT EXISTS idx_games_uuid_revision ON games(game_uuid, revision)`,
-		`CREATE INDEX IF NOT EXISTS idx_game_players_game_id ON game_players(game_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_game_players_player_id ON game_players(player_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_milestones_game_id ON milestones(game_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_awards_game_id ON awards(game_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_award_placements_award_id ON award_placements(award_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_games_date ON games(date)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_uuid ON game(game_uuid)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_is_latest ON game(is_latest)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_uuid_revision ON game(game_uuid, revision)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_player_game_id ON game_player(game_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_player_player_id ON game_player(player_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_milestone_game_id ON milestone(game_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_award_game_id ON award(game_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_award_placement_award_id ON award_placement(award_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_date ON game(date)`,
 	}
 
 	for _, query := range queries {

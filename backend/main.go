@@ -12,8 +12,8 @@ import (
 )
 
 func main() {
-	// Initialize database
-	db, err := database.Init()
+	// Initialize database with file path
+	db, err := database.Init("data/terraforming_mars.db")
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}

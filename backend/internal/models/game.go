@@ -4,25 +4,38 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"time"
 )
 
 type Game struct {
-	ID        int       `json:"id" db:"id"`
-	GameUUID  string    `json:"game_uuid" db:"game_uuid"`
-	Revision  int       `json:"revision" db:"revision"`
-	Name      string    `json:"name" db:"name"`
-	Date      time.Time `json:"date" db:"date"`
-	Map       string    `json:"map" db:"map"`
-	Generations int     `json:"generations" db:"generations"`
+	ID          int        `json:"id" db:"id"`
+	GameUUID    string     `json:"game_uuid" db:"game_uuid"`
+	Revision    int        `json:"revision" db:"revision"`
+	Name        string     `json:"name" db:"name"`
+	Date        string     `json:"date" db:"date"` // ISO date string YYYY-MM-DD
+	Map         string     `json:"map" db:"map"`
+	Generations int        `json:"generations" db:"generations"`
 	Expansions  Expansions `json:"expansions" db:"expansions"`
-	IsLatest    bool      `json:"is_latest" db:"is_latest"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	IsLatest    bool       `json:"is_latest" db:"is_latest"`
+	CreatedBy   int        `json:"created_by" db:"created_by"`
+	CreatedAt   string     `json:"created_at" db:"created_at"` // ISO datetime string
 }
 
+type PlayerRole string
+
+const (
+	RoleAdmin  PlayerRole = "admin"
+	RoleUser   PlayerRole = "user" 
+	RolePlayer PlayerRole = "player"
+)
+
 type Player struct {
-	ID   int    `json:"id" db:"id"`
-	Name string `json:"name" db:"name"`
+	ID           int         `json:"id" db:"id"`
+	Name         string      `json:"name" db:"name"`
+	PasswordHash *string     `json:"-" db:"password_hash"` // Never return in JSON
+	Role         PlayerRole  `json:"role" db:"role"`
+	CreatedBy    *int        `json:"created_by" db:"created_by"` // Foreign key to player.id
+	CreatedAt    string      `json:"created_at" db:"created_at"` // ISO datetime string
+	UpdatedAt    string      `json:"updated_at" db:"updated_at"` // ISO datetime string
 }
 
 type GamePlayer struct {
@@ -41,10 +54,10 @@ type GamePlayer struct {
 }
 
 type Milestone struct {
-	ID                  int    `json:"id" db:"id"`
-	GameID              int    `json:"game_id" db:"game_id"`
-	Name                string `json:"name" db:"name"`
-	WinnerGamePlayerID  *int   `json:"winner_game_player_id" db:"winner_game_player_id"` // references GamePlayer.ID
+	ID                 int    `json:"id" db:"id"`
+	GameID             int    `json:"game_id" db:"game_id"`
+	Name               string `json:"name" db:"name"`
+	WinnerGamePlayerID *int   `json:"winner_game_player_id" db:"winner_game_player_id"` // references GamePlayer.ID
 }
 
 type Award struct {
@@ -95,31 +108,45 @@ type GameWithDetails struct {
 	Placements  []AwardPlacement `json:"award_placements"`
 }
 
+// PlayerRequest represents a player in the create game request
+type PlayerRequest struct {
+	Name               string `json:"name"`
+	Corporation        string `json:"corporation"`
+	TerraformingRating int    `json:"terraforming_rating"`
+	Cities             int    `json:"cities"`
+	Greeneries         int    `json:"greeneries"`
+	Cards              int    `json:"cards"`
+	TurmoilPoints      int    `json:"turmoil_points"`
+}
+
+// MilestoneRequest represents a milestone in the create game request
+type MilestoneRequest struct {
+	Name                  string `json:"name"`
+	WinnerGamePlayerIndex *int   `json:"winner_game_player_index"` // Index in the Players array
+}
+
+// PlacementRequest represents an award placement
+type PlacementRequest struct {
+	PlayerIndex int `json:"player_index"`
+	Placement   int `json:"placement"`
+}
+
+// AwardRequest represents an award in the create game request
+type AwardRequest struct {
+	Name       string             `json:"name"`
+	Placements []PlacementRequest `json:"placements"`
+}
+
 // CreateGameRequest represents the request body for creating a game
 type CreateGameRequest struct {
-	Name        string     `json:"name"`
-	Date        string     `json:"date"` // Will be parsed to time.Time
-	Map         string     `json:"map"`
-	Generations int        `json:"generations"`
-	Expansions  Expansions `json:"expansions"`
-	Players     []struct {
-		Name               string `json:"name"`
-		Corporation        string `json:"corporation"`
-		TerraformingRating int    `json:"terraforming_rating"`
-		Cities             int    `json:"cities"`
-		Greeneries         int    `json:"greeneries"`
-		Cards              int    `json:"cards"`
-		TurmoilPoints      int    `json:"turmoil_points"`
-	} `json:"players"`
-	Milestones []struct {
-		Name                  string `json:"name"`
-		WinnerGamePlayerIndex *int   `json:"winner_game_player_index"` // Index in the Players array
-	} `json:"milestones"`
-	Awards []struct {
-		Name       string `json:"name"`
-		Placements []struct {
-			PlayerIndex int `json:"player_index"`
-			Placement   int `json:"placement"`
-		} `json:"placements"`
-	} `json:"awards"`
+	Name        string             `json:"name"`
+	Date        string             `json:"date"` // Will be parsed to time.Time
+	Map         string             `json:"map"`
+	Generations int                `json:"generations"`
+	Expansions  Expansions         `json:"expansions"`
+	Players     []PlayerRequest    `json:"players"`
+	Milestones  []MilestoneRequest `json:"milestones"`
+	Awards      []AwardRequest     `json:"awards"`
+	CreatedBy   int                `json:"created_by"`
 }
+
