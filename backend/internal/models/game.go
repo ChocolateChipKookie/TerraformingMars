@@ -7,15 +7,14 @@ import (
 )
 
 type Game struct {
-	ID          int        `json:"id" db:"id"`
-	GameUUID    string     `json:"game_uuid" db:"game_uuid"`
+	ID          int        `json:"-" db:"id"`                   // Internal auto-increment primary key
+	GameID      int        `json:"id" db:"game_id"`             // User-facing stable game ID
 	Revision    int        `json:"revision" db:"revision"`
 	Name        string     `json:"name" db:"name"`
 	Date        string     `json:"date" db:"date"` // ISO date string YYYY-MM-DD
 	Map         string     `json:"map" db:"map"`
 	Generations int        `json:"generations" db:"generations"`
 	Expansions  Expansions `json:"expansions" db:"expansions"`
-	IsLatest    bool       `json:"is_latest" db:"is_latest"`
 	CreatedBy   int        `json:"created_by" db:"created_by"`
 	CreatedAt   string     `json:"created_at" db:"created_at"` // ISO datetime string
 }
@@ -27,6 +26,19 @@ const (
 	RoleUser   PlayerRole = "user" 
 	RolePlayer PlayerRole = "player"
 )
+
+// Placement represents the placement in an award (1st or 2nd place)
+type Placement int
+
+const (
+	PlacementFirst  Placement = 1
+	PlacementSecond Placement = 2
+)
+
+// IsValid checks if the placement value is valid
+func (p Placement) IsValid() bool {
+	return p == PlacementFirst || p == PlacementSecond
+}
 
 type Player struct {
 	ID           int         `json:"id" db:"id"`
@@ -67,10 +79,10 @@ type Award struct {
 }
 
 type AwardPlacement struct {
-	ID           int `json:"id" db:"id"`
-	AwardID      int `json:"award_id" db:"award_id"`
-	GamePlayerID int `json:"game_player_id" db:"game_player_id"`
-	Placement    int `json:"placement" db:"placement"` // 0=none, 1=gold, 2=silver
+	ID           int       `json:"id" db:"id"`
+	AwardID      int       `json:"award_id" db:"award_id"`
+	GamePlayerID int       `json:"game_player_id" db:"game_player_id"`
+	Placement    Placement `json:"placement" db:"placement"`
 }
 
 // Expansions type for JSON storage in SQLite
@@ -127,8 +139,8 @@ type MilestoneRequest struct {
 
 // PlacementRequest represents an award placement
 type PlacementRequest struct {
-	PlayerIndex int `json:"player_index"`
-	Placement   int `json:"placement"`
+	PlayerIndex int       `json:"player_index"`
+	Placement   Placement `json:"placement"`
 }
 
 // AwardRequest represents an award in the create game request

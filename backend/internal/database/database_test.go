@@ -174,21 +174,21 @@ func TestCreateGame(t *testing.T) {
 			{
 				Name: "Landlord",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 0, Placement: 1}, // Alice gets gold
-					{PlayerIndex: 1, Placement: 2}, // Bob gets silver
+					{PlayerIndex: 0, Placement: models.PlacementFirst}, // Alice gets first
+					{PlayerIndex: 1, Placement: models.PlacementSecond}, // Bob gets second
 				},
 			},
 			{
 				Name: "Banker",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 2, Placement: 1}, // Charlie gets gold
-					{PlayerIndex: 0, Placement: 2}, // Alice gets silver
+					{PlayerIndex: 2, Placement: models.PlacementFirst}, // Charlie gets first
+					{PlayerIndex: 0, Placement: models.PlacementSecond}, // Alice gets second
 				},
 			},
 			{
 				Name: "Scientist",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 1, Placement: 1}, // Bob gets gold
+					{PlayerIndex: 1, Placement: models.PlacementFirst}, // Bob gets first
 				},
 			},
 		},
@@ -216,9 +216,7 @@ func TestCreateGame(t *testing.T) {
 		t.Errorf("Expected revision 1, got %d", game.Game.Revision)
 	}
 	
-	if !game.Game.IsLatest {
-		t.Error("Expected game to be marked as latest")
-	}
+	// No need to check IsLatest anymore - we use MAX(revision) instead
 	
 	// Verify expansions
 	if !game.Game.Expansions["base"] {
@@ -512,7 +510,7 @@ func TestUpdateGame(t *testing.T) {
 			{
 				Name: "Landlord",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 0, Placement: 1},
+					{PlayerIndex: 0, Placement: models.PlacementFirst},
 				},
 			},
 		},
@@ -543,14 +541,14 @@ func TestUpdateGame(t *testing.T) {
 			{
 				Name: "Landlord",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 1, Placement: 1}, // Changed winner
-					{PlayerIndex: 0, Placement: 2}, // Alice now silver
+					{PlayerIndex: 1, Placement: models.PlacementFirst}, // Changed winner
+					{PlayerIndex: 0, Placement: models.PlacementSecond}, // Alice now second
 				},
 			},
 			{
 				Name: "Banker", // Added award
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 0, Placement: 1},
+					{PlayerIndex: 0, Placement: models.PlacementFirst},
 				},
 			},
 		},
@@ -561,14 +559,9 @@ func TestUpdateGame(t *testing.T) {
 		t.Fatalf("Failed to update game: %v", err)
 	}
 	
-	// Verify the updated game has a new ID (new revision)
-	if updatedGame.Game.ID == createdGame.Game.ID {
-		t.Error("Expected updated game to have a different ID (new revision)")
-	}
-	
-	// Verify the game UUID is the same
-	if updatedGame.Game.GameUUID != createdGame.Game.GameUUID {
-		t.Error("Expected updated game to have the same UUID")
+	// Verify the updated game has the same GameID across revisions
+	if updatedGame.Game.GameID != createdGame.Game.GameID {
+		t.Error("Expected updated game to have the same GameID across revisions")
 	}
 	
 	// Verify revision number increased
@@ -576,9 +569,9 @@ func TestUpdateGame(t *testing.T) {
 		t.Errorf("Expected revision 2, got %d", updatedGame.Game.Revision)
 	}
 	
-	// Verify the updated game is marked as latest
-	if !updatedGame.Game.IsLatest {
-		t.Error("Expected updated game to be marked as latest")
+	// Updated game should have revision 2
+	if updatedGame.Game.Revision != 2 {
+		t.Errorf("Expected updated game to have revision 2, got %d", updatedGame.Game.Revision)
 	}
 	
 	// Verify updated game details
@@ -651,23 +644,20 @@ func TestUpdateGame(t *testing.T) {
 		t.Errorf("Expected 2 awards, got %d", len(updatedGame.Awards))
 	}
 	
-	// Verify that the original game is no longer marked as latest
-	originalGame, err := repo.GetGameByID(createdGame.Game.ID)
+	// GetGameByID always returns the latest revision, so originalGame should be the updated one
+	latestGame, err := repo.GetGameByID(createdGame.Game.GameID)
 	if err != nil {
-		t.Fatalf("Failed to retrieve original game: %v", err)
+		t.Fatalf("Failed to retrieve latest game: %v", err)
 	}
 	
-	if originalGame.Game.IsLatest {
-		t.Error("Expected original game to no longer be marked as latest")
+	// The latest game should be the updated revision
+	if latestGame.Game.Revision != 2 {
+		t.Errorf("Expected latest game to have revision 2, got %d", latestGame.Game.Revision)
 	}
 	
-	// Verify both revisions exist with correct data
-	if originalGame.Game.Revision != 1 {
-		t.Errorf("Expected original game to have revision 1, got %d", originalGame.Game.Revision)
-	}
-	
-	if originalGame.Game.Generations != 10 {
-		t.Errorf("Expected original game to still have 10 generations, got %d", originalGame.Game.Generations)
+	// Verify the latest revision has the updated data
+	if latestGame.Game.Generations != 11 {
+		t.Errorf("Expected latest game to have 11 generations, got %d", latestGame.Game.Generations)
 	}
 }
 

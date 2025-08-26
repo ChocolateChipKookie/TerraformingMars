@@ -53,19 +53,27 @@ func migrate(db *sql.DB) error {
 			FOREIGN KEY (created_by) REFERENCES player(id) ON DELETE SET NULL
 		) STRICT`,
 
+		// Game ID sequence table
+		`CREATE TABLE IF NOT EXISTS game_sequence (
+			previous_game_id INTEGER PRIMARY KEY DEFAULT 0
+		) STRICT`,
+		
+		// Initialize game sequence if empty
+		`INSERT OR IGNORE INTO game_sequence (previous_game_id) VALUES (0)`,
+
 		// Game table with revision system
 		`CREATE TABLE IF NOT EXISTS game (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			game_uuid TEXT NOT NULL,
+			game_id INTEGER NOT NULL,
 			revision INTEGER NOT NULL DEFAULT 1,
 			name TEXT NOT NULL,
 			date TEXT NOT NULL,
 			map TEXT NOT NULL,
 			generations INTEGER NOT NULL,
 			expansions TEXT NOT NULL,
-			is_latest INTEGER NOT NULL DEFAULT TRUE CHECK (is_latest IN (TRUE, FALSE)),
 			created_by INTEGER NOT NULL,
 			created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE (game_id, revision),
 			FOREIGN KEY (created_by) REFERENCES player(id) ON DELETE CASCADE
 		) STRICT`,
 
@@ -116,9 +124,7 @@ func migrate(db *sql.DB) error {
 		) STRICT`,
 
 		// Create indexes for better performance
-		`CREATE INDEX IF NOT EXISTS idx_game_uuid ON game(game_uuid)`,
-		`CREATE INDEX IF NOT EXISTS idx_game_is_latest ON game(is_latest)`,
-		`CREATE INDEX IF NOT EXISTS idx_game_uuid_revision ON game(game_uuid, revision)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_game_id_revision ON game(game_id, revision)`,
 		`CREATE INDEX IF NOT EXISTS idx_game_player_game_id ON game_player(game_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_game_player_player_id ON game_player(player_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_milestone_game_id ON milestone(game_id)`,
