@@ -15,6 +15,7 @@ type Game struct {
 	Map         string     `json:"map" db:"map"`
 	Generations int        `json:"generations" db:"generations"`
 	Expansions  Expansions `json:"expansions" db:"expansions"`
+	Note        *string    `json:"note" db:"note"` // Optional text note
 	CreatedBy   int        `json:"created_by" db:"created_by"`
 	CreatedAt   string     `json:"created_at" db:"created_at"` // ISO datetime string
 }
@@ -85,6 +86,23 @@ type AwardPlacement struct {
 	Placement    Placement `json:"placement" db:"placement"`
 }
 
+type GameImage struct {
+	ID           int    `json:"id" db:"id"`
+	GameID       int    `json:"game_id" db:"game_id"`
+	ImageData    []byte `json:"image_data" db:"image_data"`
+	MimeType     string `json:"mime_type" db:"mime_type"`
+	DisplayOrder int    `json:"display_order" db:"display_order"`
+	UploadedAt   string `json:"uploaded_at" db:"uploaded_at"`
+}
+
+// GameImageMeta contains just the metadata for an image (without the actual data)
+type GameImageMeta struct {
+	ID           int    `json:"id" db:"id"`
+	DisplayOrder int    `json:"display_order" db:"display_order"`
+	MimeType     string `json:"mime_type" db:"mime_type"`
+	UploadedAt   string `json:"uploaded_at" db:"uploaded_at"`
+}
+
 // Expansions type for JSON storage in SQLite
 type Expansions map[string]bool
 
@@ -118,6 +136,7 @@ type GameWithDetails struct {
 	Milestones  []Milestone      `json:"milestones"`
 	Awards      []Award          `json:"awards"`
 	Placements  []AwardPlacement `json:"award_placements"`
+	Images      []GameImageMeta  `json:"images"`
 }
 
 // PlayerRequest represents a player in the create game request
@@ -149,6 +168,12 @@ type AwardRequest struct {
 	Placements []PlacementRequest `json:"placements"`
 }
 
+// ImageRequest represents an image in the create game request
+type ImageRequest struct {
+	ImageData []byte `json:"image_data"`
+	MimeType  string `json:"mime_type"`
+}
+
 // CreateGameRequest represents the request body for creating a game
 type CreateGameRequest struct {
 	Name        string             `json:"name"`
@@ -156,9 +181,11 @@ type CreateGameRequest struct {
 	Map         string             `json:"map"`
 	Generations int                `json:"generations"`
 	Expansions  Expansions         `json:"expansions"`
+	Note        *string            `json:"note"`
 	Players     []PlayerRequest    `json:"players"`
 	Milestones  []MilestoneRequest `json:"milestones"`
 	Awards      []AwardRequest     `json:"awards"`
+	Images      []ImageRequest     `json:"images"`
 	CreatedBy   int                `json:"created_by"`
 }
 

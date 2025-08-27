@@ -1,8 +1,14 @@
-Add image field to game, add note field.
 Migrate data from mega json to database.
 combine the backend and frontend.
 In frontend select users from dropdown.
 
-Add limited input option for entering game:
- - No milestones/awards just points
- - No expansions
+TODO:
+ - Add image field to game
+ - Add note field to game
+ - Combine backend and frontend
+ - In frontend users select the name from a dropdown
+ - Allow limited input option:
+  - Game name
+  - Date
+  - Players
+  - Scores

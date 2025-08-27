@@ -32,6 +32,9 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/games", h.createGame).Methods("POST")     // Create new game
 	router.HandleFunc("/games/{id}", h.getGame).Methods("GET")    // Get specific game
 	router.HandleFunc("/games/{id}", h.updateGame).Methods("PUT") // Update existing game (new revision)
+	
+	// Image routes
+	router.HandleFunc("/images/{id}", h.getImage).Methods("GET") // Get image data by image ID
 }
 
 // Helper function to send JSON responses

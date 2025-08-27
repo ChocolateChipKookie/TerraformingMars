@@ -290,3 +290,179 @@ func TestCreateGame(t *testing.T) {
 	})
 }
 
+func TestGameImages(t *testing.T) {
+	ctx := setupGameFixture(t)
+	
+	// Create sample image data
+	image1 := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A}
+	image2 := []byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10}
+	
+	// Create a game with images
+	gameReq := models.CreateGameRequest{
+		Name:        "Game with Images",
+		Date:        "2024-01-16",
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"base": true},
+		Players: []models.PlayerRequest{
+			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
+		},
+		Images: []models.ImageRequest{
+			{ImageData: image1, MimeType: "image/png"},
+			{ImageData: image2, MimeType: "image/jpeg"},
+		},
+	}
+	
+	req := AuthenticatedGameRequest{
+		CreateGameRequest: gameReq,
+		ActorName:         ctx.AdminName,
+		ActorPassword:     ctx.AdminPassword,
+	}
+	
+	// Create the game
+	body, _ := json.Marshal(req)
+	httpReq, _ := http.NewRequest("POST", "/games", bytes.NewBuffer(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	
+	rr := httptest.NewRecorder()
+	ctx.Handler.createGame(rr, httpReq)
+	
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("Failed to create game, status: %d, body: %s", rr.Code, rr.Body.String())
+	}
+	
+	var game models.GameWithDetails
+	json.NewDecoder(rr.Body).Decode(&game)
+	
+	// Verify image metadata is included in game response
+	if len(game.Images) != 2 {
+		t.Errorf("Expected 2 images in game response, got %d", len(game.Images))
+	}
+	
+	if game.Images[0].MimeType != "image/png" {
+		t.Errorf("Expected first image mime type 'image/png', got '%s'", game.Images[0].MimeType)
+	}
+	
+	if game.Images[1].MimeType != "image/jpeg" {
+		t.Errorf("Expected second image mime type 'image/jpeg', got '%s'", game.Images[1].MimeType)
+	}
+	
+	// Test GET /images/{id} for first image
+	t.Run("Get first image data", func(t *testing.T) {
+		req := httptest.NewRequest("GET", fmt.Sprintf("/images/%d", game.Images[0].ID), nil)
+		rr := httptest.NewRecorder()
+		
+		router := mux.NewRouter()
+		router.HandleFunc("/images/{id}", ctx.Handler.getImage).Methods("GET")
+		router.ServeHTTP(rr, req)
+		
+		if rr.Code != http.StatusOK {
+			t.Errorf("Expected status 200, got %d", rr.Code)
+		}
+		
+		if rr.Header().Get("Content-Type") != "image/png" {
+			t.Errorf("Expected Content-Type 'image/png', got '%s'", rr.Header().Get("Content-Type"))
+		}
+		
+		if rr.Header().Get("Cache-Control") != "public, max-age=3600" {
+			t.Errorf("Expected Cache-Control header")
+		}
+		
+		if !bytes.Equal(rr.Body.Bytes(), image1) {
+			t.Error("Response body doesn't match expected image data")
+		}
+	})
+	
+	// Test GET /images/{id} for second image
+	t.Run("Get second image data", func(t *testing.T) {
+		req := httptest.NewRequest("GET", fmt.Sprintf("/images/%d", game.Images[1].ID), nil)
+		rr := httptest.NewRecorder()
+		
+		router := mux.NewRouter()
+		router.HandleFunc("/images/{id}", ctx.Handler.getImage).Methods("GET")
+		router.ServeHTTP(rr, req)
+		
+		if rr.Code != http.StatusOK {
+			t.Errorf("Expected status 200, got %d", rr.Code)
+		}
+		
+		if rr.Header().Get("Content-Type") != "image/jpeg" {
+			t.Errorf("Expected Content-Type 'image/jpeg', got '%s'", rr.Header().Get("Content-Type"))
+		}
+		
+		if !bytes.Equal(rr.Body.Bytes(), image2) {
+			t.Error("Response body doesn't match expected image data")
+		}
+	})
+	
+	// Test non-existent image
+	t.Run("Get non-existent image data", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/images/99999", nil)
+		rr := httptest.NewRecorder()
+		
+		router := mux.NewRouter()
+		router.HandleFunc("/images/{id}", ctx.Handler.getImage).Methods("GET")
+		router.ServeHTTP(rr, req)
+		
+		if rr.Code != http.StatusNotFound {
+			t.Errorf("Expected status 404, got %d", rr.Code)
+		}
+	})
+	
+	// Test invalid image ID
+	t.Run("Get image with invalid ID", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/images/invalid", nil)
+		rr := httptest.NewRecorder()
+		
+		router := mux.NewRouter()
+		router.HandleFunc("/images/{id}", ctx.Handler.getImage).Methods("GET")
+		router.ServeHTTP(rr, req)
+		
+		if rr.Code != http.StatusBadRequest {
+			t.Errorf("Expected status 400, got %d", rr.Code)
+		}
+	})
+}
+
+func TestGameWithNote(t *testing.T) {
+	ctx := setupGameFixture(t)
+	
+	gameNote := "This was a great game!"
+	gameReq := models.CreateGameRequest{
+		Name:        "Game with Note",
+		Date:        "2024-01-16",
+		Map:         "Tharsis",
+		Generations: 10,
+		Note:        &gameNote,
+		Expansions:  models.Expansions{"base": true},
+		Players: []models.PlayerRequest{
+			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
+		},
+	}
+	
+	req := AuthenticatedGameRequest{
+		CreateGameRequest: gameReq,
+		ActorName:         ctx.AdminName,
+		ActorPassword:     ctx.AdminPassword,
+	}
+	
+	body, _ := json.Marshal(req)
+	httpReq, _ := http.NewRequest("POST", "/games", bytes.NewBuffer(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	
+	rr := httptest.NewRecorder()
+	ctx.Handler.createGame(rr, httpReq)
+	
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("Failed to create game, status: %d, body: %s", rr.Code, rr.Body.String())
+	}
+	
+	var game models.GameWithDetails
+	json.NewDecoder(rr.Body).Decode(&game)
+	
+	// Verify note was saved
+	if game.Game.Note == nil || *game.Game.Note != gameNote {
+		t.Errorf("Expected note '%s', got %v", gameNote, game.Game.Note)
+	}
+}
+

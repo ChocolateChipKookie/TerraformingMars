@@ -1,6 +1,8 @@
 package database
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 	"terraforming-mars-backend/internal/models"
 )
@@ -145,11 +147,13 @@ func TestCreateGame(t *testing.T) {
 	}
 	
 	// Create a game with cleaner structure
+	noteText := "Test note"
 	req := models.CreateGameRequest{
 		Name:        "Test Game",
 		Date:        "2024-01-15",
 		Map:         "Hellas",
 		Generations: 12,
+		Note:        &noteText,
 		Expansions: models.Expansions{
 			"base":     true,
 			"prelude":  true,
@@ -214,6 +218,10 @@ func TestCreateGame(t *testing.T) {
 	
 	if game.Game.Revision != 1 {
 		t.Errorf("Expected revision 1, got %d", game.Game.Revision)
+	}
+	
+	if game.Game.Note == nil || *game.Game.Note != "Test note" {
+		t.Errorf("Expected note 'Test note', got %v", game.Game.Note)
 	}
 	
 	// No need to check IsLatest anymore - we use MAX(revision) instead
@@ -923,4 +931,81 @@ func TestGameModificationPermissions(t *testing.T) {
 // Helper function to create int pointer
 func intPtr(i int) *int {
 	return &i
+}
+
+func TestGameImages(t *testing.T) {
+	repo, systemAdmin := setupTestDB(t)
+	
+	// Create players
+	_, err := repo.CreatePlayer("Alice", nil, models.RolePlayer, *systemAdmin)
+	if err != nil {
+		t.Fatalf("Failed to create player: %v", err)
+	}
+	
+	// Create sample image bytes
+	image1 := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A}
+	image2 := []byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10}
+	
+	req := models.CreateGameRequest{
+		Name:        "Game with Images",
+		Date:        "2024-01-15",
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"base": true},
+		Players: []models.PlayerRequest{
+			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
+		},
+		Images: []models.ImageRequest{
+			{ImageData: image1, MimeType: "image/png"},
+			{ImageData: image2, MimeType: "image/jpeg"},
+		},
+	}
+	
+	// Create game
+	game, err := repo.CreateGame(req, *systemAdmin)
+	if err != nil {
+		t.Fatalf("Failed to create game: %v", err)
+	}
+	
+	// Verify image metadata
+	if len(game.Images) != 2 {
+		t.Fatalf("Expected 2 images, got %d", len(game.Images))
+	}
+	
+	if game.Images[0].MimeType != "image/png" {
+		t.Errorf("Expected first image mime type 'image/png', got '%s'", game.Images[0].MimeType)
+	}
+	
+	if game.Images[1].MimeType != "image/jpeg" {
+		t.Errorf("Expected second image mime type 'image/jpeg', got '%s'", game.Images[1].MimeType)
+	}
+	
+	// Test fetching image data
+	imageData, mimeType, err := repo.GetGameImageData(game.Images[0].ID)
+	if err != nil {
+		t.Fatalf("Failed to get image data: %v", err)
+	}
+	
+	if !bytes.Equal(imageData, image1) {
+		t.Error("Retrieved image data doesn't match")
+	}
+	
+	if mimeType != "image/png" {
+		t.Errorf("Expected mime type 'image/png', got '%s'", mimeType)
+	}
+	
+	// Test max images limit
+	tooManyImages := make([]models.ImageRequest, 6)
+	for i := 0; i < 6; i++ {
+		tooManyImages[i] = models.ImageRequest{ImageData: image1, MimeType: "image/png"}
+	}
+	
+	req.Images = tooManyImages
+	_, err = repo.CreateGame(req, *systemAdmin)
+	if err == nil {
+		t.Error("Expected error with 6 images")
+	}
+	if !strings.Contains(err.Error(), "too many images") {
+		t.Errorf("Expected 'too many images' error, got: %v", err)
+	}
 }

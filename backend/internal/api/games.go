@@ -103,3 +103,23 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 	
 	h.sendJSON(w, http.StatusOK, game)
 }
+
+// GET /images/{id} - Get image data by image ID
+func (h *Handler) getImage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		h.sendError(w, http.StatusBadRequest, "Invalid image ID")
+		return
+	}
+	
+	imageData, mimeType, err := h.repo.GetGameImageData(id)
+	if err != nil {
+		h.sendError(w, http.StatusNotFound, "Image not found")
+		return
+	}
+	
+	w.Header().Set("Content-Type", mimeType)
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	w.Write(imageData)
+}

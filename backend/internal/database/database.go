@@ -71,6 +71,7 @@ func migrate(db *sql.DB) error {
 			map TEXT NOT NULL,
 			generations INTEGER NOT NULL,
 			expansions TEXT NOT NULL,
+			note TEXT,
 			created_by INTEGER NOT NULL,
 			created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			UNIQUE (game_id, revision),
@@ -123,6 +124,17 @@ func migrate(db *sql.DB) error {
 			FOREIGN KEY (game_player_id) REFERENCES game_player(id) ON DELETE CASCADE
 		) STRICT`,
 
+		// Game image table (stored as base64)
+		`CREATE TABLE IF NOT EXISTS game_image (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			game_id INTEGER NOT NULL,
+			image_data BLOB NOT NULL,
+			mime_type TEXT NOT NULL,
+			display_order INTEGER NOT NULL DEFAULT 0,
+			uploaded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE
+		) STRICT`,
+
 		// Create indexes for better performance
 		`CREATE INDEX IF NOT EXISTS idx_game_game_id_revision ON game(game_id, revision)`,
 		`CREATE INDEX IF NOT EXISTS idx_game_player_game_id ON game_player(game_id)`,
@@ -131,6 +143,7 @@ func migrate(db *sql.DB) error {
 		`CREATE INDEX IF NOT EXISTS idx_award_game_id ON award(game_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_award_placement_award_id ON award_placement(award_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_game_date ON game(date)`,
+		`CREATE INDEX IF NOT EXISTS idx_game_image_game_id ON game_image(game_id, display_order)`,
 	}
 
 	for _, query := range queries {

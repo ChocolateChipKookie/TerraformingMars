@@ -446,9 +446,9 @@ func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Playe
 
 	// Create game with first revision
 	result, err := tx.Exec(`
-		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, created_by)
-		VALUES (?, 1, ?, ?, ?, ?, ?, ?)
-	`, gameID, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), req.CreatedBy)
+		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, created_by)
+		VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?)
+	`, gameID, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), req.Note, req.CreatedBy)
 	if err != nil {
 		return nil, err
 	}
@@ -462,6 +462,20 @@ func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Playe
 	// Create all game-related data
 	if err := r.createGameData(tx, internalID, req); err != nil {
 		return nil, err
+	}
+
+	// Create game images (max 5)
+	if len(req.Images) > 5 {
+		return nil, fmt.Errorf("too many images: maximum 5 images allowed, got %d", len(req.Images))
+	}
+	for i, imageReq := range req.Images {
+		_, err = tx.Exec(`
+			INSERT INTO game_image (game_id, image_data, mime_type, display_order)
+			VALUES (?, ?, ?, ?)
+		`, internalID, imageReq.ImageData, imageReq.MimeType, i)
+		if err != nil {
+			return nil, fmt.Errorf("error creating image %d: %v", i, err)
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -516,9 +530,9 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 
 	// Create new revision (keep the original creator)
 	result, err := tx.Exec(`
-		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`, gameID, maxRevision+1, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), createdBy)
+		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, created_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, gameID, maxRevision+1, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), req.Note, createdBy)
 	if err != nil {
 		return nil, err
 	}
@@ -534,6 +548,20 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 		return nil, err
 	}
 
+	// Create game images (max 5)
+	if len(req.Images) > 5 {
+		return nil, fmt.Errorf("too many images: maximum 5 images allowed, got %d", len(req.Images))
+	}
+	for i, imageReq := range req.Images {
+		_, err = tx.Exec(`
+			INSERT INTO game_image (game_id, image_data, mime_type, display_order)
+			VALUES (?, ?, ?, ?)
+		`, internalID, imageReq.ImageData, imageReq.MimeType, i)
+		if err != nil {
+			return nil, fmt.Errorf("error creating image %d: %v", i, err)
+		}
+	}
+
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
@@ -544,7 +572,7 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 // GetAllGames retrieves all latest game revisions
 func (r *Repository) GetAllGames() ([]models.Game, error) {
 	rows, err := r.db.Query(`
-		SELECT id, game_id, revision, name, date, map, generations, expansions, created_by, created_at
+		SELECT id, game_id, revision, name, date, map, generations, expansions, note, created_by, created_at
 		FROM game
 		GROUP BY game_id
 		HAVING revision = MAX(revision)
@@ -561,7 +589,7 @@ func (r *Repository) GetAllGames() ([]models.Game, error) {
 		var expansionsJSON string
 		err := rows.Scan(
 			&g.ID, &g.GameID, &g.Revision, &g.Name, &g.Date,
-			&g.Map, &g.Generations, &expansionsJSON, &g.CreatedBy, &g.CreatedAt,
+			&g.Map, &g.Generations, &expansionsJSON, &g.Note, &g.CreatedBy, &g.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -583,14 +611,14 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 	var game models.Game
 	var expansionsJSON string
 	err := r.db.QueryRow(`
-		SELECT id, game_id, revision, name, date, map, generations, expansions, created_by, created_at
+		SELECT id, game_id, revision, name, date, map, generations, expansions, note, created_by, created_at
 		FROM game 
 		WHERE game_id = ?
 		ORDER BY revision DESC
 		LIMIT 1
 	`, gameID).Scan(
 		&game.ID, &game.GameID, &game.Revision, &game.Name, &game.Date,
-		&game.Map, &game.Generations, &expansionsJSON, &game.CreatedBy, &game.CreatedAt,
+		&game.Map, &game.Generations, &expansionsJSON, &game.Note, &game.CreatedBy, &game.CreatedAt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -711,6 +739,28 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 		placements = append(placements, p)
 	}
 
+	// Get image metadata (without actual image data)
+	imageRows, err := r.db.Query(`
+		SELECT id, display_order, mime_type, uploaded_at
+		FROM game_image
+		WHERE game_id = ?
+		ORDER BY display_order
+	`, game.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer imageRows.Close()
+
+	var images []models.GameImageMeta
+	for imageRows.Next() {
+		var img models.GameImageMeta
+		err := imageRows.Scan(&img.ID, &img.DisplayOrder, &img.MimeType, &img.UploadedAt)
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, img)
+	}
+
 	return &models.GameWithDetails{
 		Game:        game,
 		GamePlayers: gamePlayers,
@@ -718,5 +768,24 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 		Milestones:  milestones,
 		Awards:      awards,
 		Placements:  placements,
+		Images:      images,
 	}, nil
+}
+
+// GetGameImageData retrieves the actual image data for a specific image
+func (r *Repository) GetGameImageData(imageID int) ([]byte, string, error) {
+	var imageData []byte
+	var mimeType string
+	err := r.db.QueryRow(`
+		SELECT image_data, mime_type
+		FROM game_image
+		WHERE id = ?
+	`, imageID).Scan(&imageData, &mimeType)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, "", fmt.Errorf("image with ID %d not found", imageID)
+		}
+		return nil, "", err
+	}
+	return imageData, mimeType, nil
 }
