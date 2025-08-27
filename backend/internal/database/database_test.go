@@ -2,7 +2,6 @@ package database
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 	"terraforming-mars-backend/internal/models"
 )
@@ -994,18 +993,4 @@ func TestGameImages(t *testing.T) {
 		t.Errorf("Expected mime type 'image/png', got '%s'", mimeType)
 	}
 	
-	// Test max images limit
-	tooManyImages := make([]models.ImageRequest, 6)
-	for i := 0; i < 6; i++ {
-		tooManyImages[i] = models.ImageRequest{ImageData: image1, MimeType: "image/png"}
-	}
-	
-	req.Images = tooManyImages
-	_, err = repo.CreateGame(req, *systemAdmin)
-	if err == nil {
-		t.Error("Expected error with 6 images")
-	}
-	if !strings.Contains(err.Error(), "too many images") {
-		t.Errorf("Expected 'too many images' error, got: %v", err)
-	}
 }

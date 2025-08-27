@@ -464,10 +464,7 @@ func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Playe
 		return nil, err
 	}
 
-	// Create game images (max 5)
-	if len(req.Images) > 5 {
-		return nil, fmt.Errorf("too many images: maximum 5 images allowed, got %d", len(req.Images))
-	}
+	// Create game images (images should already be processed by API layer)
 	for i, imageReq := range req.Images {
 		_, err = tx.Exec(`
 			INSERT INTO game_image (game_id, image_data, mime_type, display_order)
@@ -548,10 +545,7 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 		return nil, err
 	}
 
-	// Create game images (max 5)
-	if len(req.Images) > 5 {
-		return nil, fmt.Errorf("too many images: maximum 5 images allowed, got %d", len(req.Images))
-	}
+	// Create game images (images should already be processed by API layer)
 	for i, imageReq := range req.Images {
 		_, err = tx.Exec(`
 			INSERT INTO game_image (game_id, image_data, mime_type, display_order)

@@ -2,10 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"terraforming-mars-backend/internal/imageutil"
 	"terraforming-mars-backend/internal/models"
 )
 
@@ -62,6 +64,12 @@ func (h *Handler) createGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	// Process images before creating the game
+	if err := h.processImages(&req.CreateGameRequest); err != nil {
+		h.sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	
 	// Create the game
 	game, err := h.repo.CreateGame(req.CreateGameRequest, *actor)
 	if err != nil {
@@ -94,6 +102,12 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	// Process images before updating the game
+	if err := h.processImages(&req.CreateGameRequest); err != nil {
+		h.sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	
 	// Update the game (creates new revision)
 	game, err := h.repo.UpdateGame(id, req.CreateGameRequest, *actor)
 	if err != nil {
@@ -122,4 +136,27 @@ func (h *Handler) getImage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", mimeType)
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	w.Write(imageData)
+}
+
+// processImages validates and processes all images in a game request
+func (h *Handler) processImages(req *models.CreateGameRequest) error {
+	// Check maximum number of images
+	if len(req.Images) > 5 {
+		return fmt.Errorf("too many images: maximum 5 images allowed, got %d", len(req.Images))
+	}
+	
+	// Process each image
+	for i, imageReq := range req.Images {
+		// Process image: resize and compress
+		processedData, finalMimeType, err := imageutil.ProcessImage(imageReq.ImageData, imageReq.MimeType)
+		if err != nil {
+			return fmt.Errorf("error processing image %d: %v", i+1, err)
+		}
+		
+		// Update the request with processed image
+		req.Images[i].ImageData = processedData
+		req.Images[i].MimeType = finalMimeType
+	}
+	
+	return nil
 }

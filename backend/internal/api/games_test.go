@@ -294,8 +294,8 @@ func TestGameImages(t *testing.T) {
 	ctx := setupGameFixture(t)
 	
 	// Create sample image data
-	image1 := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A}
-	image2 := []byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10}
+	image1 := createTestImage("image/png")
+	image2 := createTestImage("image/jpeg")
 	
 	// Create a game with images
 	gameReq := models.CreateGameRequest{
@@ -339,12 +339,13 @@ func TestGameImages(t *testing.T) {
 		t.Errorf("Expected 2 images in game response, got %d", len(game.Images))
 	}
 	
-	if game.Images[0].MimeType != "image/png" {
-		t.Errorf("Expected first image mime type 'image/png', got '%s'", game.Images[0].MimeType)
+	// Both images should be converted to WebP
+	if game.Images[0].MimeType != "image/webp" {
+		t.Errorf("Expected first image mime type 'image/webp', got '%s'", game.Images[0].MimeType)
 	}
 	
-	if game.Images[1].MimeType != "image/jpeg" {
-		t.Errorf("Expected second image mime type 'image/jpeg', got '%s'", game.Images[1].MimeType)
+	if game.Images[1].MimeType != "image/webp" {
+		t.Errorf("Expected second image mime type 'image/webp', got '%s'", game.Images[1].MimeType)
 	}
 	
 	// Test GET /images/{id} for first image
@@ -360,16 +361,16 @@ func TestGameImages(t *testing.T) {
 			t.Errorf("Expected status 200, got %d", rr.Code)
 		}
 		
-		if rr.Header().Get("Content-Type") != "image/png" {
-			t.Errorf("Expected Content-Type 'image/png', got '%s'", rr.Header().Get("Content-Type"))
+		if rr.Header().Get("Content-Type") != "image/webp" {
+			t.Errorf("Expected Content-Type 'image/webp', got '%s'", rr.Header().Get("Content-Type"))
 		}
 		
 		if rr.Header().Get("Cache-Control") != "public, max-age=3600" {
 			t.Errorf("Expected Cache-Control header")
 		}
 		
-		if !bytes.Equal(rr.Body.Bytes(), image1) {
-			t.Error("Response body doesn't match expected image data")
+		if len(rr.Body.Bytes()) == 0 {
+			t.Error("Response body is empty")
 		}
 	})
 	
@@ -386,12 +387,12 @@ func TestGameImages(t *testing.T) {
 			t.Errorf("Expected status 200, got %d", rr.Code)
 		}
 		
-		if rr.Header().Get("Content-Type") != "image/jpeg" {
-			t.Errorf("Expected Content-Type 'image/jpeg', got '%s'", rr.Header().Get("Content-Type"))
+		if rr.Header().Get("Content-Type") != "image/webp" {
+			t.Errorf("Expected Content-Type 'image/webp', got '%s'", rr.Header().Get("Content-Type"))
 		}
 		
-		if !bytes.Equal(rr.Body.Bytes(), image2) {
-			t.Error("Response body doesn't match expected image data")
+		if len(rr.Body.Bytes()) == 0 {
+			t.Error("Response body is empty")
 		}
 	})
 	
