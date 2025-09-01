@@ -31,7 +31,7 @@ func main() {
 
 	// Setup CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000"}, // React dev server
+		AllowedOrigins: []string{"http://localhost:3000", "http://localhost:5173"}, // React and Vite dev servers
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"*"},
 	})
