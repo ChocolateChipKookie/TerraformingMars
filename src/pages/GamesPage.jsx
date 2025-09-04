@@ -1,76 +1,123 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
+import Container from '../components/Container';
+import { SubContainer, SubContainerElement } from '../components/Container';
+import LinkButton from '../components/LinkButton';
+import styles from '../styles/GamesPage.module.css';
 
 function GamesPage() {
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
   const [searchValue, setSearchValue] = useState('');
-  const [showGameList, setShowGameList] = useState(false);
 
   useEffect(() => {
-    fetch('/data/games.json')
+    fetch('http://localhost:8080/api/games')
       .then(response => response.json())
-      .then(data => setGames(data))
-      .catch(error => console.error('Error loading games:', error));
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          setGames(data);
+        } else {
+          setGames([]);
+        }
+      })
+      .catch(error => {
+        console.error('Error loading games:', error);
+        setGames([]);
+      });
   }, []);
 
   const redirectToGame = () => {
     const game = games.find(g => g.name === searchValue);
     if (game) {
-      window.location.href = `/games/${game.id}.html`;
+      navigate(`/game/${game.id}`);
     }
   };
 
-  const hideContainer = () => {
-    setShowGameList(!showGameList);
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const formatExpansions = (expansions) => {
+    if (!expansions) return '';
+    return Object.entries(expansions)
+      .filter(([_, enabled]) => enabled)
+      .map(([name]) => name)
+      .join(', ');
   };
 
   return (
-    <div>
-      <div>Played games</div>
-      
-      <div>
-        <div>Links</div>
-        <div>
-          <div>
-            <div>
-              <label>Search:</label>
-              <button onClick={redirectToGame}>GO</button>
+    <Layout>
+      <Container title="Played Games">
+        <SubContainer title="Search Games">
+          <SubContainerElement>
+            <div className={styles.searchContainer}>
+              <label className={styles.searchLabel}>Search:</label>
               <input 
                 type="text" 
-                placeholder="Game" 
+                placeholder="Enter game name" 
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && redirectToGame()}
                 list="datalist-games"
+                className={styles.searchInput}
               />
               <datalist id="datalist-games">
                 {games.map(game => (
                   <option key={game.id} value={game.name} />
                 ))}
               </datalist>
-            </div>
-          </div>
-          <div>
-            <div>
-              <label>Select game:</label>
-              <button onClick={hideContainer}>
-                {showGameList ? "Hide" : "Show"}
+              <button onClick={redirectToGame} className={styles.searchButton}>
+                GO
               </button>
             </div>
-            <div style={{ display: showGameList ? 'block' : 'none' }}>
-              {games.map(game => (
-                <a key={game.id} href={`/games/${game.id}.html`}>
-                  {game.name}
-                </a>
-              ))}
+          </SubContainerElement>
+        </SubContainer>
+
+        <SubContainer title="All Games">
+          <SubContainerElement>
+            <div className={styles.gamesList}>
+              {games.length > 0 ? (
+                games.map(game => (
+                  <a 
+                    key={game.id} 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(`/game/${game.id}`);
+                    }}
+                    className={styles.gameLink}
+                  >
+                    <div className={styles.gameName}>{game.name}</div>
+                    <div className={styles.gameInfo}>
+                      <span>Date: {formatDate(game.date)}</span>
+                      <span>Map: {game.map}</span>
+                      <span>Gen: {game.generations}</span>
+                      {formatExpansions(game.expansions) && (
+                        <span>Exp: {formatExpansions(game.expansions)}</span>
+                      )}
+                    </div>
+                  </a>
+                ))
+              ) : (
+                <div className={styles.noGames}>No games found</div>
+              )}
             </div>
-          </div>
+          </SubContainerElement>
+        </SubContainer>
+
+        <div className={styles.backButtonContainer}>
+          <LinkButton onClick={() => navigate('/')}>
+            Main Page
+          </LinkButton>
         </div>
-      </div>
-      <div>
-        <button onClick={() => navigate('/')}>Main page</button>
-      </div>
-    </div>
+      </Container>
+    </Layout>
   );
 }
 

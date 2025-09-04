@@ -5,16 +5,17 @@ import AddGamePage from './pages/AddGamePage';
 import AddPlayerPage from './pages/AddPlayerPage';
 import PlayerStatsPage from './pages/PlayerStatsPage';
 import GamesPage from './pages/GamesPage';
+import { ROUTES } from './constants/routes';
 import './App.css';
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/add-game" element={<AddGamePage />} />
-      <Route path="/add-player" element={<AddPlayerPage />} />
-      <Route path="/player-stats" element={<PlayerStatsPage />} />
-      <Route path="/games" element={<GamesPage />} />
+      <Route path={ROUTES.HOME} element={<HomePage />} />
+      <Route path={ROUTES.ADD_GAME} element={<AddGamePage />} />
+      <Route path={ROUTES.ADD_PLAYER} element={<AddPlayerPage />} />
+      <Route path={ROUTES.PLAYER_STATS} element={<PlayerStatsPage />} />
+      <Route path={ROUTES.PLAYED_GAMES} element={<GamesPage />} />
       <Route path="/games/:id" element={<div>Game Detail Page (TODO)</div>} />
     </Routes>
   );

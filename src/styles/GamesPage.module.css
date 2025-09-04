@@ -1,0 +1,97 @@
+/* GamesPage Component Styles - Following existing design patterns */
+
+.searchContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.searchLabel {
+  font-size: 2rem;
+  min-width: 150px;
+}
+
+.searchInput {
+  flex: 1;
+  font-family: 'tm-default';
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  background: inherit;
+  height: 3rem;
+  padding: 0 1rem;
+  border: 3px solid black;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.searchButton {
+  background: linear-gradient(145deg, #787776, #f5f5f5, #aaaaaa, #ebebeb, #f5f5f5);
+  border: 3px solid #666;
+  border-radius: 15px;
+  font-family: 'tm-default';
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  padding: 0.5rem 2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.searchButton:hover {
+  background: linear-gradient(145deg, #565656, #d5d5d5, #8a8a8a, #cbcbcb, #d5d5d5);
+  color: #eee;
+}
+
+.gamesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: rgb(240, 240, 240);
+  border: 3px solid black;
+  border-radius: 15px;
+}
+
+.gameLink {
+  display: block;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(145deg, #e6e6e6, #ffffff, #d4d4d4, #f5f5f5);
+  border: 2px solid #aaa;
+  border-radius: 10px;
+  text-decoration: none;
+  color: black;
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.gameLink:hover {
+  background: linear-gradient(145deg, #787776, #f5f5f5, #aaaaaa, #ebebeb, #f5f5f5);
+  transform: translateX(10px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.gameName {
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+
+.gameInfo {
+  display: flex;
+  gap: 2rem;
+  font-size: 1.3rem;
+  color: #555;
+}
+
+.noGames {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.8rem;
+  color: #666;
+}
+
+.backButtonContainer {
+  margin-top: 2rem;
+  text-align: center;
+}

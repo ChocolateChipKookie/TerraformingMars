@@ -32,7 +32,7 @@ const NAVIGATION_BUTTONS = [
     id: 'played-games',
     label: 'Played games',
     route: ROUTES.PLAYED_GAMES,
-    enabled: false,
+    enabled: true,
     description: 'Browse game history and results',
   },
   {
