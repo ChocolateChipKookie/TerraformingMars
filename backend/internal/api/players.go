@@ -70,6 +70,25 @@ func (h *Handler) createPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if this is the first player in the system
+	players, err := h.repo.GetAllPlayers()
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, "Failed to check existing players")
+		return
+	}
+
+	// If no players exist, create the first one as admin without authentication
+	if len(players) == 0 {
+		// Force the role to admin for the first player
+		player, err := h.repo.CreateSystemAdmin(req.Name, req.Password)
+		if err != nil {
+			h.sendError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		h.sendJSON(w, http.StatusCreated, player)
+		return
+	}
+
 	// Authenticate the actor
 	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
 	if err != nil {
