@@ -2,11 +2,29 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func Init(connectionString string) (*sql.DB, error) {
+	// Check if directory exists for file-based databases
+	if connectionString != ":memory:" {
+		dir := filepath.Dir(connectionString)
+		fileInfo, err := os.Stat(dir)
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("database directory does not exist: %s\nPlease create the directory first with: mkdir -p %s", dir, dir)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error accessing database directory %s: %v", dir, err)
+		}
+		if !fileInfo.IsDir() {
+			return nil, fmt.Errorf("database path %s exists but is not a directory", dir)
+		}
+	}
+
 	// Open SQLite database with provided connection string
 	// Can be ":memory:" for in-memory, or a file path
 	db, err := sql.Open("sqlite3", connectionString)
