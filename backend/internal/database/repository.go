@@ -437,9 +437,9 @@ func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Playe
 		return nil, err
 	}
 
-	// Get next game ID and increment sequence atomically
+	// Get next game ID using max(game_id) + 1
 	var gameID int
-	err = tx.QueryRow("UPDATE game_sequence SET previous_game_id = previous_game_id + 1 RETURNING previous_game_id").Scan(&gameID)
+	err = tx.QueryRow("SELECT COALESCE(MAX(game_id), 0) + 1 FROM game").Scan(&gameID)
 	if err != nil {
 		return nil, err
 	}

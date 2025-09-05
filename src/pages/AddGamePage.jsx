@@ -6,6 +6,7 @@ import React, {
   useReducer,
 } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../constants/routes";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
 import { SubContainer, SubContainerElement } from "../components/Container";
@@ -334,6 +335,10 @@ function AddGamePage() {
   // Use custom hook for player management
   const playerManager = usePlayerManagement();
 
+  // Authentication state
+  const [actorName, setActorName] = useState('');
+  const [actorPassword, setActorPassword] = useState('');
+
   // Use custom hooks for milestones and awards
   const milestones = useGameObjectives(
     "milestone",
@@ -557,6 +562,80 @@ function AddGamePage() {
       playerManager.setPlayerScores(newScores);
     }
   }, [milestones.data, awards.data]);
+
+  const handleSubmitGame = async () => {
+    // Validate authentication
+    if (!actorName || !actorPassword) {
+      alert('Please enter your username and password to submit the game.');
+      return;
+    }
+
+    // Format the game data for submission
+    const gameData = {
+      name: gameConfig.name,
+      date: gameConfig.date,
+      map: gameConfig.map,
+      generations: gameConfig.generations,
+      expansions: gameConfig.expansions,
+      note: null,
+
+      // Format players with scores
+      players: playerManager.players.map((player, index) => ({
+        name: player.name,
+        corporation: player.corporation,
+        terraforming_rating: parseInt(playerManager.playerScores[index].terraformingRating) || 20,
+        cities: parseInt(playerManager.playerScores[index].cities) || 0,
+        greeneries: parseInt(playerManager.playerScores[index].greeneries) || 0,
+        cards: parseInt(playerManager.playerScores[index].cards) || 0,
+        turmoil_points: parseInt(playerManager.playerScores[index].turmoilPoints) || 0,
+      })),
+
+      // Format milestones
+      milestones: Object.entries(milestones.data).map(([name, winnerIndex]) => ({
+        name: name,
+        winner_game_player_index: winnerIndex === -1 ? null : winnerIndex,
+      })),
+
+      // Format awards with placements
+      awards: Object.entries(awards.data).map(([name, placements]) => ({
+        name: name,
+        placements: Object.entries(placements)
+          .filter(([_, placement]) => placement > 0)
+          .map(([playerIndex, placement]) => ({
+            player_index: parseInt(playerIndex),
+            placement: placement,
+          })),
+      })),
+
+      images: [],
+
+      // Authentication from form inputs
+      actor_name: actorName,
+      actor_password: actorPassword,
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/api/games', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(gameData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`Game created successfully! Game ID: ${result.game.game_id}`);
+        navigate(ROUTES.PLAYED_GAMES);
+      } else {
+        const error = await response.json();
+        alert(`Failed to create game: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error submitting game:', error);
+      alert('Failed to submit game. Please check if the backend is running.');
+    }
+  };
 
   return (
     <Layout>
@@ -853,7 +932,42 @@ function AddGamePage() {
         </SubContainer>
       </Container>
 
-      <LinkButton onClick={() => navigate("/")}>Main page</LinkButton>
+      <Container title="Submit Game" titleStyle="banner">
+        <SubContainer>
+          <SubContainerElement>
+            <label>Username:</label>
+            <input
+              type="text"
+              className={styles.optionInput}
+              value={actorName}
+              onChange={(e) => setActorName(e.target.value)}
+              placeholder="Enter your username"
+            />
+          </SubContainerElement>
+
+          <SubContainerElement>
+            <label>Password:</label>
+            <input
+              type="password"
+              className={styles.optionInput}
+              value={actorPassword}
+              onChange={(e) => setActorPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
+          </SubContainerElement>
+
+          <SubContainerElement>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <LinkButton onClick={() => navigate(ROUTES.HOME)}>
+                Main page
+              </LinkButton>
+              <LinkButton onClick={handleSubmitGame} style={{ backgroundColor: '#4CAF50' }}>
+                Submit Game
+              </LinkButton>
+            </div>
+          </SubContainerElement>
+        </SubContainer>
+      </Container>
     </Layout>
   );
 }

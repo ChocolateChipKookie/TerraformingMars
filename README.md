@@ -2,6 +2,8 @@ Migrate data from mega json to database.
 combine the backend and frontend.
 In frontend select users from dropdown.
 
+Verify the user input in the add game scenario
+
 TODO:
  - Add image field to game
  - Add note field to game

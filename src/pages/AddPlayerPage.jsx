@@ -21,6 +21,7 @@ const AddPlayerPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedUserRole, setSelectedUserRole] = useState(null);
+  const [isInitialSetup, setIsInitialSetup] = useState(false);
 
   useEffect(() => {
     // Fetch all players for the dropdown
@@ -28,8 +29,19 @@ const AddPlayerPage = () => {
       try {
         const response = await fetch('http://localhost:8080/api/players');
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json() || [];
           setPlayers(data);
+
+          // Check if data is empty (no users exist)
+          if (data.length === 0) {
+            console.log('No users found, enabling admin creation mode');
+            setIsInitialSetup(true);
+            // Default to admin role for first user
+            setFormData(prev => ({
+              ...prev,
+              role: 'admin'
+            }));
+          }
         }
       } catch (err) {
         console.error('Failed to fetch players:', err);
@@ -74,13 +86,17 @@ const AddPlayerPage = () => {
     // Prepare request data
     const requestData = {
       name: formData.name,
-      role: formData.role,
-      actor_name: formData.actor_name,
-      actor_password: formData.actor_password
+      role: formData.role
     };
 
-    // Only include password for users (required for users, not allowed for players)
-    if (formData.role === 'user') {
+    // Include authentication only if not initial setup
+    if (!isInitialSetup) {
+      requestData.actor_name = formData.actor_name;
+      requestData.actor_password = formData.actor_password;
+    }
+
+    // Include password for admin and user roles (required for auth roles, not allowed for players)
+    if (formData.role === 'admin' || formData.role === 'user') {
       requestData.password = formData.password;
     }
 
@@ -110,67 +126,69 @@ const AddPlayerPage = () => {
 
   return (
     <Layout>
-      <Container title="Add New Player" titleStyle="banner">
+      <Container title={isInitialSetup ? "Add Admin" : "Add New Player"} titleStyle="banner">
         <form onSubmit={handleSubmit}>
           <SubContainer>
+            {!isInitialSetup && (
+              <div style={formStyles.subcontainerBox}>
+                <SubContainer>
+                  <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
+                    Authentication
+                  </div>
+
+                  <SubContainerElement label="Username">
+                    <select
+                      name="actor_name"
+                      value={formData.actor_name}
+                      onChange={handleInputChange}
+                      required={!isInitialSetup}
+                      className={styles.optionInput}
+                      disabled={playersLoading}
+                      autoComplete="username"
+                    >
+                      <option value="">Select User</option>
+                      {(players || [])
+                        .filter(player => player.role === 'user' || player.role === 'admin')
+                        .map(player => (
+                          <option key={player.id} value={player.name}>
+                            {player.name}
+                          </option>
+                        ))}
+                    </select>
+                  </SubContainerElement>
+
+                  {/* Hidden username field for password managers */}
+                  {formData.actor_name && (
+                    <input
+                      type="hidden"
+                      name="username"
+                      value={formData.actor_name}
+                      autoComplete="username"
+                    />
+                  )}
+
+                  <SubContainerElement label="Password">
+                    <input
+                      type="password"
+                      name="actor_password"
+                      value={formData.actor_password}
+                      onChange={handleInputChange}
+                      required={!isInitialSetup}
+                      className={styles.optionInput}
+                      autoComplete="current-password"
+                    />
+                  </SubContainerElement>
+                </SubContainer>
+              </div>
+            )}
+
             <div style={formStyles.subcontainerBox}>
               <SubContainer>
                 <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                  Authentication
+                  {isInitialSetup ? 'Admin Details' : 'New Player Details'}
                 </div>
 
-                <SubContainerElement label="Username">
-                  <select
-                    name="actor_name"
-                    value={formData.actor_name}
-                    onChange={handleInputChange}
-                    required
-                    className={styles.optionInput}
-                    disabled={playersLoading}
-                    autoComplete="username"
-                  >
-                    <option value="">Select User</option>
-                    {players
-                      .filter(player => player.role === 'user' || player.role === 'admin')
-                      .map(player => (
-                        <option key={player.id} value={player.name}>
-                          {player.name}
-                        </option>
-                      ))}
-                  </select>
-                </SubContainerElement>
-
-                {/* Hidden username field for password managers */}
-                {formData.actor_name && (
-                  <input 
-                    type="hidden" 
-                    name="username" 
-                    value={formData.actor_name}
-                    autoComplete="username"
-                  />
-                )}
-
-                <SubContainerElement label="Password">
-                  <input
-                    type="password"
-                    name="actor_password"
-                    value={formData.actor_password}
-                    onChange={handleInputChange}
-                    required
-                    className={styles.optionInput}
-                    autoComplete="current-password"
-                  />
-                </SubContainerElement>
-              </SubContainer>
-            </div>
-
-            <div style={formStyles.subcontainerBox}>
-              <SubContainer>
-                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                  New Player Details
-                </div>
-
-                <SubContainerElement label="Player Name">
+                <SubContainerElement label={isInitialSetup ? "Admin Name" : "Player Name"}>
                   <input
                     type="text"
                     name="name"
@@ -182,20 +200,22 @@ const AddPlayerPage = () => {
                   />
                 </SubContainerElement>
 
-                <SubContainerElement label="Role">
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className={styles.optionInput}
-                    disabled={!formData.actor_name || selectedUserRole === 'user'}
-                  >
-                    <option value="player">Player</option>
-                    <option value="user">User</option>
-                  </select>
-                </SubContainerElement>
+                {!isInitialSetup && (
+                  <SubContainerElement label="Role">
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                      className={styles.optionInput}
+                      disabled={!formData.actor_name || selectedUserRole === 'user'}
+                    >
+                      <option value="player">Player</option>
+                      <option value="user">User</option>
+                    </select>
+                  </SubContainerElement>
+                )}
 
-                {formData.role === 'user' && (
+                {(formData.role === 'user' || formData.role === 'admin') && (
                   <SubContainerElement label="Password">
                     <input
                       type="password"

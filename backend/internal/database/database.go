@@ -71,14 +71,6 @@ func migrate(db *sql.DB) error {
 			FOREIGN KEY (created_by) REFERENCES player(id) ON DELETE SET NULL
 		) STRICT`,
 
-		// Game ID sequence table
-		`CREATE TABLE IF NOT EXISTS game_sequence (
-			previous_game_id INTEGER PRIMARY KEY DEFAULT 0
-		) STRICT`,
-		
-		// Initialize game sequence if empty
-		`INSERT OR IGNORE INTO game_sequence (previous_game_id) VALUES (0)`,
-
 		// Game table with revision system
 		`CREATE TABLE IF NOT EXISTS game (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
