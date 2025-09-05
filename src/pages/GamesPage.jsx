@@ -110,13 +110,22 @@ function GamesPage() {
             </div>
           </SubContainerElement>
         </SubContainer>
-
-        <div className={styles.backButtonContainer}>
-          <LinkButton onClick={() => navigate('/')}>
-            Main Page
-          </LinkButton>
-        </div>
       </Container>
+
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center',
+        margin: '1% auto',
+        maxWidth: '900px',
+        padding: '0'
+      }}>
+        <LinkButton 
+          onClick={() => navigate('/')}
+          style={{ width: '200px' }}
+        >
+          Main Page
+        </LinkButton>
+      </div>
     </Layout>
   );
 }

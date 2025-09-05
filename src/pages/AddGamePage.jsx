@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../constants/routes";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
+import AuthenticationContainer from "../components/AuthenticationContainer";
 import { SubContainer, SubContainerElement } from "../components/Container";
 import LinkButton from "../components/LinkButton";
 import styles from "../styles/AddGamePage.module.css";
@@ -338,6 +339,10 @@ function AddGamePage() {
   // Authentication state
   const [actorName, setActorName] = useState('');
   const [actorPassword, setActorPassword] = useState('');
+  
+  // Available players from backend
+  const [availablePlayers, setAvailablePlayers] = useState([]);
+  const [playersLoading, setPlayersLoading] = useState(true);
 
   // Use custom hooks for milestones and awards
   const milestones = useGameObjectives(
@@ -353,13 +358,32 @@ function AddGamePage() {
     playerManager.playerNumber,
   );
 
-  // Set default date on mount
+  // Set default date and fetch players on mount
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const day = String(today.getDate()).padStart(2, "0");
     dispatch({ type: "SET_DATE", value: `${year}-${month}-${day}` });
+    
+    // Fetch available players
+    const fetchPlayers = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/players');
+        if (response.ok) {
+          const data = await response.json();
+          // Sort all players alphabetically by name
+          const sortedPlayers = (data || []).sort((a, b) => a.name.localeCompare(b.name));
+          setAvailablePlayers(sortedPlayers);
+        }
+      } catch (err) {
+        console.error('Failed to fetch players:', err);
+      } finally {
+        setPlayersLoading(false);
+      }
+    };
+    
+    fetchPlayers();
   }, []);
 
   // Get max players from map data (memoized to prevent re-renders)
@@ -583,7 +607,7 @@ function AddGamePage() {
       players: playerManager.players.map((player, index) => ({
         name: player.name,
         corporation: player.corporation,
-        terraforming_rating: parseInt(playerManager.playerScores[index].terraformingRating) || 20,
+        terraforming_rating: parseInt(playerManager.playerScores[index].terraformingRating) || 0,
         cities: parseInt(playerManager.playerScores[index].cities) || 0,
         greeneries: parseInt(playerManager.playerScores[index].greeneries) || 0,
         cards: parseInt(playerManager.playerScores[index].cards) || 0,
@@ -625,7 +649,7 @@ function AddGamePage() {
 
       if (response.ok) {
         const result = await response.json();
-        alert(`Game created successfully! Game ID: ${result.game.game_id}`);
+        alert(`Game created successfully! Game ID: ${result.game.id}`);
         navigate(ROUTES.PLAYED_GAMES);
       } else {
         const error = await response.json();
@@ -811,6 +835,8 @@ function AddGamePage() {
               corporations={getAvailableCorporations()}
               onUpdate={playerManager.updatePlayerData}
               selectedCorporations={selectedCorporations}
+              availablePlayers={availablePlayers}
+              selectedPlayers={playerManager.players.map(p => p.name).filter(n => n)}
             />
           ))}
         </SubContainer>
@@ -878,10 +904,7 @@ function AddGamePage() {
                 <PointInput
                   config={{ label: "TR", field: "terraformingRating" }}
                   gameState={sharedGameState}
-                  options={{
-                    ...editableOptions,
-                    placeholder: GAME_CONSTANTS.DEFAULT_TR.toString(),
-                  }}
+                  options={editableOptions}
                 />
                 <PointInput
                   config={{ label: "Cities", field: "cities" }}
@@ -932,42 +955,37 @@ function AddGamePage() {
         </SubContainer>
       </Container>
 
-      <Container title="Submit Game" titleStyle="banner">
-        <SubContainer>
-          <SubContainerElement>
-            <label>Username:</label>
-            <input
-              type="text"
-              className={styles.optionInput}
-              value={actorName}
-              onChange={(e) => setActorName(e.target.value)}
-              placeholder="Enter your username"
-            />
-          </SubContainerElement>
+      <AuthenticationContainer
+        actorName={actorName}
+        setActorName={setActorName}
+        actorPassword={actorPassword}
+        setActorPassword={setActorPassword}
+        players={availablePlayers}
+        playersLoading={playersLoading}
+        title="Authentication"
+      />
 
-          <SubContainerElement>
-            <label>Password:</label>
-            <input
-              type="password"
-              className={styles.optionInput}
-              value={actorPassword}
-              onChange={(e) => setActorPassword(e.target.value)}
-              placeholder="Enter your password"
-            />
-          </SubContainerElement>
-
-          <SubContainerElement>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <LinkButton onClick={() => navigate(ROUTES.HOME)}>
-                Main page
-              </LinkButton>
-              <LinkButton onClick={handleSubmitGame} style={{ backgroundColor: '#4CAF50' }}>
-                Submit Game
-              </LinkButton>
-            </div>
-          </SubContainerElement>
-        </SubContainer>
-      </Container>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        gap: '2rem', 
+        margin: '1% auto',
+        maxWidth: '900px',
+        padding: '0'
+      }}>
+        <LinkButton 
+          onClick={() => navigate(ROUTES.HOME)}
+          style={{ width: 'calc(50% - 1rem)' }}
+        >
+          Main page
+        </LinkButton>
+        <LinkButton 
+          onClick={handleSubmitGame} 
+          style={{ backgroundColor: '#4CAF50', width: 'calc(50% - 1rem)' }}
+        >
+          Submit Game
+        </LinkButton>
+      </div>
     </Layout>
   );
 }

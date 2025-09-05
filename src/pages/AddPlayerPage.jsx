@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Container from '../components/Container';
 import { SubContainer, SubContainerElement } from '../components/Container';
+import AuthenticationContainer from '../components/AuthenticationContainer';
 import LinkButton from '../components/LinkButton';
 import { formStyles } from '../styles/formStyles';
 import styles from '../styles/AddGamePage.module.css';
@@ -126,68 +127,28 @@ const AddPlayerPage = () => {
 
   return (
     <Layout>
-      <Container title={isInitialSetup ? "Add Admin" : "Add New Player"} titleStyle="banner">
+      {!isInitialSetup && (
+        <AuthenticationContainer
+          actorName={formData.actor_name}
+          setActorName={(name) => setFormData(prev => ({ ...prev, actor_name: name }))}
+          actorPassword={formData.actor_password}
+          setActorPassword={(password) => setFormData(prev => ({ ...prev, actor_password: password }))}
+          players={players}
+          playersLoading={playersLoading}
+          onUserSelect={(user) => {
+            setSelectedUserRole(user ? user.role : null);
+            // If the selected user is not an admin and current role is 'user', switch to 'player'
+            if (user && user.role !== 'admin' && formData.role === 'user') {
+              setFormData(prev => ({ ...prev, role: 'player' }));
+            }
+          }}
+          required={true}
+        />
+      )}
+      
+      <Container title={isInitialSetup ? "Admin Details" : "New Player Details"} titleStyle="banner">
         <form onSubmit={handleSubmit}>
           <SubContainer>
-            {!isInitialSetup && (
-              <div style={formStyles.subcontainerBox}>
-                <SubContainer>
-                  <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                    Authentication
-                  </div>
-
-                  <SubContainerElement label="Username">
-                    <select
-                      name="actor_name"
-                      value={formData.actor_name}
-                      onChange={handleInputChange}
-                      required={!isInitialSetup}
-                      className={styles.optionInput}
-                      disabled={playersLoading}
-                      autoComplete="username"
-                    >
-                      <option value="">Select User</option>
-                      {(players || [])
-                        .filter(player => player.role === 'user' || player.role === 'admin')
-                        .map(player => (
-                          <option key={player.id} value={player.name}>
-                            {player.name}
-                          </option>
-                        ))}
-                    </select>
-                  </SubContainerElement>
-
-                  {/* Hidden username field for password managers */}
-                  {formData.actor_name && (
-                    <input
-                      type="hidden"
-                      name="username"
-                      value={formData.actor_name}
-                      autoComplete="username"
-                    />
-                  )}
-
-                  <SubContainerElement label="Password">
-                    <input
-                      type="password"
-                      name="actor_password"
-                      value={formData.actor_password}
-                      onChange={handleInputChange}
-                      required={!isInitialSetup}
-                      className={styles.optionInput}
-                      autoComplete="current-password"
-                    />
-                  </SubContainerElement>
-                </SubContainer>
-              </div>
-            )}
-
-            <div style={formStyles.subcontainerBox}>
-              <SubContainer>
-                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>
-                  {isInitialSetup ? 'Admin Details' : 'New Player Details'}
-                </div>
-
                 <SubContainerElement label={isInitialSetup ? "Admin Name" : "Player Name"}>
                   <input
                     type="text"
@@ -228,8 +189,6 @@ const AddPlayerPage = () => {
                     />
                   </SubContainerElement>
                 )}
-              </SubContainer>
-            </div>
 
             {error && (
               <div style={{
@@ -244,30 +203,32 @@ const AddPlayerPage = () => {
                 {error}
               </div>
             )}
-
-            <div style={{
-              display: 'flex',
-              gap: '2rem',
-              justifyContent: 'center',
-              padding: '2rem'
-            }}>
-              <LinkButton
-                onClick={() => navigate('/')}
-                style={{ width: '200px' }}
-              >
-                Cancel
-              </LinkButton>
-              <LinkButton
-                onClick={handleSubmit}
-                disabled={loading}
-                style={{ width: '200px' }}
-              >
-                {loading ? 'Creating...' : 'Create'}
-              </LinkButton>
-            </div>
           </SubContainer>
         </form>
       </Container>
+
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        gap: '2rem', 
+        margin: '1% auto',
+        maxWidth: '900px',
+        padding: '0'
+      }}>
+        <LinkButton
+          onClick={() => navigate('/')}
+          style={{ width: 'calc(50% - 1rem)' }}
+        >
+          Cancel
+        </LinkButton>
+        <LinkButton
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{ width: 'calc(50% - 1rem)', backgroundColor: '#4CAF50' }}
+        >
+          {loading ? 'Creating...' : 'Create'}
+        </LinkButton>
+      </div>
     </Layout>
   );
 };
