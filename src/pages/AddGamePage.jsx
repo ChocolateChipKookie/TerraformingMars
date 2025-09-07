@@ -10,14 +10,15 @@ import { ROUTES } from "../constants/routes";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
 import AuthenticationContainer from "../components/AuthenticationContainer";
+import GameOptionsContainer from "../components/GameContainers/GameOptionsContainer";
+import GamePlayersContainer from "../components/GameContainers/GamePlayersContainer";
+import MilestonesContainer from "../components/GameContainers/MilestonesContainer";
+import AwardsContainer from "../components/GameContainers/AwardsContainer";
+import PointsContainer from "../components/GameContainers/PointsContainer";
 import { SubContainer, SubContainerElement } from "../components/Container";
 import LinkButton from "../components/LinkButton";
 import styles from "../styles/AddGamePage.module.css";
 import { gameData, GAME_CONSTANTS } from "../data/gameData";
-import ExpansionIcon from "../components/AddGamePage/ExpansionIcon";
-import PointInput from "../components/AddGamePage/PointInput";
-import { PlayerInput, PlayerNamesHeader } from "../components/AddGamePage/PlayerInput";
-import { MilestoneRow, AwardRow } from "../components/AddGamePage/GameObjectives";
 
 // Local components for this page only
 
@@ -102,6 +103,7 @@ const gameConfigReducer = (state, action) => {
 // Custom hook for player management
 function usePlayerManagement(
   initialPlayerCount = GAME_CONSTANTS.DEFAULT_PLAYER_COUNT,
+  maxPlayers = GAME_CONSTANTS.DEFAULT_MAX_PLAYERS,
 ) {
   const [playerNumber, setPlayerNumber] = useState(initialPlayerCount);
   const [players, setPlayers] = useState([]);
@@ -175,10 +177,10 @@ function usePlayerManagement(
   const setPlayerCount = useCallback((count) => {
     const validCount = Math.max(
       GAME_CONSTANTS.MIN_PLAYERS,
-      Math.min(count, GAME_CONSTANTS.DEFAULT_MAX_PLAYERS),
+      Math.min(count, maxPlayers),
     );
     setPlayerNumber(validCount);
-  }, []);
+  }, [maxPlayers]);
 
   return {
     playerNumber,
@@ -333,8 +335,16 @@ function AddGamePage() {
     gameConfigInitialState,
   );
 
+  // Get max players from map data (memoized to prevent re-renders)
+  const maxPlayers = useMemo(
+    () =>
+      gameData.maps[gameConfig.map]?.maxPlayers ||
+      GAME_CONSTANTS.DEFAULT_MAX_PLAYERS,
+    [gameConfig.map],
+  );
+
   // Use custom hook for player management
-  const playerManager = usePlayerManagement();
+  const playerManager = usePlayerManagement(GAME_CONSTANTS.DEFAULT_PLAYER_COUNT, maxPlayers);
 
   // Authentication state
   const [actorName, setActorName] = useState('');
@@ -385,14 +395,6 @@ function AddGamePage() {
     
     fetchPlayers();
   }, []);
-
-  // Get max players from map data (memoized to prevent re-renders)
-  const maxPlayers = useMemo(
-    () =>
-      gameData.maps[gameConfig.map]?.maxPlayers ||
-      GAME_CONSTANTS.DEFAULT_MAX_PLAYERS,
-    [gameConfig.map],
-  );
 
   // Adjust player count when map changes
   useEffect(() => {
@@ -665,295 +667,41 @@ function AddGamePage() {
     <Layout>
       <Container title="Add game" />
 
-      <Container title="Options" titleStyle="banner">
-        <SubContainer>
-          <SubContainerElement>
-            <label>Name:</label>
-            <input
-              type="text"
-              className={styles.optionInput}
-              value={gameConfig.name}
-              onChange={(e) =>
-                dispatch({
-                  type: "SET_FIELD",
-                  field: "name",
-                  value: e.target.value,
-                })
-              }
-            />
-          </SubContainerElement>
+      <GameOptionsContainer 
+        gameConfig={gameConfig}
+        dispatch={dispatch}
+        playerManager={playerManager}
+        maxPlayers={maxPlayers}
+      />
 
-          <SubContainerElement>
-            <label>Date:</label>
-            <input
-              type="date"
-              className={styles.optionInput}
-              value={gameConfig.date}
-              onChange={(e) =>
-                dispatch({ type: "SET_DATE", value: e.target.value })
-              }
-              required={true}
-            />
-          </SubContainerElement>
+      <GamePlayersContainer
+        playerManager={playerManager}
+        availablePlayers={availablePlayers}
+        selectedCorporations={selectedCorporations}
+        getAvailableCorporations={getAvailableCorporations}
+      />
 
-          <SubContainerElement>
-            <label>Map:</label>
-            <select
-              className={styles.optionInput}
-              value={gameConfig.map}
-              onChange={(e) =>
-                dispatch({ type: "SET_MAP", value: e.target.value })
-              }
-            >
-              {mapOptions}
-            </select>
-          </SubContainerElement>
+      <MilestonesContainer
+        milestones={milestones}
+        gameConfig={gameConfig}
+        playerManager={playerManager}
+        getSelectedMilestonesCount={getSelectedMilestonesCount}
+        updateMilestoneWinner={updateMilestoneWinner}
+      />
 
-          <SubContainerElement>
-            <label>Generations:</label>
-            <NumericInputWithButtons
-              value={gameConfig.generations}
-              onChange={(e) => {
-                const val = parseInt(e.target.value) || 0;
-                dispatch({ type: "SET_GENERATIONS", value: val });
-              }}
-              onDecrement={() =>
-                dispatch({
-                  type: "SET_GENERATIONS",
-                  value: gameConfig.generations - 1,
-                })
-              }
-              onIncrement={() =>
-                dispatch({
-                  type: "SET_GENERATIONS",
-                  value: gameConfig.generations + 1,
-                })
-              }
-            />
-          </SubContainerElement>
+      <AwardsContainer
+        awards={awards}
+        gameConfig={gameConfig}
+        playerManager={playerManager}
+        cyclePlacement={cyclePlacement}
+        isAwardFunded={isAwardFunded}
+        getFundedAwardsCount={getFundedAwardsCount}
+      />
 
-          <SubContainerElement>
-            <label>Players:</label>
-            <NumericInputWithButtons
-              value={playerManager.playerNumber}
-              onChange={(e) => {
-                const val =
-                  parseInt(e.target.value) || GAME_CONSTANTS.MIN_PLAYERS;
-                playerManager.setPlayerNumber(Math.min(maxPlayers, val));
-              }}
-              onDecrement={() =>
-                playerManager.setPlayerNumber(
-                  Math.max(
-                    GAME_CONSTANTS.MIN_PLAYERS,
-                    playerManager.playerNumber - 1,
-                  ),
-                )
-              }
-              onIncrement={() =>
-                playerManager.setPlayerNumber(
-                  Math.min(maxPlayers, playerManager.playerNumber + 1),
-                )
-              }
-            />
-          </SubContainerElement>
-
-          <SubContainerElement>
-            <div className={styles.subcontainerBox}>
-              <div className={styles.expansionsContainer}>
-                {/* Content container - shared by both bar and list */}
-                <div className={styles.expansionsContent}>
-                  {!gameConfig.expandedExpansions && (
-                    <div className={styles.expansionsCompactView}>
-                      {expansionEntries.map(([key, value]) => (
-                        <ExpansionIcon
-                          key={key}
-                          expansion={key}
-                          checked={value}
-                          disabled={key === "Base Game"}
-                          onChange={() =>
-                            dispatch({
-                              type: "TOGGLE_EXPANSION",
-                              expansion: key,
-                            })
-                          }
-                          showText={false}
-                        >
-                          {key}
-                        </ExpansionIcon>
-                      ))}
-                    </div>
-                  )}
-
-                  {gameConfig.expandedExpansions && (
-                    <div className={styles.expansionsExpandedView}>
-                      {expansionEntries.map(([key, value]) => (
-                        <ExpansionIcon
-                          key={key + "_expanded"}
-                          expansion={key}
-                          checked={value}
-                          disabled={key === "Base Game"}
-                          onChange={() =>
-                            dispatch({
-                              type: "TOGGLE_EXPANSION",
-                              expansion: key,
-                            })
-                          }
-                          showText={true}
-                        >
-                          {key}
-                        </ExpansionIcon>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Expand/Collapse button container */}
-                <div className={styles.expansionsToggleContainer}>
-                  <div
-                    className={styles.expansionsToggleButton}
-                    onClick={() => dispatch({ type: "TOGGLE_EXPANDED_VIEW" })}
-                    title={
-                      gameConfig.expandedExpansions ? "Collapse" : "Expand"
-                    }
-                  >
-                    ☰
-                  </div>
-                </div>
-              </div>
-            </div>
-          </SubContainerElement>
-        </SubContainer>
-      </Container>
-
-      <Container title="Players" titleStyle="banner">
-        <SubContainer>
-          {playerManager.players.map((player, index) => (
-            <PlayerInput
-              key={index}
-              index={index}
-              player={player}
-              corporations={getAvailableCorporations()}
-              onUpdate={playerManager.updatePlayerData}
-              selectedCorporations={selectedCorporations}
-              availablePlayers={availablePlayers}
-              selectedPlayers={playerManager.players.map(p => p.name).filter(n => n)}
-            />
-          ))}
-        </SubContainer>
-      </Container>
-
-      <Container title="Milestones" titleStyle="banner">
-        <SubContainer>
-          {milestones.selected.map((milestone, index) => (
-            <MilestoneRow
-              key={index}
-              config={{
-                milestone,
-                index,
-                isCustomizable: gameConfig.expansions["Milestones & Awards"],
-              }}
-              gameState={{
-                milestones,
-                players: playerManager.players,
-                getSelectedMilestonesCount,
-              }}
-              handlers={{ updateMilestoneWinner }}
-            />
-          ))}
-        </SubContainer>
-      </Container>
-
-      <Container title="Awards" titleStyle="banner">
-        <SubContainer>
-          <PlayerNamesHeader players={playerManager.players} />
-
-          {awards.selected.map((award, index) => (
-            <AwardRow
-              key={index}
-              config={{
-                award,
-                index,
-                isCustomizable: gameConfig.expansions["Milestones & Awards"],
-              }}
-              gameState={{
-                awards,
-                players: playerManager.players,
-              }}
-              handlers={{ cyclePlacement, isAwardFunded, getFundedAwardsCount }}
-            />
-          ))}
-        </SubContainer>
-      </Container>
-
-      <Container title="Points" titleStyle="banner">
-        <SubContainer>
-          <PlayerNamesHeader players={playerManager.players} />
-
-          {(() => {
-            const sharedGameState = {
-              players: playerManager.players,
-              playerScores: playerManager.playerScores,
-            };
-            const editableOptions = {
-              onChange: playerManager.updatePlayerScore,
-            };
-            const readOnlyOptions = { readOnly: true };
-
-            return (
-              <>
-                <PointInput
-                  config={{ label: "TR", field: "terraformingRating" }}
-                  gameState={sharedGameState}
-                  options={editableOptions}
-                />
-                <PointInput
-                  config={{ label: "Cities", field: "cities" }}
-                  gameState={sharedGameState}
-                  options={editableOptions}
-                />
-                <PointInput
-                  config={{ label: "Greeneries", field: "greeneries" }}
-                  gameState={sharedGameState}
-                  options={editableOptions}
-                />
-                <PointInput
-                  config={{ label: "Cards", field: "cards" }}
-                  gameState={sharedGameState}
-                  options={editableOptions}
-                />
-                {gameConfig.expansions.Turmoil && (
-                  <PointInput
-                    config={{ label: "Turmoil", field: "turmoilPoints" }}
-                    gameState={sharedGameState}
-                    options={editableOptions}
-                  />
-                )}
-
-                <div className={styles.scoreSeparator}>
-                  <PointInput
-                    config={{ label: "Milestones", field: "milestonePoints" }}
-                    gameState={sharedGameState}
-                    options={readOnlyOptions}
-                  />
-                  <PointInput
-                    config={{ label: "Awards", field: "awardPoints" }}
-                    gameState={sharedGameState}
-                    options={readOnlyOptions}
-                  />
-                </div>
-
-                <div className={styles.scoreSeparatorFinal}>
-                  <PointInput
-                    config={{ label: "Total", field: "totalPoints" }}
-                    gameState={sharedGameState}
-                    options={readOnlyOptions}
-                  />
-                </div>
-              </>
-            );
-          })()}
-        </SubContainer>
-      </Container>
+      <PointsContainer
+        playerManager={playerManager}
+        gameConfig={gameConfig}
+      />
 
       <AuthenticationContainer
         actorName={actorName}

@@ -1,24 +1,9 @@
-import React from "react";
-import styles from "../../styles/AddGamePage.module.css";
+import React from 'react';
+import Container from '../Container';
+import { SubContainer } from '../Container';
+import styles from '../../styles/AddGamePage.module.css';
 
-// Helper component for player names header
-const PlayerNamesHeader = React.memo(({ players }) => {
-  return (
-    <div className={styles.playerNamesHeader}>
-      <div className={styles.playerNamesEmpty}>
-        {/* Empty space for alignment */}
-      </div>
-      <div className={styles.playerFieldsContainer}>
-        {players.map((player, playerIndex) => (
-          <div key={playerIndex} className={styles.playerNameCell}>
-            {player.name || `P${playerIndex + 1}`}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-});
-
+// PlayerInput component
 const PlayerInput = React.memo(
   ({ index, player, corporations, onUpdate, selectedCorporations, availablePlayers, selectedPlayers }) => {
     const availableCorporations = React.useMemo(
@@ -74,4 +59,30 @@ const PlayerInput = React.memo(
   },
 );
 
-export { PlayerInput, PlayerNamesHeader };
+function GamePlayersContainer({ 
+  playerManager,
+  availablePlayers,
+  selectedCorporations,
+  getAvailableCorporations
+}) {
+  return (
+    <Container title="Players" titleStyle="banner">
+      <SubContainer>
+        {playerManager.players.map((player, index) => (
+          <PlayerInput
+            key={index}
+            index={index}
+            player={player}
+            corporations={getAvailableCorporations()}
+            onUpdate={playerManager.updatePlayerData}
+            selectedCorporations={selectedCorporations}
+            availablePlayers={availablePlayers}
+            selectedPlayers={playerManager.players.map(p => p.name).filter(n => n)}
+          />
+        ))}
+      </SubContainer>
+    </Container>
+  );
+}
+
+export default GamePlayersContainer;

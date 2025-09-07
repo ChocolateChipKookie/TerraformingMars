@@ -1,35 +1,8 @@
-import React, { useCallback, useMemo } from "react";
-import styles from "../../styles/AddGamePage.module.css";
-import { GAME_CONSTANTS } from "../../data/gameData";
-
-// Award Button component
-function AwardButton({ awardConfig, playerIndex, handlers }) {
-  const { award, awardPlacements } = awardConfig;
-  const { onCyclePlacement, isAwardFunded, getFundedAwardsCount } = handlers;
-  
-  const isDisabled =
-    !award ||
-    (!isAwardFunded(award) &&
-      getFundedAwardsCount() >= GAME_CONSTANTS.MAX_AWARDS_FUNDED);
-  const placement = awardPlacements[award]?.[playerIndex] || 0;
-
-  const getButtonClass = () => {
-    if (isDisabled) return styles.awardButtonDisabled;
-    if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD)
-      return styles.awardButtonGold;
-    if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER)
-      return styles.awardButtonSilver;
-    return styles.awardButtonNone;
-  };
-
-  return (
-    <button
-      className={getButtonClass()}
-      onClick={() => onCyclePlacement(award, playerIndex)}
-      disabled={isDisabled}
-    />
-  );
-}
+import React, { useCallback, useMemo } from 'react';
+import Container from '../Container';
+import { SubContainer } from '../Container';
+import styles from '../../styles/AddGamePage.module.css';
+import { GAME_CONSTANTS } from '../../data/gameData';
 
 // Helper component for milestone/award selection dropdown
 const ObjectiveSelector = React.memo(
@@ -130,52 +103,35 @@ const MilestoneRow = React.memo(({ config, gameState, handlers }) => {
   );
 });
 
-// Helper component for award row
-const AwardRow = React.memo(({ config, gameState, handlers }) => {
-  const { award, index, isCustomizable } = config;
-  const { awards, players } = gameState;
-  const { cyclePlacement, isAwardFunded, getFundedAwardsCount } = handlers;
-  
-  const handleUpdate = useCallback(
-    (newValue) => {
-      awards.updateSelected(index, newValue);
-    },
-    [awards.updateSelected, index],
-  );
-
-  const getDropdownOptions = useCallback(() => {
-    return awards.getAvailableForDropdown(award);
-  }, [awards.getAvailableForDropdown, award]);
-
+function MilestonesContainer({ 
+  milestones,
+  gameConfig,
+  playerManager,
+  getSelectedMilestonesCount,
+  updateMilestoneWinner
+}) {
   return (
-    <div className={styles.pointInputContainer}>
-      {isCustomizable ? (
-        <ObjectiveSelector
-          value={award}
-          onUpdate={handleUpdate}
-          getAvailableOptions={getDropdownOptions}
-          placeholder="Select Award"
-        />
-      ) : (
-        <div className={styles.pointInputLabel}>{award}</div>
-      )}
-
-      <div className={styles.playerFieldsContainer}>
-        {players.map((player, playerIndex) => (
-          <AwardButton
-            key={playerIndex}
-            awardConfig={{ award, awardPlacements: awards.data }}
-            playerIndex={playerIndex}
-            handlers={{
-              onCyclePlacement: cyclePlacement,
-              isAwardFunded,
-              getFundedAwardsCount,
+    <Container title="Milestones" titleStyle="banner">
+      <SubContainer>
+        {milestones.selected.map((milestone, index) => (
+          <MilestoneRow
+            key={index}
+            config={{
+              milestone,
+              index,
+              isCustomizable: gameConfig.expansions["Milestones & Awards"],
             }}
+            gameState={{
+              milestones,
+              players: playerManager.players,
+              getSelectedMilestonesCount,
+            }}
+            handlers={{ updateMilestoneWinner }}
           />
         ))}
-      </div>
-    </div>
+      </SubContainer>
+    </Container>
   );
-});
+}
 
-export { MilestoneRow, AwardRow };
+export default MilestonesContainer;
