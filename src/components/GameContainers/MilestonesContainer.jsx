@@ -1,40 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
 import Container from '../Container';
 import { SubContainer } from '../Container';
-import styles from '../../styles/AddGamePage.module.css';
+import styles from '../../styles/GamePage.module.css';
 import { GAME_CONSTANTS } from '../../data/gameData';
+import { SelectField } from './FormFields';
 
-// Helper component for milestone/award selection dropdown
-const ObjectiveSelector = React.memo(
-  ({ value, onUpdate, getAvailableOptions, placeholder = "Select..." }) => {
-    const availableOptions = useMemo(
-      () => getAvailableOptions(),
-      [getAvailableOptions],
-    );
-
-    const handleChange = useCallback(
-      (e) => {
-        onUpdate(e.target.value);
-      },
-      [onUpdate],
-    );
-
-    return (
-      <select
-        className={styles.containerInput}
-        value={value || ""}
-        onChange={handleChange}
-      >
-        {!value && <option value="">{placeholder}</option>}
-        {availableOptions.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    );
-  },
-);
 
 // Helper component for milestone/award label display
 const ObjectiveLabel = React.memo(({ value }) => {
@@ -42,7 +12,7 @@ const ObjectiveLabel = React.memo(({ value }) => {
 });
 
 // Helper component for milestone row
-const MilestoneRow = React.memo(({ config, gameState, handlers }) => {
+const MilestoneRow = React.memo(({ config, gameState, handlers, readOnly = false }) => {
   const { milestone, index, isCustomizable } = config;
   const { milestones, players, getSelectedMilestonesCount } = gameState;
   const { updateMilestoneWinner } = handlers;
@@ -76,21 +46,28 @@ const MilestoneRow = React.memo(({ config, gameState, handlers }) => {
   return (
     <div className={styles.playerInputDiv}>
       {isCustomizable ? (
-        <ObjectiveSelector
+        <SelectField
           value={milestone}
-          onUpdate={handleUpdate}
-          getAvailableOptions={getDropdownOptions}
+          onChange={(e) => handleUpdate(e.target.value)}
+          options={getDropdownOptions()}
           placeholder="Select Milestone"
+          readOnly={readOnly}
+          className={styles.milestoneDropdown}
         />
       ) : (
         <ObjectiveLabel value={milestone} />
       )}
 
-      <select
+      <SelectField
         className={styles.containerInput}
-        value={milestones.data[milestone] ?? -1}
+        value={milestone ? (milestones.data[milestone] ?? -1) : -1}
         onChange={handleWinnerChange}
         disabled={isMilestoneDisabled}
+        readOnly={readOnly}
+        displayFormatter={(val) => {
+          if (val === -1 || val == null) return "Not achieved";
+          return players[val]?.name || `Player ${val + 1}`;
+        }}
       >
         <option value={-1}>Not achieved</option>
         {players.map((p, i) => (
@@ -98,7 +75,7 @@ const MilestoneRow = React.memo(({ config, gameState, handlers }) => {
             {p.name || `Player ${i + 1}`}
           </option>
         ))}
-      </select>
+      </SelectField>
     </div>
   );
 });
@@ -108,7 +85,8 @@ function MilestonesContainer({
   gameConfig,
   playerManager,
   getSelectedMilestonesCount,
-  updateMilestoneWinner
+  updateMilestoneWinner,
+  readOnly = false
 }) {
   return (
     <Container title="Milestones" titleStyle="banner">
@@ -127,6 +105,7 @@ function MilestonesContainer({
               getSelectedMilestonesCount,
             }}
             handlers={{ updateMilestoneWinner }}
+            readOnly={readOnly}
           />
         ))}
       </SubContainer>

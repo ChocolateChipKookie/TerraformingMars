@@ -6,7 +6,7 @@ import { SubContainer, SubContainerElement } from '../components/Container';
 import AuthenticationContainer from '../components/AuthenticationContainer';
 import LinkButton from '../components/LinkButton';
 import { formStyles } from '../styles/formStyles';
-import styles from '../styles/AddGamePage.module.css';
+import styles from '../styles/GamePage.module.css';
 
 const AddPlayerPage = () => {
   const navigate = useNavigate();

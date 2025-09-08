@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import Container from '../Container';
 import { SubContainer } from '../Container';
-import styles from '../../styles/AddGamePage.module.css';
+import styles from '../../styles/GamePage.module.css';
 
 // Helper component for player names header
 const PlayerNamesHeader = React.memo(({ players }) => {
@@ -98,7 +98,8 @@ function PointInput({ config, gameState, options = {} }) {
 
 function PointsContainer({ 
   playerManager,
-  gameConfig
+  gameConfig,
+  readOnly = false
 }) {
   const sharedGameState = {
     players: playerManager.players,
@@ -106,6 +107,7 @@ function PointsContainer({
   };
   const editableOptions = {
     onChange: playerManager.updatePlayerScore,
+    readOnly: readOnly,
   };
   const readOnlyOptions = { readOnly: true };
 

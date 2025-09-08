@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 import Layout from '../components/Layout';
 import Container from '../components/Container';
 import { SubContainer, SubContainerElement } from '../components/Container';
@@ -30,7 +31,7 @@ function GamesPage() {
   const redirectToGame = () => {
     const game = games.find(g => g.name === searchValue);
     if (game) {
-      navigate(`/game/${game.id}`);
+      navigate(ROUTES.gameDetails(game.id));
     }
   };
 
@@ -89,7 +90,7 @@ function GamesPage() {
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(`/game/${game.id}`);
+                      navigate(ROUTES.gameDetails(game.id));
                     }}
                     className={styles.gameLink}
                   >

@@ -467,3 +467,318 @@ func TestGameWithNote(t *testing.T) {
 	}
 }
 
+func TestUpdateGameMilestonesAndAwards(t *testing.T) {
+	ctx := setupGameFixture(t)
+	
+	// Step 1: Create initial game with milestones and awards
+	winnerIndex := 0
+	initialGameReq := models.CreateGameRequest{
+		Name:        "Test Update Game",
+		Date:        "2024-01-15",
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions: models.Expansions{
+			"Base Game":     true,
+			"Corporate Era": false,
+		},
+		Players: []models.PlayerRequest{
+			{
+				Name:               "Alice",
+				Corporation:        "Ecoline",
+				TerraformingRating: 25,
+				Cities:             5,
+				Greeneries:         7,
+				Cards:              15,
+				TurmoilPoints:      0,
+			},
+			{
+				Name:               "Bob",
+				Corporation:        "Tharsis Republic",
+				TerraformingRating: 23,
+				Cities:             4,
+				Greeneries:         5,
+				Cards:              12,
+				TurmoilPoints:      0,
+			},
+		},
+		Milestones: []models.MilestoneRequest{
+			{Name: "Terraformer", WinnerGamePlayerIndex: &winnerIndex},
+			{Name: "Mayor", WinnerGamePlayerIndex: nil},
+		},
+		Awards: []models.AwardRequest{
+			{
+				Name: "Landlord",
+				Placements: []models.PlacementRequest{
+					{PlayerIndex: 0, Placement: models.PlacementFirst},
+					{PlayerIndex: 1, Placement: models.PlacementSecond},
+				},
+			},
+			{
+				Name:       "Banker",
+				Placements: []models.PlacementRequest{},
+			},
+		},
+	}
+	
+	req := AuthenticatedGameRequest{
+		CreateGameRequest: initialGameReq,
+		ActorName:         ctx.AdminName,
+		ActorPassword:     ctx.AdminPassword,
+	}
+	
+	// Create the game
+	body, _ := json.Marshal(req)
+	httpReq, _ := http.NewRequest("POST", "/games", bytes.NewBuffer(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	
+	rr := httptest.NewRecorder()
+	ctx.Handler.createGame(rr, httpReq)
+	
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("Failed to create game, status: %d, body: %s", rr.Code, rr.Body.String())
+	}
+	
+	var createdGame models.GameWithDetails
+	err := json.NewDecoder(rr.Body).Decode(&createdGame)
+	if err != nil {
+		t.Fatalf("Failed to parse created game: %v", err)
+	}
+	gameID := createdGame.Game.GameID
+	
+	// Verify initial state
+	if len(createdGame.Milestones) != 2 {
+		t.Errorf("Expected 2 milestones, got %d", len(createdGame.Milestones))
+	}
+	if len(createdGame.Awards) != 2 {
+		t.Errorf("Expected 2 awards, got %d", len(createdGame.Awards))
+	}
+	
+	// Count funded awards (those with placements)
+	fundedCount := 0
+	for _, award := range createdGame.Awards {
+		if award.Name == "Landlord" {
+			// Check placements via Placements
+			placementsForAward := 0
+			for _, placement := range createdGame.Placements {
+				if placement.AwardID == award.ID {
+					placementsForAward++
+				}
+			}
+			if placementsForAward > 0 {
+				fundedCount++
+			}
+		}
+	}
+	if fundedCount != 1 {
+		t.Errorf("Initially expected 1 funded award, got %d", fundedCount)
+	}
+	
+	// Step 2: Update the game with different milestones and awards
+	winnerIndex1 := 1
+	updatedGameReq := models.CreateGameRequest{
+		Name:        "Updated Test Game",
+		Date:        "2024-01-15",
+		Map:         "Tharsis",
+		Generations: 11,
+		Expansions: models.Expansions{
+			"Base Game":     true,
+			"Corporate Era": true,
+		},
+		Players: []models.PlayerRequest{
+			{
+				Name:               "Alice",
+				Corporation:        "Ecoline",
+				TerraformingRating: 30,
+				Cities:             6,
+				Greeneries:         8,
+				Cards:              18,
+				TurmoilPoints:      0,
+			},
+			{
+				Name:               "Bob",
+				Corporation:        "Tharsis Republic",
+				TerraformingRating: 28,
+				Cities:             5,
+				Greeneries:         6,
+				Cards:              15,
+				TurmoilPoints:      0,
+			},
+		},
+		Milestones: []models.MilestoneRequest{
+			{Name: "Terraformer", WinnerGamePlayerIndex: &winnerIndex},  // Same winner
+			{Name: "Mayor", WinnerGamePlayerIndex: &winnerIndex1},       // Now achieved by Bob
+			{Name: "Gardener", WinnerGamePlayerIndex: &winnerIndex},     // New milestone
+		},
+		Awards: []models.AwardRequest{
+			{
+				Name: "Landlord",
+				Placements: []models.PlacementRequest{
+					{PlayerIndex: 1, Placement: models.PlacementFirst},   // Swapped
+					{PlayerIndex: 0, Placement: models.PlacementSecond},  // Swapped
+				},
+			},
+			{
+				Name: "Banker",
+				Placements: []models.PlacementRequest{
+					{PlayerIndex: 0, Placement: models.PlacementFirst}, // Now funded
+				},
+			},
+			{
+				Name: "Scientist", // New award
+				Placements: []models.PlacementRequest{
+					{PlayerIndex: 1, Placement: models.PlacementFirst},
+				},
+			},
+		},
+	}
+	
+	updateReq := AuthenticatedGameRequest{
+		CreateGameRequest: updatedGameReq,
+		ActorName:         ctx.AdminName,
+		ActorPassword:     ctx.AdminPassword,
+	}
+	
+	// Update the game
+	body, _ = json.Marshal(updateReq)
+	httpReq, _ = http.NewRequest("PUT", fmt.Sprintf("/games/%d", gameID), bytes.NewBuffer(body))
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq = mux.SetURLVars(httpReq, map[string]string{"id": fmt.Sprintf("%d", gameID)})
+	
+	rr = httptest.NewRecorder()
+	ctx.Handler.updateGame(rr, httpReq)
+	
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Failed to update game, status: %d, body: %s", rr.Code, rr.Body.String())
+	}
+	
+	var updatedGame models.GameWithDetails
+	err = json.NewDecoder(rr.Body).Decode(&updatedGame)
+	if err != nil {
+		t.Fatalf("Failed to parse updated game: %v", err)
+	}
+	
+	// Step 3: Verify the updates
+	
+	// Verify milestones
+	if len(updatedGame.Milestones) != 3 {
+		t.Errorf("Expected 3 milestones after update, got %d", len(updatedGame.Milestones))
+	}
+	
+	milestoneNames := make(map[string]bool)
+	for _, m := range updatedGame.Milestones {
+		milestoneNames[m.Name] = true
+		
+		// Check Mayor milestone winner changed
+		if m.Name == "Mayor" {
+			if m.WinnerGamePlayerID == nil {
+				t.Error("Mayor should have a winner after update")
+			} else {
+				// Find the winner player
+				for _, gp := range updatedGame.GamePlayers {
+					if gp.ID == *m.WinnerGamePlayerID {
+						player, _ := ctx.Repo.GetPlayerByID(gp.PlayerID)
+						if player.Name != "Bob" {
+							t.Errorf("Mayor winner should be Bob, got %s", player.Name)
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	if !milestoneNames["Terraformer"] {
+		t.Error("Terraformer milestone missing after update")
+	}
+	if !milestoneNames["Mayor"] {
+		t.Error("Mayor milestone missing after update")
+	}
+	if !milestoneNames["Gardener"] {
+		t.Error("New milestone Gardener should be added")
+	}
+	
+	// Verify awards
+	if len(updatedGame.Awards) != 3 {
+		t.Errorf("Expected 3 awards after update, got %d", len(updatedGame.Awards))
+	}
+	
+	awardNames := make(map[string]bool)
+	for _, a := range updatedGame.Awards {
+		awardNames[a.Name] = true
+	}
+	
+	if !awardNames["Landlord"] {
+		t.Error("Landlord award missing after update")
+	}
+	if !awardNames["Banker"] {
+		t.Error("Banker award missing after update")
+	}
+	if !awardNames["Scientist"] {
+		t.Error("New award Scientist should be added")
+	}
+	
+	// Verify award placements changed
+	for _, award := range updatedGame.Awards {
+		if award.Name == "Landlord" {
+			// Count placements for this award
+			placementCount := 0
+			for _, p := range updatedGame.Placements {
+				if p.AwardID == award.ID {
+					placementCount++
+					// Check that placements are swapped
+					for _, gp := range updatedGame.GamePlayers {
+						if gp.ID == p.GamePlayerID {
+							player, _ := ctx.Repo.GetPlayerByID(gp.PlayerID)
+							if player.Name == "Bob" && p.Placement != models.PlacementFirst {
+								t.Error("Bob should have first place in Landlord after update")
+							}
+							if player.Name == "Alice" && p.Placement != models.PlacementSecond {
+								t.Error("Alice should have second place in Landlord after update")
+							}
+						}
+					}
+				}
+			}
+			if placementCount != 2 {
+				t.Errorf("Landlord should still have 2 placements, got %d", placementCount)
+			}
+		}
+		
+		if award.Name == "Banker" {
+			// Check that Banker is now funded
+			placementCount := 0
+			for _, p := range updatedGame.Placements {
+				if p.AwardID == award.ID {
+					placementCount++
+				}
+			}
+			if placementCount != 1 {
+				t.Errorf("Banker should now have 1 placement, got %d", placementCount)
+			}
+		}
+	}
+	
+	// Verify other game fields updated
+	if updatedGame.Game.Generations != 11 {
+		t.Errorf("Generations should be updated to 11, got %d", updatedGame.Game.Generations)
+	}
+	
+	if !updatedGame.Game.Expansions["Corporate Era"] {
+		t.Error("Corporate Era expansion should be enabled after update")
+	}
+	
+	// Verify player scores updated
+	for _, gp := range updatedGame.GamePlayers {
+		player, _ := ctx.Repo.GetPlayerByID(gp.PlayerID)
+		if player.Name == "Alice" {
+			if gp.TerraformingRating != 30 {
+				t.Errorf("Alice's TR should be 30, got %d", gp.TerraformingRating)
+			}
+		}
+		if player.Name == "Bob" {
+			if gp.TerraformingRating != 28 {
+				t.Errorf("Bob's TR should be 28, got %d", gp.TerraformingRating)
+			}
+		}
+	}
+}
+

@@ -1,11 +1,12 @@
 import React from 'react';
 import Container from '../Container';
 import { SubContainer } from '../Container';
-import styles from '../../styles/AddGamePage.module.css';
+import styles from '../../styles/GamePage.module.css';
+import { SelectField } from './FormFields';
 
 // PlayerInput component
 const PlayerInput = React.memo(
-  ({ index, player, corporations, onUpdate, selectedCorporations, availablePlayers, selectedPlayers }) => {
+  ({ index, player, corporations, onUpdate, selectedCorporations, availablePlayers, selectedPlayers, readOnly = false }) => {
     const availableCorporations = React.useMemo(
       () =>
         corporations.filter(
@@ -30,10 +31,12 @@ const PlayerInput = React.memo(
 
     return (
       <div className={styles.playerInputDiv}>
-        <select
+        <SelectField
           className={styles.containerInput}
           value={player.name}
           onChange={(e) => onUpdate(index, "name", e.target.value)}
+          readOnly={readOnly}
+          placeholder="Select Player"
         >
           <option value="">Select Player</option>
           {availablePlayersForSelection.map((p) => (
@@ -41,11 +44,13 @@ const PlayerInput = React.memo(
               {p.name}
             </option>
           ))}
-        </select>
-        <select
+        </SelectField>
+        <SelectField
           className={styles.containerInput}
           value={player.corporation}
           onChange={(e) => onUpdate(index, "corporation", e.target.value)}
+          readOnly={readOnly}
+          placeholder="Select Corporation"
         >
           <option value="">Select Corporation</option>
           {availableCorporations.map((corp) => (
@@ -53,7 +58,7 @@ const PlayerInput = React.memo(
               {corp}
             </option>
           ))}
-        </select>
+        </SelectField>
       </div>
     );
   },
@@ -63,7 +68,8 @@ function GamePlayersContainer({
   playerManager,
   availablePlayers,
   selectedCorporations,
-  getAvailableCorporations
+  getAvailableCorporations,
+  readOnly = false
 }) {
   return (
     <Container title="Players" titleStyle="banner">
@@ -78,6 +84,7 @@ function GamePlayersContainer({
             selectedCorporations={selectedCorporations}
             availablePlayers={availablePlayers}
             selectedPlayers={playerManager.players.map(p => p.name).filter(n => n)}
+            readOnly={readOnly}
           />
         ))}
       </SubContainer>

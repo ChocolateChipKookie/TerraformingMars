@@ -588,12 +588,12 @@ func (r *Repository) GetAllGames() ([]models.Game, error) {
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// Parse expansions JSON
 		if err := json.Unmarshal([]byte(expansionsJSON), &g.Expansions); err != nil {
 			return nil, fmt.Errorf("error parsing expansions JSON: %v", err)
 		}
-		
+
 		games = append(games, g)
 	}
 	return games, nil

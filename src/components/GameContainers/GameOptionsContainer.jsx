@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import Container from '../Container';
 import { SubContainer, SubContainerElement } from '../Container';
-import styles from '../../styles/AddGamePage.module.css';
+import styles from '../../styles/GamePage.module.css';
 import { gameData, GAME_CONSTANTS } from '../../data/gameData';
+import { SelectField, InputField } from './FormFields';
 
 // ExpansionIcon component
 function ExpansionIcon({
@@ -155,13 +156,28 @@ function NumericInputWithButtons({
   onChange,
   onDecrement,
   onIncrement,
+  readOnly = false,
 }) {
+  if (readOnly) {
+    return (
+      <div className={styles.numericInputContainer}>
+        <InputField
+          type="text"
+          className={styles.numericInput}
+          value={value}
+          readOnly={true}
+          style={{ textAlign: 'center', width: '100%' }}
+        />
+      </div>
+    );
+  }
+  
   return (
     <div className={styles.numericInputContainer}>
       <button className={styles.numericInputButton} onClick={onDecrement}>
         −
       </button>
-      <input
+      <InputField
         type="text"
         inputMode="numeric"
         pattern="[0-9]*"
@@ -180,7 +196,8 @@ function GameOptionsContainer({
   gameConfig, 
   dispatch,
   playerManager,
-  maxPlayers
+  maxPlayers,
+  readOnly = false
 }) {
   // Get map options memoized
   const mapOptions = useMemo(() => {
@@ -200,7 +217,7 @@ function GameOptionsContainer({
       <SubContainer>
         <SubContainerElement>
           <label>Name:</label>
-          <input
+          <InputField
             type="text"
             className={styles.optionInput}
             value={gameConfig.name}
@@ -211,12 +228,13 @@ function GameOptionsContainer({
                 value: e.target.value,
               })
             }
+            readOnly={readOnly}
           />
         </SubContainerElement>
 
         <SubContainerElement>
           <label>Date:</label>
-          <input
+          <InputField
             type="date"
             className={styles.optionInput}
             value={gameConfig.date}
@@ -224,20 +242,22 @@ function GameOptionsContainer({
               dispatch({ type: "SET_DATE", value: e.target.value })
             }
             required={true}
+            readOnly={readOnly}
           />
         </SubContainerElement>
 
         <SubContainerElement>
           <label>Map:</label>
-          <select
+          <SelectField
             className={styles.optionInput}
             value={gameConfig.map}
             onChange={(e) =>
               dispatch({ type: "SET_MAP", value: e.target.value })
             }
+            readOnly={readOnly}
           >
             {mapOptions}
-          </select>
+          </SelectField>
         </SubContainerElement>
 
         <SubContainerElement>
@@ -260,6 +280,7 @@ function GameOptionsContainer({
                 value: gameConfig.generations + 1,
               })
             }
+            readOnly={readOnly}
           />
         </SubContainerElement>
 
@@ -285,6 +306,7 @@ function GameOptionsContainer({
                 Math.min(maxPlayers, playerManager.playerNumber + 1),
               )
             }
+            readOnly={readOnly}
           />
         </SubContainerElement>
 
@@ -300,9 +322,9 @@ function GameOptionsContainer({
                         key={key}
                         expansion={key}
                         checked={value}
-                        disabled={key === "Base Game"}
+                        disabled={key === "Base Game" || readOnly}
                         onChange={() =>
-                          dispatch({
+                          readOnly ? null : dispatch({
                             type: "TOGGLE_EXPANSION",
                             expansion: key,
                           })
@@ -322,9 +344,9 @@ function GameOptionsContainer({
                         key={key + "_expanded"}
                         expansion={key}
                         checked={value}
-                        disabled={key === "Base Game"}
+                        disabled={key === "Base Game" || readOnly}
                         onChange={() =>
-                          dispatch({
+                          readOnly ? null : dispatch({
                             type: "TOGGLE_EXPANSION",
                             expansion: key,
                           })

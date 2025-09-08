@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
 import Container from '../Container';
 import { SubContainer } from '../Container';
-import styles from '../../styles/AddGamePage.module.css';
+import styles from '../../styles/GamePage.module.css';
 import { GAME_CONSTANTS } from '../../data/gameData';
+import { SelectField } from './FormFields';
 
 // Helper component for player names header
 const PlayerNamesHeader = React.memo(({ players }) => {
@@ -23,7 +24,7 @@ const PlayerNamesHeader = React.memo(({ players }) => {
 });
 
 // Award Button component
-function AwardButton({ awardConfig, playerIndex, handlers }) {
+function AwardButton({ awardConfig, playerIndex, handlers, readOnly = false }) {
   const { award, awardPlacements } = awardConfig;
   const { onCyclePlacement, isAwardFunded, getFundedAwardsCount } = handlers;
   
@@ -46,45 +47,14 @@ function AwardButton({ awardConfig, playerIndex, handlers }) {
     <button
       className={getButtonClass()}
       onClick={() => onCyclePlacement(award, playerIndex)}
-      disabled={isDisabled}
+      disabled={isDisabled || readOnly}
     />
   );
 }
 
-// Helper component for milestone/award selection dropdown
-const ObjectiveSelector = React.memo(
-  ({ value, onUpdate, getAvailableOptions, placeholder = "Select..." }) => {
-    const availableOptions = useMemo(
-      () => getAvailableOptions(),
-      [getAvailableOptions],
-    );
-
-    const handleChange = useCallback(
-      (e) => {
-        onUpdate(e.target.value);
-      },
-      [onUpdate],
-    );
-
-    return (
-      <select
-        className={styles.containerInput}
-        value={value || ""}
-        onChange={handleChange}
-      >
-        {!value && <option value="">{placeholder}</option>}
-        {availableOptions.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    );
-  },
-);
 
 // Helper component for award row
-const AwardRow = React.memo(({ config, gameState, handlers }) => {
+const AwardRow = React.memo(({ config, gameState, handlers, readOnly = false }) => {
   const { award, index, isCustomizable } = config;
   const { awards, players } = gameState;
   const { cyclePlacement, isAwardFunded, getFundedAwardsCount } = handlers;
@@ -103,11 +73,13 @@ const AwardRow = React.memo(({ config, gameState, handlers }) => {
   return (
     <div className={styles.pointInputContainer}>
       {isCustomizable ? (
-        <ObjectiveSelector
+        <SelectField
           value={award}
-          onUpdate={handleUpdate}
-          getAvailableOptions={getDropdownOptions}
+          onChange={(e) => handleUpdate(e.target.value)}
+          options={getDropdownOptions()}
           placeholder="Select Award"
+          readOnly={readOnly}
+          className={styles.objectiveDropdown}
         />
       ) : (
         <div className={styles.pointInputLabel}>{award}</div>
@@ -124,6 +96,7 @@ const AwardRow = React.memo(({ config, gameState, handlers }) => {
               isAwardFunded,
               getFundedAwardsCount,
             }}
+            readOnly={readOnly}
           />
         ))}
       </div>
@@ -137,7 +110,8 @@ function AwardsContainer({
   playerManager,
   cyclePlacement,
   isAwardFunded,
-  getFundedAwardsCount
+  getFundedAwardsCount,
+  readOnly = false
 }) {
   return (
     <Container title="Awards" titleStyle="banner">
@@ -157,6 +131,7 @@ function AwardsContainer({
               players: playerManager.players,
             }}
             handlers={{ cyclePlacement, isAwardFunded, getFundedAwardsCount }}
+            readOnly={readOnly}
           />
         ))}
       </SubContainer>

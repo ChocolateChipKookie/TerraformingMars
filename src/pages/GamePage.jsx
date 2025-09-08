@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useReducer,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ROUTES } from "../constants/routes";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
@@ -17,7 +17,7 @@ import AwardsContainer from "../components/GameContainers/AwardsContainer";
 import PointsContainer from "../components/GameContainers/PointsContainer";
 import { SubContainer, SubContainerElement } from "../components/Container";
 import LinkButton from "../components/LinkButton";
-import styles from "../styles/AddGamePage.module.css";
+import styles from "../styles/GamePage.module.css";
 import { gameData, GAME_CONSTANTS } from "../data/gameData";
 
 // Local components for this page only
@@ -83,6 +83,14 @@ const gameConfigReducer = (state, action) => {
         expansions: {
           ...state.expansions,
           [action.expansion]: !state.expansions[action.expansion],
+        },
+      };
+    case "SET_EXPANSION":
+      return {
+        ...state,
+        expansions: {
+          ...state.expansions,
+          [action.expansion]: action.value,
         },
       };
     case "TOGGLE_EXPANDED_VIEW":
@@ -326,8 +334,20 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 }
 
 
-function AddGamePage() {
+function GamePage() {
   const navigate = useNavigate();
+  const { gameId } = useParams();
+  const [searchParams] = useSearchParams();
+  
+  // Determine mode: 'view', 'edit', or 'add'
+  const [mode, setMode] = useState(() => {
+    if (!gameId) return 'add'; // No gameId means adding new game
+    return searchParams.get('edit') === 'true' ? 'edit' : 'view';
+  });
+  
+  // Loading state for fetching game data
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   // Use reducer for game configuration
   const [gameConfig, dispatch] = useReducer(
@@ -353,6 +373,9 @@ function AddGamePage() {
   // Available players from backend
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
+  
+  // Trigger for refetching data
+  const [shouldRefetch, setShouldRefetch] = useState(false);
 
   // Use custom hooks for milestones and awards
   const milestones = useGameObjectives(
@@ -368,15 +391,126 @@ function AddGamePage() {
     playerManager.playerNumber,
   );
 
-  // Set default date and fetch players on mount
+  // Fetch game data if in view/edit mode
   useEffect(() => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    dispatch({ type: "SET_DATE", value: `${year}-${month}-${day}` });
+    const fetchGameData = async () => {
+      if (!gameId) return;
+      
+      setIsLoading(true);
+      setLoadError(null);
+      
+      try {
+        const response = await fetch(`http://localhost:8080/api/games/${gameId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch game');
+        }
+        
+        const gameData = await response.json();
+        
+        console.log('Fetched game data:', gameData);
+        
+        // Parse and populate the game data into state
+        // Game basic info
+        dispatch({ type: "SET_FIELD", field: "name", value: gameData.game.name });
+        dispatch({ type: "SET_FIELD", field: "date", value: gameData.game.date });
+        dispatch({ type: "SET_MAP", value: gameData.game.map });
+        dispatch({ type: "SET_GENERATIONS", value: gameData.game.generations });
+        
+        // Set expansions one by one to maintain order
+        if (gameData.game.expansions) {
+          Object.keys(gameConfigInitialState.expansions).forEach(exp => {
+            const value = gameData.game.expansions[exp] || false;
+            dispatch({ type: "SET_EXPANSION", expansion: exp, value: value });
+          });
+        }
+        
+        // Set players
+        if (gameData.game_players && gameData.players) {
+          playerManager.setPlayerNumber(gameData.game_players.length);
+          
+          // Map game_players to our player format
+          const mappedPlayers = gameData.game_players.map((gp, index) => {
+            const player = gameData.players.find(p => p.id === gp.player_id);
+            return {
+              name: player ? player.name : '',
+              corporation: gp.corporation
+            };
+          });
+          
+          // Update player data
+          mappedPlayers.forEach((player, index) => {
+            playerManager.updatePlayerData(index, 'name', player.name);
+            playerManager.updatePlayerData(index, 'corporation', player.corporation);
+          });
+          
+          // Update player scores
+          gameData.game_players.forEach((gp, index) => {
+            playerManager.updatePlayerScore(index, 'terraformingRating', String(gp.terraforming_rating));
+            playerManager.updatePlayerScore(index, 'cities', String(gp.cities));
+            playerManager.updatePlayerScore(index, 'greeneries', String(gp.greeneries));
+            playerManager.updatePlayerScore(index, 'cards', String(gp.cards));
+            playerManager.updatePlayerScore(index, 'turmoilPoints', String(gp.turmoil_points));
+          });
+        }
+        
+        // Set milestones
+        if (gameData.milestones) {
+          const milestoneData = {};
+          gameData.milestones.forEach(m => {
+            // Find the player index from game_player_id
+            const winnerIndex = m.winner_game_player_id 
+              ? gameData.game_players.findIndex(gp => gp.id === m.winner_game_player_id)
+              : -1;
+            milestoneData[m.name] = winnerIndex;
+          });
+          milestones.setData(milestoneData);
+          milestones.selected = gameData.milestones.map(m => m.name);
+        }
+        
+        // Set awards
+        if (gameData.awards && gameData.award_placements) {
+          const awardData = {};
+          gameData.awards.forEach(a => {
+            awardData[a.name] = {};
+            // Find placements for this award
+            const placements = gameData.award_placements.filter(p => p.award_id === a.id);
+            placements.forEach(p => {
+              const playerIndex = gameData.game_players.findIndex(gp => gp.id === p.game_player_id);
+              if (playerIndex !== -1) {
+                awardData[a.name][playerIndex] = p.placement;
+              }
+            });
+          });
+          awards.setData(awardData);
+          awards.selected = gameData.awards.map(a => a.name);
+        }
+        
+      } catch (err) {
+        console.error('Failed to fetch game:', err);
+        setLoadError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Fetch available players
+    if (shouldRefetch || gameId) {
+      fetchGameData();
+      setShouldRefetch(false);
+    }
+  }, [gameId, shouldRefetch]); // Fetch when gameId changes or shouldRefetch is triggered
+
+  // Set default date for new games and fetch players
+  useEffect(() => {
+    // Only set default date for new games
+    if (mode === 'add') {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      dispatch({ type: "SET_DATE", value: `${year}-${month}-${day}` });
+    }
+    
+    // Always fetch available players
     const fetchPlayers = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/players');
@@ -394,7 +528,7 @@ function AddGamePage() {
     };
     
     fetchPlayers();
-  }, []);
+  }, [mode]);
 
   // Adjust player count when map changes
   useEffect(() => {
@@ -640,9 +774,20 @@ function AddGamePage() {
       actor_password: actorPassword,
     };
 
+    console.log('Sending game data:', gameData);
+    console.log('Milestones selected:', milestones.selected);
+    console.log('Milestones data:', milestones.data);
+    console.log('Awards selected:', awards.selected);
+    console.log('Awards data:', awards.data);
+
     try {
-      const response = await fetch('http://localhost:8080/api/games', {
-        method: 'POST',
+      const isEditing = mode === 'edit' && gameId;
+      const url = isEditing 
+        ? `http://localhost:8080/api/games/${gameId}`
+        : 'http://localhost:8080/api/games';
+      
+      const response = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -651,11 +796,14 @@ function AddGamePage() {
 
       if (response.ok) {
         const result = await response.json();
-        alert(`Game created successfully! Game ID: ${result.game.id}`);
+        const message = isEditing 
+          ? `Game updated successfully!`
+          : `Game created successfully! Game ID: ${result.game.id}`;
+        alert(message);
         navigate(ROUTES.PLAYED_GAMES);
       } else {
         const error = await response.json();
-        alert(`Failed to create game: ${error.error || 'Unknown error'}`);
+        alert(`Failed to ${isEditing ? 'update' : 'create'} game: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error submitting game:', error);
@@ -663,15 +811,53 @@ function AddGamePage() {
     }
   };
 
+  // Handle cancel edit - reload original data
+  const handleCancelEdit = () => {
+    setMode('view');
+    // Trigger re-fetch of game data to discard changes
+    setShouldRefetch(true);
+  };
+
+  // Get page title based on mode
+  const getPageTitle = () => {
+    if (mode === 'add') return 'Add Game';
+    if (mode === 'edit') return 'Edit Game';
+    return 'Game Details';
+  };
+
+  // Handle loading and error states
+  if (isLoading) {
+    return (
+      <Layout>
+        <Container title="Loading..." />
+      </Layout>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <Layout>
+        <Container title="Error" />
+        <Container>
+          <p>Failed to load game: {loadError}</p>
+          <LinkButton onClick={() => navigate(ROUTES.PLAYED_GAMES)}>
+            Back to Games
+          </LinkButton>
+        </Container>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <Container title="Add game" />
+      <Container title={getPageTitle()} />
 
       <GameOptionsContainer 
         gameConfig={gameConfig}
         dispatch={dispatch}
         playerManager={playerManager}
         maxPlayers={maxPlayers}
+        readOnly={mode === 'view'}
       />
 
       <GamePlayersContainer
@@ -679,6 +865,7 @@ function AddGamePage() {
         availablePlayers={availablePlayers}
         selectedCorporations={selectedCorporations}
         getAvailableCorporations={getAvailableCorporations}
+        readOnly={mode === 'view'}
       />
 
       <MilestonesContainer
@@ -687,6 +874,7 @@ function AddGamePage() {
         playerManager={playerManager}
         getSelectedMilestonesCount={getSelectedMilestonesCount}
         updateMilestoneWinner={updateMilestoneWinner}
+        readOnly={mode === 'view'}
       />
 
       <AwardsContainer
@@ -696,23 +884,29 @@ function AddGamePage() {
         cyclePlacement={cyclePlacement}
         isAwardFunded={isAwardFunded}
         getFundedAwardsCount={getFundedAwardsCount}
+        readOnly={mode === 'view'}
       />
 
       <PointsContainer
         playerManager={playerManager}
         gameConfig={gameConfig}
+        readOnly={mode === 'view'}
       />
 
-      <AuthenticationContainer
-        actorName={actorName}
-        setActorName={setActorName}
-        actorPassword={actorPassword}
-        setActorPassword={setActorPassword}
-        players={availablePlayers}
-        playersLoading={playersLoading}
-        title="Authentication"
-      />
+      {/* Only show authentication in add/edit modes */}
+      {(mode === 'add' || mode === 'edit') && (
+        <AuthenticationContainer
+          actorName={actorName}
+          setActorName={setActorName}
+          actorPassword={actorPassword}
+          setActorPassword={setActorPassword}
+          players={availablePlayers}
+          playersLoading={playersLoading}
+          title="Authentication"
+        />
+      )}
 
+      {/* Dynamic buttons based on mode */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between',
@@ -721,21 +915,55 @@ function AddGamePage() {
         maxWidth: '900px',
         padding: '0'
       }}>
-        <LinkButton 
-          onClick={() => navigate(ROUTES.HOME)}
-          style={{ width: 'calc(50% - 1rem)' }}
-        >
-          Main page
-        </LinkButton>
-        <LinkButton 
-          onClick={handleSubmitGame} 
-          style={{ backgroundColor: '#4CAF50', width: 'calc(50% - 1rem)' }}
-        >
-          Submit Game
-        </LinkButton>
+        {mode === 'view' ? (
+          <>
+            <LinkButton 
+              onClick={() => navigate(ROUTES.PLAYED_GAMES)}
+              style={{ width: 'calc(50% - 1rem)' }}
+            >
+              Back to Games
+            </LinkButton>
+            <LinkButton 
+              onClick={() => setMode('edit')} 
+              style={{ backgroundColor: '#2196F3', width: 'calc(50% - 1rem)' }}
+            >
+              Edit Game
+            </LinkButton>
+          </>
+        ) : mode === 'edit' ? (
+          <>
+            <LinkButton 
+              onClick={handleCancelEdit}
+              style={{ width: 'calc(50% - 1rem)' }}
+            >
+              Cancel
+            </LinkButton>
+            <LinkButton 
+              onClick={handleSubmitGame} 
+              style={{ backgroundColor: '#4CAF50', width: 'calc(50% - 1rem)' }}
+            >
+              Save Changes
+            </LinkButton>
+          </>
+        ) : (
+          <>
+            <LinkButton 
+              onClick={() => navigate(ROUTES.HOME)}
+              style={{ width: 'calc(50% - 1rem)' }}
+            >
+              Main page
+            </LinkButton>
+            <LinkButton 
+              onClick={handleSubmitGame} 
+              style={{ backgroundColor: '#4CAF50', width: 'calc(50% - 1rem)' }}
+            >
+              Submit Game
+            </LinkButton>
+          </>
+        )}
       </div>
     </Layout>
   );
 }
 
-export default AddGamePage;
+export default GamePage;

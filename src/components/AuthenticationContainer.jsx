@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Container from './Container';
 import { SubContainer, SubContainerElement } from './Container';
-import styles from '../styles/AddGamePage.module.css';
+import styles from '../styles/GamePage.module.css';
 
 const AuthenticationContainer = ({ 
   actorName, 

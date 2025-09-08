@@ -1,15 +1,22 @@
 /* AddGamePage Component Styles - Consolidated without duplication */
 
-/* Base Form Styles */
-.optionInput {
+/* Common input/select styles */
+.commonInput {
   text-align: center;
   font-family: inherit;
   font-size: 1.8rem;
-  background: inherit;
-  float: right;
   height: 3rem;
-  width: 50%;
   box-sizing: border-box;
+  border: 1px solid #999;
+  background-color: inherit;
+  border-radius: 4px;
+}
+
+/* Base Form Styles */
+.optionInput {
+  composes: commonInput;
+  float: right;
+  width: 50%;
 }
 
 .subcontainerBox {
@@ -79,10 +86,7 @@
 }
 
 .containerInput {
-  composes: baseInput;
-  border-color: #666;
-  border-radius: 4px;
-  background-color: white;
+  composes: commonInput baseInput;
   width: 48%;
   display: inline-block;
 }
@@ -97,6 +101,11 @@
 .milestoneLabel {
   composes: baseLabel;
   border-color: #666;
+  width: 48%;
+}
+
+.milestoneDropdown {
+  composes: commonInput;
   width: 48%;
 }
 
@@ -157,16 +166,11 @@
 }
 
 .numericInput {
-  composes: centeredText inheritFont;
+  composes: commonInput;
   font-size: 2rem;
   font-weight: bold;
-  background: inherit;
-  height: 3rem;
   flex: 1;
   min-width: 0;
-  box-sizing: border-box;
-  border: 1px solid #777;
-  border-radius: 3px;
 }
 
 /* Score Cell Styles */
@@ -188,10 +192,12 @@
 }
 
 .scoreInput {
-  composes: scoreCell;
-  background: inherit;
+  composes: commonInput;
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex: 1;
+  min-width: 0;
   line-height: normal;
-  box-sizing: border-box;
 }
 
 /* Layout Pattern Consolidation */
@@ -210,6 +216,11 @@
 .pointInputLabel {
   composes: baseLabel;
   border-color: #666;
+  width: 28%;
+}
+
+.objectiveDropdown {
+  composes: commonInput;
   width: 28%;
 }
 
