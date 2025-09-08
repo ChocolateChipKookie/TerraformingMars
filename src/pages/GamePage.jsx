@@ -207,6 +207,7 @@ function usePlayerManagement(
 function useGameObjectives(type, map, expansions, playerNumber) {
   const [selected, setSelected] = useState([]);
   const [data, setData] = useState({});
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const isAward = type === "award";
   const dataKey = isAward ? "awards" : "milestones";
@@ -243,6 +244,9 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 
   // Initialize objectives when map or expansions change
   useEffect(() => {
+    // Skip initialization if already initialized (loading existing game)
+    if (isInitialized) return;
+    
     if (expansions["Milestones & Awards"]) {
       const mapObjectives = gameData[dataKey][map] || [];
       const numSlots = expansions["Venus Next"] ? venusSlots : defaultSlots;
@@ -323,13 +327,22 @@ function useGameObjectives(type, map, expansions, playerNumber) {
     [selected, data, playerNumber, isAward],
   );
 
+  // Function to load existing game data
+  const loadGameData = useCallback((selectedItems, itemData) => {
+    setSelected(selectedItems);
+    setData(itemData);
+    setIsInitialized(true);
+  }, []);
+
   return {
     selected,
+    setSelected,
     data,
     setData,
     getAvailable,
     getAvailableForDropdown,
     updateSelected,
+    loadGameData,
   };
 }
 
@@ -456,22 +469,25 @@ function GamePage() {
         // Set milestones
         if (gameData.milestones) {
           const milestoneData = {};
+          const milestoneNames = [];
           gameData.milestones.forEach(m => {
             // Find the player index from game_player_id
             const winnerIndex = m.winner_game_player_id 
               ? gameData.game_players.findIndex(gp => gp.id === m.winner_game_player_id)
               : -1;
             milestoneData[m.name] = winnerIndex;
+            milestoneNames.push(m.name);
           });
-          milestones.setData(milestoneData);
-          milestones.selected = gameData.milestones.map(m => m.name);
+          milestones.loadGameData(milestoneNames, milestoneData);
         }
         
         // Set awards
         if (gameData.awards && gameData.award_placements) {
           const awardData = {};
+          const awardNames = [];
           gameData.awards.forEach(a => {
             awardData[a.name] = {};
+            awardNames.push(a.name);
             // Find placements for this award
             const placements = gameData.award_placements.filter(p => p.award_id === a.id);
             placements.forEach(p => {
@@ -480,9 +496,14 @@ function GamePage() {
                 awardData[a.name][playerIndex] = p.placement;
               }
             });
+            // Initialize empty placements for players without awards
+            for (let i = 0; i < gameData.game_players.length; i++) {
+              if (awardData[a.name][i] === undefined) {
+                awardData[a.name][i] = 0;
+              }
+            }
           });
-          awards.setData(awardData);
-          awards.selected = gameData.awards.map(a => a.name);
+          awards.loadGameData(awardNames, awardData);
         }
         
       } catch (err) {
