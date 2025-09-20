@@ -6,6 +6,7 @@ import Container from '../components/Container';
 import { SubContainer, SubContainerElement } from '../components/Container';
 import LinkButton from '../components/LinkButton';
 import styles from '../styles/GamesPage.module.css';
+import { gameApi } from '../services/api';
 
 function GamesPage() {
   const navigate = useNavigate();
@@ -13,8 +14,7 @@ function GamesPage() {
   const [searchValue, setSearchValue] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/games')
-      .then(response => response.json())
+    gameApi.getAll()
       .then(data => {
         if (data && Array.isArray(data)) {
           setGames(data);
@@ -23,7 +23,6 @@ function GamesPage() {
         }
       })
       .catch(error => {
-        console.error('Error loading games:', error);
         setGames([]);
       });
   }, []);

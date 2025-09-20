@@ -1,25 +1,8 @@
 import React, { useCallback } from 'react';
 import Container from '../Container';
 import { SubContainer } from '../Container';
+import { PlayerNamesHeader } from '../Common';
 import styles from '../../styles/GamePage.module.css';
-
-// Helper component for player names header
-const PlayerNamesHeader = React.memo(({ players }) => {
-  return (
-    <div className={styles.playerNamesHeader}>
-      <div className={styles.playerNamesEmpty}>
-        {/* Empty space for alignment */}
-      </div>
-      <div className={styles.playerFieldsContainer}>
-        {players.map((player, playerIndex) => (
-          <div key={playerIndex} className={styles.playerNameCell}>
-            {player.name || `P${playerIndex + 1}`}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-});
 
 // Helper component for read-only score display
 const ReadOnlyScoreCell = React.memo(({ playerIndex, playerScores, field }) => {

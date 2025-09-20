@@ -15,39 +15,12 @@ import GamePlayersContainer from "../components/GameContainers/GamePlayersContai
 import MilestonesContainer from "../components/GameContainers/MilestonesContainer";
 import AwardsContainer from "../components/GameContainers/AwardsContainer";
 import PointsContainer from "../components/GameContainers/PointsContainer";
-import { SubContainer, SubContainerElement } from "../components/Container";
+import GameNotesAndImagesContainer from "../components/GameContainers/GameNotesAndImagesContainer";
 import LinkButton from "../components/LinkButton";
+import { NumericInputWithButtons } from "../components/Common";
 import styles from "../styles/GamePage.module.css";
 import { gameData, GAME_CONSTANTS } from "../data/gameData";
-
-// Local components for this page only
-
-function NumericInputWithButtons({
-  value,
-  onChange,
-  onDecrement,
-  onIncrement,
-}) {
-  return (
-    <div className={styles.numericInputContainer}>
-      <button className={styles.numericInputButton} onClick={onDecrement}>
-        −
-      </button>
-      <input
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        className={styles.numericInput}
-        value={value}
-        onChange={onChange}
-      />
-      <button className={styles.numericInputButton} onClick={onIncrement}>
-        +
-      </button>
-    </div>
-  );
-}
-
+import { gameApi, playerApi } from "../services/api";
 
 
 // Game configuration reducer
@@ -69,6 +42,8 @@ const gameConfigInitialState = {
     Promo: false,
   },
   expandedExpansions: false,
+  note: "",
+  images: [],
 };
 
 const gameConfigReducer = (state, action) => {
@@ -103,6 +78,20 @@ const gameConfigReducer = (state, action) => {
         Math.max(GAME_CONSTANTS.MIN_GENERATIONS, action.value),
       );
       return { ...state, generations };
+    case "SET_NOTE":
+      return { ...state, note: action.value };
+    case "ADD_IMAGE":
+      if (state.images.length < 4) {
+        return { ...state, images: [...state.images, action.image] };
+      }
+      return state;
+    case "REMOVE_IMAGE":
+      return {
+        ...state,
+        images: state.images.filter((_, index) => index !== action.index),
+      };
+    case "SET_IMAGES":
+      return { ...state, images: action.images };
     default:
       return state;
   }
@@ -413,14 +402,7 @@ function GamePage() {
       setLoadError(null);
       
       try {
-        const response = await fetch(`http://localhost:8080/api/games/${gameId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch game');
-        }
-        
-        const gameData = await response.json();
-        
-        console.log('Fetched game data:', gameData);
+        const gameData = await gameApi.getById(gameId);
         
         // Parse and populate the game data into state
         // Game basic info
@@ -428,6 +410,8 @@ function GamePage() {
         dispatch({ type: "SET_FIELD", field: "date", value: gameData.game.date });
         dispatch({ type: "SET_MAP", value: gameData.game.map });
         dispatch({ type: "SET_GENERATIONS", value: gameData.game.generations });
+        dispatch({ type: "SET_NOTE", value: gameData.game.note || "" });
+        dispatch({ type: "SET_IMAGES", images: gameData.images || [] });
         
         // Set expansions one by one to maintain order
         if (gameData.game.expansions) {
@@ -507,7 +491,6 @@ function GamePage() {
         }
         
       } catch (err) {
-        console.error('Failed to fetch game:', err);
         setLoadError(err.message);
       } finally {
         setIsLoading(false);
@@ -534,13 +517,10 @@ function GamePage() {
     // Always fetch available players
     const fetchPlayers = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/players');
-        if (response.ok) {
-          const data = await response.json();
-          // Sort all players alphabetically by name
-          const sortedPlayers = (data || []).sort((a, b) => a.name.localeCompare(b.name));
-          setAvailablePlayers(sortedPlayers);
-        }
+        const data = await playerApi.getAll();
+        // Sort all players alphabetically by name
+        const sortedPlayers = data.sort((a, b) => a.name.localeCompare(b.name));
+        setAvailablePlayers(sortedPlayers);
       } catch (err) {
         console.error('Failed to fetch players:', err);
       } finally {
@@ -758,7 +738,7 @@ function GamePage() {
       map: gameConfig.map,
       generations: gameConfig.generations,
       expansions: gameConfig.expansions,
-      note: null,
+      note: gameConfig.note || null,
 
       // Format players with scores
       players: playerManager.players.map((player, index) => ({
@@ -788,47 +768,40 @@ function GamePage() {
           })),
       })),
 
-      images: [],
+      images: gameConfig.images.map(img => {
+        // Handle new uploads (have image_data) vs existing images (have id)
+        if (img.image_data) {
+          return {
+            image_data: img.image_data,
+            mime_type: img.mime_type,
+          };
+        } else {
+          return {
+            id: img.id,
+          };
+        }
+      }),
 
       // Authentication from form inputs
       actor_name: actorName,
       actor_password: actorPassword,
     };
 
-    console.log('Sending game data:', gameData);
-    console.log('Milestones selected:', milestones.selected);
-    console.log('Milestones data:', milestones.data);
-    console.log('Awards selected:', awards.selected);
-    console.log('Awards data:', awards.data);
-
     try {
       const isEditing = mode === 'edit' && gameId;
-      const url = isEditing 
-        ? `http://localhost:8080/api/games/${gameId}`
-        : 'http://localhost:8080/api/games';
       
-      const response = await fetch(url, {
-        method: isEditing ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(gameData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        const message = isEditing 
-          ? `Game updated successfully!`
-          : `Game created successfully! Game ID: ${result.game.id}`;
-        alert(message);
-        navigate(ROUTES.PLAYED_GAMES);
-      } else {
-        const error = await response.json();
-        alert(`Failed to ${isEditing ? 'update' : 'create'} game: ${error.error || 'Unknown error'}`);
-      }
+      const result = isEditing 
+        ? await gameApi.update(gameId, gameData)
+        : await gameApi.create(gameData);
+      
+      const message = isEditing 
+        ? `Game updated successfully!`
+        : `Game created successfully! Game ID: ${result.game.id}`;
+      alert(message);
+      navigate(ROUTES.PLAYED_GAMES);
     } catch (error) {
-      console.error('Error submitting game:', error);
-      alert('Failed to submit game. Please check if the backend is running.');
+      const isEditing = mode === 'edit' && gameId;
+      alert(`Failed to ${isEditing ? 'update' : 'create'} game: ${error.message}`);
     }
   };
 
@@ -911,6 +884,12 @@ function GamePage() {
       <PointsContainer
         playerManager={playerManager}
         gameConfig={gameConfig}
+        readOnly={mode === 'view'}
+      />
+
+      <GameNotesAndImagesContainer
+        gameConfig={gameConfig}
+        dispatch={dispatch}
         readOnly={mode === 'view'}
       />
 

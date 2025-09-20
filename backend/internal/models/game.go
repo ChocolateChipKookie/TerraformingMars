@@ -7,8 +7,8 @@ import (
 )
 
 type Game struct {
-	ID          int        `json:"-" db:"id"`                   // Internal auto-increment primary key
-	GameID      int        `json:"id" db:"game_id"`             // User-facing stable game ID
+	ID          int        `json:"-" db:"id"`       // Internal auto-increment primary key
+	GameID      int        `json:"id" db:"game_id"` // User-facing stable game ID
 	Revision    int        `json:"revision" db:"revision"`
 	Name        string     `json:"name" db:"name"`
 	Date        string     `json:"date" db:"date"` // ISO date string YYYY-MM-DD
@@ -24,7 +24,7 @@ type PlayerRole string
 
 const (
 	RoleAdmin  PlayerRole = "admin"
-	RoleUser   PlayerRole = "user" 
+	RoleUser   PlayerRole = "user"
 	RolePlayer PlayerRole = "player"
 )
 
@@ -42,13 +42,13 @@ func (p Placement) IsValid() bool {
 }
 
 type Player struct {
-	ID           int         `json:"id" db:"id"`
-	Name         string      `json:"name" db:"name"`
-	PasswordHash *string     `json:"-" db:"password_hash"` // Never return in JSON
-	Role         PlayerRole  `json:"role" db:"role"`
-	CreatedBy    *int        `json:"created_by" db:"created_by"` // Foreign key to player.id
-	CreatedAt    string      `json:"created_at" db:"created_at"` // ISO datetime string
-	UpdatedAt    string      `json:"updated_at" db:"updated_at"` // ISO datetime string
+	ID           int        `json:"id" db:"id"`
+	Name         string     `json:"name" db:"name"`
+	PasswordHash *string    `json:"-" db:"password_hash"` // Never return in JSON
+	Role         PlayerRole `json:"role" db:"role"`
+	CreatedBy    *int       `json:"created_by" db:"created_by"` // Foreign key to player.id
+	CreatedAt    string     `json:"created_at" db:"created_at"` // ISO datetime string
+	UpdatedAt    string     `json:"updated_at" db:"updated_at"` // ISO datetime string
 }
 
 type GamePlayer struct {
@@ -169,9 +169,14 @@ type AwardRequest struct {
 }
 
 // ImageRequest represents an image in the create game request
+// Can either be new image data or reference to existing image
 type ImageRequest struct {
-	ImageData []byte `json:"image_data"`
-	MimeType  string `json:"mime_type"`
+	// For new images
+	ImageData []byte `json:"image_data,omitempty"`
+	MimeType  string `json:"mime_type,omitempty"`
+
+	// For existing images (reference by ID)
+	ID *int `json:"id,omitempty"`
 }
 
 // CreateGameRequest represents the request body for creating a game
@@ -188,4 +193,3 @@ type CreateGameRequest struct {
 	Images      []ImageRequest     `json:"images"`
 	CreatedBy   int                `json:"created_by"`
 }
-

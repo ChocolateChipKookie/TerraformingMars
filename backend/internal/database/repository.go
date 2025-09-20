@@ -547,12 +547,26 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 
 	// Create game images (images should already be processed by API layer)
 	for i, imageReq := range req.Images {
-		_, err = tx.Exec(`
-			INSERT INTO game_image (game_id, image_data, mime_type, display_order)
-			VALUES (?, ?, ?, ?)
-		`, internalID, imageReq.ImageData, imageReq.MimeType, i)
-		if err != nil {
-			return nil, fmt.Errorf("error creating image %d: %v", i, err)
+		if imageReq.ID != nil {
+			// For existing images, just create a reference (copy the image to new revision)
+			_, err = tx.Exec(`
+				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
+				SELECT ?, image_data, mime_type, ?
+				FROM game_image
+				WHERE id = ?
+			`, internalID, i, *imageReq.ID)
+			if err != nil {
+				return nil, fmt.Errorf("error copying existing image %d: %v", *imageReq.ID, err)
+			}
+		} else {
+			// For new images, insert the processed data
+			_, err = tx.Exec(`
+				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
+				VALUES (?, ?, ?, ?)
+			`, internalID, imageReq.ImageData, imageReq.MimeType, i)
+			if err != nil {
+				return nil, fmt.Errorf("error creating image %d: %v", i, err)
+			}
 		}
 	}
 
@@ -782,4 +796,22 @@ func (r *Repository) GetGameImageData(imageID int) ([]byte, string, error) {
 		return nil, "", err
 	}
 	return imageData, mimeType, nil
+}
+
+// GetImageGameID retrieves the user-facing game_id for a specific image (for ownership validation)
+func (r *Repository) GetImageGameID(imageID int) (int, error) {
+	var userFacingGameID int
+	err := r.db.QueryRow(`
+		SELECT game.game_id
+		FROM game_image
+		JOIN game ON game_image.game_id = game.id
+		WHERE game_image.id = ?
+	`, imageID).Scan(&userFacingGameID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, fmt.Errorf("image with ID %d not found", imageID)
+		}
+		return 0, err
+	}
+	return userFacingGameID, nil
 }

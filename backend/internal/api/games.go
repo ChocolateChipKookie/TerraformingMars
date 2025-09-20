@@ -14,7 +14,7 @@ import (
 // Request structure for creating/updating a game with authentication
 type AuthenticatedGameRequest struct {
 	models.CreateGameRequest
-	
+
 	// Actor authentication (who is creating/updating this game)
 	ActorName     string `json:"actor_name"`
 	ActorPassword string `json:"actor_password"`
@@ -27,7 +27,7 @@ func (h *Handler) getGames(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusInternalServerError, "Failed to fetch games")
 		return
 	}
-	
+
 	h.sendJSON(w, http.StatusOK, games)
 }
 
@@ -39,13 +39,13 @@ func (h *Handler) getGame(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusBadRequest, "Invalid game ID")
 		return
 	}
-	
+
 	game, err := h.repo.GetGameByID(id)
 	if err != nil {
 		h.sendError(w, http.StatusNotFound, "Game not found")
 		return
 	}
-	
+
 	h.sendJSON(w, http.StatusOK, game)
 }
 
@@ -56,27 +56,27 @@ func (h *Handler) createGame(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-	
+
 	// Authenticate the actor
 	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
 	if err != nil {
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
-	
-	// Process images before creating the game
-	if err := h.processImages(&req.CreateGameRequest); err != nil {
+
+	// Process images before creating the game (no gameID for new games)
+	if err := h.processImages(&req.CreateGameRequest, nil); err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	
+
 	// Create the game
 	game, err := h.repo.CreateGame(req.CreateGameRequest, *actor)
 	if err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	
+
 	h.sendJSON(w, http.StatusCreated, game)
 }
 
@@ -88,33 +88,33 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusBadRequest, "Invalid game ID")
 		return
 	}
-	
+
 	var req AuthenticatedGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.sendError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-	
+
 	// Authenticate the actor
 	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
 	if err != nil {
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
-	
-	// Process images before updating the game
-	if err := h.processImages(&req.CreateGameRequest); err != nil {
+
+	// Process images before updating the game (validate ownership for existing images)
+	if err := h.processImages(&req.CreateGameRequest, &id); err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	
+
 	// Update the game (creates new revision)
 	game, err := h.repo.UpdateGame(id, req.CreateGameRequest, *actor)
 	if err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	
+
 	h.sendJSON(w, http.StatusOK, game)
 }
 
@@ -126,37 +126,65 @@ func (h *Handler) getImage(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusBadRequest, "Invalid image ID")
 		return
 	}
-	
+
 	imageData, mimeType, err := h.repo.GetGameImageData(id)
 	if err != nil {
 		h.sendError(w, http.StatusNotFound, "Image not found")
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", mimeType)
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	w.Write(imageData)
 }
 
 // processImages validates and processes all images in a game request
-func (h *Handler) processImages(req *models.CreateGameRequest) error {
+func (h *Handler) processImages(req *models.CreateGameRequest, gameID *int) error {
 	// Check maximum number of images
-	if len(req.Images) > 5 {
-		return fmt.Errorf("too many images: maximum 5 images allowed, got %d", len(req.Images))
+	if len(req.Images) > 4 {
+		return fmt.Errorf("too many images: maximum 4 images allowed, got %d", len(req.Images))
 	}
-	
+
 	// Process each image
 	for i, imageReq := range req.Images {
-		// Process image: resize and compress
+		// Check if this is a reference to an existing image
+		if imageReq.ID != nil {
+			// Validate that the existing image exists
+			_, _, err := h.repo.GetGameImageData(*imageReq.ID)
+			if err != nil {
+				return fmt.Errorf("referenced image %d not found", *imageReq.ID)
+			}
+
+			// For updates, validate that the image belongs to this specific game
+			if gameID != nil {
+				imageGameID, err := h.repo.GetImageGameID(*imageReq.ID)
+				if err != nil {
+					return fmt.Errorf("could not verify ownership of image %d", *imageReq.ID)
+				}
+				if imageGameID != *gameID {
+					return fmt.Errorf("image %d does not belong to this game", *imageReq.ID)
+				}
+			}
+			// No processing needed for existing images
+			continue
+		}
+
+		// Validate that new image data is present
+		if len(imageReq.ImageData) == 0 || imageReq.MimeType == "" {
+			return fmt.Errorf("image %d: missing image data or mime type", i+1)
+		}
+
+		// Process new image: resize and compress
 		processedData, finalMimeType, err := imageutil.ProcessImage(imageReq.ImageData, imageReq.MimeType)
 		if err != nil {
 			return fmt.Errorf("error processing image %d: %v", i+1, err)
 		}
-		
+
 		// Update the request with processed image
 		req.Images[i].ImageData = processedData
 		req.Images[i].MimeType = finalMimeType
 	}
-	
+
 	return nil
 }
+

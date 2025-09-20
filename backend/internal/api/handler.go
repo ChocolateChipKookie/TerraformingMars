@@ -26,13 +26,13 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/players", h.createPlayer).Methods("POST")     // Create new player
 	router.HandleFunc("/players/{id}", h.getPlayer).Methods("GET")    // Get specific player
 	router.HandleFunc("/players/{id}", h.updatePlayer).Methods("PUT") // Update existing player
-	
+
 	// Game routes - following REST conventions
 	router.HandleFunc("/games", h.getGames).Methods("GET")        // List all games
 	router.HandleFunc("/games", h.createGame).Methods("POST")     // Create new game
 	router.HandleFunc("/games/{id}", h.getGame).Methods("GET")    // Get specific game
 	router.HandleFunc("/games/{id}", h.updateGame).Methods("PUT") // Update existing game (new revision)
-	
+
 	// Image routes
 	router.HandleFunc("/images/{id}", h.getImage).Methods("GET") // Get image data by image ID
 }
@@ -48,3 +48,4 @@ func (h *Handler) sendJSON(w http.ResponseWriter, status int, data interface{}) 
 func (h *Handler) sendError(w http.ResponseWriter, status int, message string) {
 	h.sendJSON(w, status, map[string]string{"error": message})
 }
+

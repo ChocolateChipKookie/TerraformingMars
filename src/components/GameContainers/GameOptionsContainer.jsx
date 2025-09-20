@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import Container from '../Container';
 import { SubContainer, SubContainerElement } from '../Container';
+import { NumericInputWithButtons } from '../Common';
 import styles from '../../styles/GamePage.module.css';
 import { gameData, GAME_CONSTANTS } from '../../data/gameData';
 import { SelectField, InputField } from './FormFields';
@@ -147,48 +148,6 @@ function ExpansionIcon({
       </div>
       {showText && <span>{children}</span>}
     </label>
-  );
-}
-
-// Local components for this container only
-function NumericInputWithButtons({
-  value,
-  onChange,
-  onDecrement,
-  onIncrement,
-  readOnly = false,
-}) {
-  if (readOnly) {
-    return (
-      <div className={styles.numericInputContainer}>
-        <InputField
-          type="text"
-          className={styles.numericInput}
-          value={value}
-          readOnly={true}
-          style={{ textAlign: 'center', width: '100%' }}
-        />
-      </div>
-    );
-  }
-  
-  return (
-    <div className={styles.numericInputContainer}>
-      <button className={styles.numericInputButton} onClick={onDecrement}>
-        −
-      </button>
-      <InputField
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        className={styles.numericInput}
-        value={value}
-        onChange={onChange}
-      />
-      <button className={styles.numericInputButton} onClick={onIncrement}>
-        +
-      </button>
-    </div>
   );
 }
 

@@ -7,6 +7,7 @@ import AuthenticationContainer from '../components/AuthenticationContainer';
 import LinkButton from '../components/LinkButton';
 import { formStyles } from '../styles/formStyles';
 import styles from '../styles/GamePage.module.css';
+import { playerApi } from '../services/api';
 
 const AddPlayerPage = () => {
   const navigate = useNavigate();
@@ -28,21 +29,17 @@ const AddPlayerPage = () => {
     // Fetch all players for the dropdown
     const fetchPlayers = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/players');
-        if (response.ok) {
-          const data = await response.json() || [];
-          setPlayers(data);
+        const data = await playerApi.getAll();
+        setPlayers(data);
 
-          // Check if data is empty (no users exist)
-          if (data.length === 0) {
-            console.log('No users found, enabling admin creation mode');
-            setIsInitialSetup(true);
-            // Default to admin role for first user
-            setFormData(prev => ({
-              ...prev,
-              role: 'admin'
-            }));
-          }
+        // Check if data is empty (no users exist)
+        if (data.length === 0) {
+          setIsInitialSetup(true);
+          // Default to admin role for first user
+          setFormData(prev => ({
+            ...prev,
+            role: 'admin'
+          }));
         }
       } catch (err) {
         console.error('Failed to fetch players:', err);
@@ -102,20 +99,7 @@ const AddPlayerPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/players', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create player');
-      }
-
+      const data = await playerApi.create(requestData);
       alert(`Player "${formData.name}" created successfully!`);
       navigate('/');
     } catch (err) {

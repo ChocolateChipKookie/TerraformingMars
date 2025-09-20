@@ -363,3 +363,90 @@
   margin-top: 15px;
   padding-top: 15px;
 }
+
+/* Notes and Images Styles */
+.notesTextarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.imageContainer {
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.imageLink {
+  display: block;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.gameImage {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.removeImageButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(255, 0, 0, 0.8);
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+}
+
+.addImageBox {
+  position: relative;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: all 0.2s ease;
+}
+
+.addImageBox:hover {
+  border-color: #4CAF50;
+  background-color: #f0f8f0;
+}
+
+.addImagePlus {
+  font-size: 48px;
+  color: #ccc;
+  font-weight: 300;
+  user-select: none;
+}
+
+.addImageBox:hover .addImagePlus {
+  color: #4CAF50;
+}
