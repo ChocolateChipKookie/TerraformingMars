@@ -35,3 +35,4 @@ func createTestImageBase64(mimeType string) string {
 	imageBytes := createTestImage(mimeType)
 	return base64.StdEncoding.EncodeToString(imageBytes)
 }
+

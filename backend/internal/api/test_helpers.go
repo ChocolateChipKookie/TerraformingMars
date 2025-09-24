@@ -11,6 +11,7 @@ import (
 	"terraforming-mars-backend/internal/models"
 )
 
+
 // TestContext holds common test data
 type TestContext struct {
 	Handler       *Handler
@@ -100,10 +101,6 @@ func parseResponse(t *testing.T, rr *httptest.ResponseRecorder, v interface{}) {
 	}
 }
 
-// stringPtr returns a pointer to the given string
-func stringPtr(s string) *string {
-	return &s
-}
 
 // TestFixture holds both context and test players
 type TestFixture struct {
@@ -157,9 +154,9 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 	gameReq1 := models.CreateGameRequest{
 		Name:        "Admin Game",
 		Date:        "2024-01-15",
-		Map:         "Tharsis",
-		Generations: 10,
-		Expansions:  models.Expansions{"Venus Next": true, "Prelude": true},
+		Map:         models.Ptr("Tharsis"),
+		Generations: models.Ptr(10),
+		Expansions:  models.Ptr(models.Expansions{"Venus Next": true, "Prelude": true}),
 		Players: []models.PlayerRequest{
 			{
 				Name:               "Alice",
@@ -192,15 +189,15 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 		Milestones: []models.MilestoneRequest{
 			{
 				Name:                  "Terraformer",
-				WinnerGamePlayerIndex: intPtr(0), // Alice (index 0)
+				WinnerGamePlayerIndex: models.Ptr(0), // Alice (index 0)
 			},
 			{
-				Name:                  "Mayor", 
-				WinnerGamePlayerIndex: intPtr(2), // Charlie (index 2)
+				Name:                  "Mayor",
+				WinnerGamePlayerIndex: models.Ptr(2), // Charlie (index 2)
 			},
 			{
 				Name:                  "Gardener",
-				WinnerGamePlayerIndex: intPtr(1), // Bob (index 1)
+				WinnerGamePlayerIndex: models.Ptr(1), // Bob (index 1)
 			},
 		},
 		Awards: []models.AwardRequest{
@@ -230,11 +227,11 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 	// Create test game 2 - created by Bob (user) with 2 other users participating
 	// This is key for testing that participants cannot modify games they didn't create
 	gameReq2 := models.CreateGameRequest{
-		Name:        "User Game With Multiple Users", 
+		Name:        "User Game With Multiple Users",
 		Date:        "2024-01-20",
-		Map:         "Hellas",
-		Generations: 12,
-		Expansions:  models.Expansions{"Colonies": true},
+		Map:         models.Ptr("Hellas"),
+		Generations: models.Ptr(12),
+		Expansions:  models.Ptr(models.Expansions{"Colonies": true}),
 		Players: []models.PlayerRequest{
 			{
 				Name:               "Bob",
@@ -267,15 +264,15 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 		Milestones: []models.MilestoneRequest{
 			{
 				Name:                  "Diversifier",
-				WinnerGamePlayerIndex: intPtr(1), // Dave (index 1)
+				WinnerGamePlayerIndex: models.Ptr(1), // Dave (index 1)
 			},
 			{
-				Name:                  "Tactician", 
-				WinnerGamePlayerIndex: intPtr(0), // Bob (index 0)
+				Name:                  "Tactician",
+				WinnerGamePlayerIndex: models.Ptr(0), // Bob (index 0)
 			},
 			{
 				Name:                  "Polar Explorer",
-				WinnerGamePlayerIndex: intPtr(2), // Eve (index 2)
+				WinnerGamePlayerIndex: models.Ptr(2), // Eve (index 2)
 			},
 		},
 		Awards: []models.AwardRequest{
@@ -316,7 +313,3 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 	}
 }
 
-// intPtr returns a pointer to the given int
-func intPtr(i int) *int {
-	return &i
-}

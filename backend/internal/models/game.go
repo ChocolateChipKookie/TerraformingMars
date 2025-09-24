@@ -7,17 +7,18 @@ import (
 )
 
 type Game struct {
-	ID          int        `json:"-" db:"id"`       // Internal auto-increment primary key
-	GameID      int        `json:"id" db:"game_id"` // User-facing stable game ID
-	Revision    int        `json:"revision" db:"revision"`
-	Name        string     `json:"name" db:"name"`
-	Date        string     `json:"date" db:"date"` // ISO date string YYYY-MM-DD
-	Map         string     `json:"map" db:"map"`
-	Generations int        `json:"generations" db:"generations"`
-	Expansions  Expansions `json:"expansions" db:"expansions"`
-	Note        *string    `json:"note" db:"note"` // Optional text note
-	CreatedBy   int        `json:"created_by" db:"created_by"`
-	CreatedAt   string     `json:"created_at" db:"created_at"` // ISO datetime string
+	ID          int         `json:"-" db:"id"`       // Internal auto-increment primary key
+	GameID      int         `json:"id" db:"game_id"` // User-facing stable game ID
+	Revision    int         `json:"revision" db:"revision"`
+	Name        string      `json:"name" db:"name"`
+	Date        string      `json:"date" db:"date"` // ISO date string YYYY-MM-DD
+	Map         *string     `json:"map" db:"map"`             // Optional for legacy games
+	Generations *int        `json:"generations" db:"generations"` // Optional for legacy games
+	Expansions  *Expansions `json:"expansions" db:"expansions"`   // Optional for legacy games
+	Note        *string     `json:"note" db:"note"`           // Optional text note
+	LegacyMode  bool        `json:"legacy_mode" db:"legacy_mode"`
+	CreatedBy   int         `json:"created_by" db:"created_by"`
+	CreatedAt   string      `json:"created_at" db:"created_at"` // ISO datetime string
 }
 
 type PlayerRole string
@@ -148,6 +149,8 @@ type PlayerRequest struct {
 	Greeneries         int    `json:"greeneries"`
 	Cards              int    `json:"cards"`
 	TurmoilPoints      int    `json:"turmoil_points"`
+	MilestonePoints    *int   `json:"milestone_points,omitempty"` // For legacy mode
+	AwardPoints        *int   `json:"award_points,omitempty"`     // For legacy mode
 }
 
 // MilestoneRequest represents a milestone in the create game request
@@ -183,10 +186,11 @@ type ImageRequest struct {
 type CreateGameRequest struct {
 	Name        string             `json:"name"`
 	Date        string             `json:"date"` // Will be parsed to time.Time
-	Map         string             `json:"map"`
-	Generations int                `json:"generations"`
-	Expansions  Expansions         `json:"expansions"`
-	Note        *string            `json:"note"`
+	Map         *string            `json:"map,omitempty"`         // Optional for legacy
+	Generations *int               `json:"generations,omitempty"` // Optional for legacy
+	Expansions  *Expansions        `json:"expansions,omitempty"`  // Optional for legacy
+	Note        *string            `json:"note,omitempty"`
+	LegacyMode  bool               `json:"legacy_mode"`
 	Players     []PlayerRequest    `json:"players"`
 	Milestones  []MilestoneRequest `json:"milestones"`
 	Awards      []AwardRequest     `json:"awards"`

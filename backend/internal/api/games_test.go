@@ -44,11 +44,11 @@ func TestGetGames(t *testing.T) {
 	if adminGame, ok := gamesByName["Admin Game"]; !ok {
 		t.Error("Admin Game not found")
 	} else {
-		if adminGame.Map != "Tharsis" {
-			t.Errorf("Expected map 'Tharsis', got '%s'", adminGame.Map)
+		if adminGame.Map == nil || *adminGame.Map != "Tharsis" {
+			t.Errorf("Expected map 'Tharsis', got '%v'", adminGame.Map)
 		}
-		if adminGame.Generations != 10 {
-			t.Errorf("Expected 10 generations, got %d", adminGame.Generations)
+		if adminGame.Generations == nil || *adminGame.Generations != 10 {
+			t.Errorf("Expected 10 generations, got %v", adminGame.Generations)
 		}
 		if adminGame.CreatedBy != ctx.Admin.ID {
 			t.Errorf("Expected created_by %d, got %d", ctx.Admin.ID, adminGame.CreatedBy)
@@ -63,11 +63,11 @@ func TestGetGames(t *testing.T) {
 	if userGame, ok := gamesByName["User Game With Multiple Users"]; !ok {
 		t.Error("User Game With Multiple Users not found")
 	} else {
-		if userGame.Map != "Hellas" {
-			t.Errorf("Expected map 'Hellas', got '%s'", userGame.Map)
+		if userGame.Map == nil || *userGame.Map != "Hellas" {
+			t.Errorf("Expected map 'Hellas', got '%v'", userGame.Map)
 		}
-		if userGame.Generations != 12 {
-			t.Errorf("Expected 12 generations, got %d", userGame.Generations)
+		if userGame.Generations == nil || *userGame.Generations != 12 {
+			t.Errorf("Expected 12 generations, got %v", userGame.Generations)
 		}
 		if userGame.CreatedBy != ctx.Bob.ID {
 			t.Errorf("Expected created_by %d (Bob), got %d", ctx.Bob.ID, userGame.CreatedBy)
@@ -162,9 +162,9 @@ func TestCreateGame(t *testing.T) {
 	baseRequest := models.CreateGameRequest{
 		Name:        "Test New Game",
 		Date:        "2024-01-25",
-		Map:         "Tharsis",
-		Generations: 8,
-		Expansions:  models.Expansions{"Prelude": true},
+		Map:         models.Ptr("Tharsis"),
+		Generations: models.Ptr(8),
+		Expansions:  models.Ptr(models.Expansions{"Prelude": true}),
 		Players: []models.PlayerRequest{
 			{
 				Name:               "Bob",
@@ -179,7 +179,7 @@ func TestCreateGame(t *testing.T) {
 		Milestones: []models.MilestoneRequest{
 			{
 				Name:                  "Builder",
-				WinnerGamePlayerIndex: intPtr(0),
+				WinnerGamePlayerIndex: models.Ptr(0),
 			},
 		},
 		Awards: []models.AwardRequest{
@@ -275,8 +275,8 @@ func TestCreateGame(t *testing.T) {
 		if game.Game.CreatedBy != ctx.Bob.ID {
 			t.Errorf("Expected created_by %d (Bob), got %d", ctx.Bob.ID, game.Game.CreatedBy)
 		}
-		if game.Game.Map != "Tharsis" {
-			t.Errorf("Expected map 'Tharsis', got '%s'", game.Game.Map)
+		if game.Game.Map == nil || *game.Game.Map != "Tharsis" {
+			t.Errorf("Expected map 'Tharsis', got '%v'", game.Game.Map)
 		}
 		if len(game.GamePlayers) != 1 {
 			t.Errorf("Expected 1 player, got %d", len(game.GamePlayers))
@@ -301,9 +301,9 @@ func TestGameImages(t *testing.T) {
 	gameReq := models.CreateGameRequest{
 		Name:        "Game with Images",
 		Date:        "2024-01-16",
-		Map:         "Tharsis",
-		Generations: 10,
-		Expansions:  models.Expansions{"base": true},
+		Map:         models.Ptr("Tharsis"),
+		Generations: models.Ptr(10),
+		Expansions:  models.Ptr(models.Expansions{"base": true}),
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
 		},
@@ -432,10 +432,10 @@ func TestGameWithNote(t *testing.T) {
 	gameReq := models.CreateGameRequest{
 		Name:        "Game with Note",
 		Date:        "2024-01-16",
-		Map:         "Tharsis",
-		Generations: 10,
+		Map:         models.Ptr("Tharsis"),
+		Generations: models.Ptr(10),
 		Note:        &gameNote,
-		Expansions:  models.Expansions{"base": true},
+		Expansions:  models.Ptr(models.Expansions{"base": true}),
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
 		},
@@ -475,12 +475,12 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 	initialGameReq := models.CreateGameRequest{
 		Name:        "Test Update Game",
 		Date:        "2024-01-15",
-		Map:         "Tharsis",
-		Generations: 10,
-		Expansions: models.Expansions{
+		Map:         models.Ptr("Tharsis"),
+		Generations: models.Ptr(10),
+		Expansions: models.Ptr(models.Expansions{
 			"Base Game":     true,
 			"Corporate Era": false,
-		},
+		}),
 		Players: []models.PlayerRequest{
 			{
 				Name:               "Alice",
@@ -578,12 +578,12 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 	updatedGameReq := models.CreateGameRequest{
 		Name:        "Updated Test Game",
 		Date:        "2024-01-15",
-		Map:         "Tharsis",
-		Generations: 11,
-		Expansions: models.Expansions{
+		Map:         models.Ptr("Tharsis"),
+		Generations: models.Ptr(11),
+		Expansions: models.Ptr(models.Expansions{
 			"Base Game":     true,
 			"Corporate Era": true,
-		},
+		}),
 		Players: []models.PlayerRequest{
 			{
 				Name:               "Alice",
@@ -758,11 +758,15 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 	}
 	
 	// Verify other game fields updated
-	if updatedGame.Game.Generations != 11 {
-		t.Errorf("Generations should be updated to 11, got %d", updatedGame.Game.Generations)
+	if updatedGame.Game.Generations == nil || *updatedGame.Game.Generations != 11 {
+		var gen int
+		if updatedGame.Game.Generations != nil {
+			gen = *updatedGame.Game.Generations
+		}
+		t.Errorf("Generations should be updated to 11, got %d", gen)
 	}
-	
-	if !updatedGame.Game.Expansions["Corporate Era"] {
+
+	if updatedGame.Game.Expansions == nil || !(*updatedGame.Game.Expansions)["Corporate Era"] {
 		t.Error("Corporate Era expansion should be enabled after update")
 	}
 	

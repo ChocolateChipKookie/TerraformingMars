@@ -435,7 +435,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Alice Updated"),
+			Name:          models.Ptr("Alice Updated"),
 			ActorName:     ctx.AdminName,
 			ActorPassword: ctx.AdminPassword,
 		}
@@ -503,7 +503,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Charlie Updated"),
+			Name:          models.Ptr("Charlie Updated"),
 			ActorName:     "Bob",
 			ActorPassword: ctx.UserPass,
 		}
@@ -532,7 +532,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Alice Forbidden"),
+			Name:          models.Ptr("Alice Forbidden"),
 			ActorName:     "Bob",
 			ActorPassword: ctx.UserPass,
 		}
@@ -561,7 +561,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Should Fail"),
+			Name:          models.Ptr("Should Fail"),
 			ActorName:     "Alice",
 			ActorPassword: "", // Players don't have passwords
 		}
@@ -584,7 +584,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Should Fail"),
+			Name:          models.Ptr("Should Fail"),
 			ActorName:     "Bob",
 			ActorPassword: "wrongpassword",
 		}
@@ -607,7 +607,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Should Fail"),
+			Name:          models.Ptr("Should Fail"),
 			ActorName:     ctx.AdminName,
 			ActorPassword: ctx.AdminPassword,
 		}
@@ -630,7 +630,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Should Fail"),
+			Name:          models.Ptr("Should Fail"),
 			ActorName:     ctx.AdminName,
 			ActorPassword: ctx.AdminPassword,
 		}
@@ -654,8 +654,8 @@ func TestUpdatePlayer(t *testing.T) {
 		newUserPass := "alicenewpass123"
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Alice"),
-			Role:          stringPtr("user"),
+			Name:          models.Ptr("Alice"),
+			Role:          models.Ptr("user"),
 			Password:      &newUserPass,
 			ActorName:     ctx.AdminName,
 			ActorPassword: ctx.AdminPassword,
@@ -686,8 +686,8 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Bob"),
-			Role:          stringPtr("admin"),
+			Name:          models.Ptr("Bob"),
+			Role:          models.Ptr("admin"),
 			ActorName:     "Bob",
 			ActorPassword: ctx.UserPass,
 		}
@@ -710,7 +710,7 @@ func TestUpdatePlayer(t *testing.T) {
 		ctx := setupTestFixture(t)
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Alice"), // Alice already exists
+			Name:          models.Ptr("Alice"), // Alice already exists
 			ActorName:     "Bob",
 			ActorPassword: ctx.UserPass,
 		}
@@ -740,7 +740,7 @@ func TestUpdatePlayer(t *testing.T) {
 		newPassword := "bobsnewpassword456"
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Bob"),
+			Name:          models.Ptr("Bob"),
 			Password:      &newPassword,
 			ActorName:     "Bob",
 			ActorPassword: ctx.UserPass,
@@ -771,7 +771,7 @@ func TestUpdatePlayer(t *testing.T) {
 		badPassword := "shouldnotwork"
 		
 		req := UpdatePlayerRequest{
-			Name:          stringPtr("Charlie"),
+			Name:          models.Ptr("Charlie"),
 			Password:      &badPassword,
 			ActorName:     "Bob",
 			ActorPassword: ctx.UserPass,
