@@ -79,10 +79,11 @@ function PointInput({ config, gameState, options = {} }) {
   );
 }
 
-function PointsContainer({ 
+function PointsContainer({
   playerManager,
   gameConfig,
-  readOnly = false
+  readOnly = false,
+  isLegacyMode = false
 }) {
   const sharedGameState = {
     players: playerManager.players,
@@ -132,12 +133,12 @@ function PointsContainer({
             <PointInput
               config={{ label: "Milestones", field: "milestonePoints" }}
               gameState={sharedGameState}
-              options={readOnlyOptions}
+              options={isLegacyMode ? editableOptions : readOnlyOptions}
             />
             <PointInput
               config={{ label: "Awards", field: "awardPoints" }}
               gameState={sharedGameState}
-              options={readOnlyOptions}
+              options={isLegacyMode ? editableOptions : readOnlyOptions}
             />
           </div>
 

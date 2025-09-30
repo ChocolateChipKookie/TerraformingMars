@@ -151,12 +151,13 @@ function ExpansionIcon({
   );
 }
 
-function GameOptionsContainer({ 
-  gameConfig, 
+function GameOptionsContainer({
+  gameConfig,
   dispatch,
   playerManager,
   maxPlayers,
-  readOnly = false
+  readOnly = false,
+  isLegacyMode = false
 }) {
   // Get map options memoized
   const mapOptions = useMemo(() => {
@@ -205,43 +206,47 @@ function GameOptionsContainer({
           />
         </SubContainerElement>
 
-        <SubContainerElement>
-          <label>Map:</label>
-          <SelectField
-            className={styles.optionInput}
-            value={gameConfig.map}
-            onChange={(e) =>
-              dispatch({ type: "SET_MAP", value: e.target.value })
-            }
-            readOnly={readOnly}
-          >
-            {mapOptions}
-          </SelectField>
-        </SubContainerElement>
+        {!isLegacyMode && (
+          <>
+            <SubContainerElement>
+              <label>Map:</label>
+              <SelectField
+                className={styles.optionInput}
+                value={gameConfig.map}
+                onChange={(e) =>
+                  dispatch({ type: "SET_MAP", value: e.target.value })
+                }
+                readOnly={readOnly}
+              >
+                {mapOptions}
+              </SelectField>
+            </SubContainerElement>
 
-        <SubContainerElement>
-          <label>Generations:</label>
-          <NumericInputWithButtons
-            value={gameConfig.generations}
-            onChange={(e) => {
-              const val = parseInt(e.target.value) || 0;
-              dispatch({ type: "SET_GENERATIONS", value: val });
-            }}
-            onDecrement={() =>
-              dispatch({
-                type: "SET_GENERATIONS",
-                value: gameConfig.generations - 1,
-              })
-            }
-            onIncrement={() =>
-              dispatch({
-                type: "SET_GENERATIONS",
-                value: gameConfig.generations + 1,
-              })
-            }
-            readOnly={readOnly}
-          />
-        </SubContainerElement>
+            <SubContainerElement>
+              <label>Generations:</label>
+              <NumericInputWithButtons
+                value={gameConfig.generations}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value) || 0;
+                  dispatch({ type: "SET_GENERATIONS", value: val });
+                }}
+                onDecrement={() =>
+                  dispatch({
+                    type: "SET_GENERATIONS",
+                    value: gameConfig.generations - 1,
+                  })
+                }
+                onIncrement={() =>
+                  dispatch({
+                    type: "SET_GENERATIONS",
+                    value: gameConfig.generations + 1,
+                  })
+                }
+                readOnly={readOnly}
+              />
+            </SubContainerElement>
+          </>
+        )}
 
         <SubContainerElement>
           <label>Players:</label>
@@ -269,9 +274,10 @@ function GameOptionsContainer({
           />
         </SubContainerElement>
 
-        <SubContainerElement>
-          <div className={styles.subcontainerBox}>
-            <div className={styles.expansionsContainer}>
+        {!isLegacyMode && (
+          <SubContainerElement>
+            <div className={styles.subcontainerBox}>
+              <div className={styles.expansionsContainer}>
               {/* Content container - shared by both bar and list */}
               <div className={styles.expansionsContent}>
                 {!gameConfig.expandedExpansions && (
@@ -333,7 +339,8 @@ function GameOptionsContainer({
               </div>
             </div>
           </div>
-        </SubContainerElement>
+          </SubContainerElement>
+        )}
       </SubContainer>
     </Container>
   );

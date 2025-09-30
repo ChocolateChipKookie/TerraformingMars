@@ -101,6 +101,7 @@ const gameConfigReducer = (state, action) => {
 function usePlayerManagement(
   initialPlayerCount = GAME_CONSTANTS.DEFAULT_PLAYER_COUNT,
   maxPlayers = GAME_CONSTANTS.DEFAULT_MAX_PLAYERS,
+  isLegacyMode = false,
 ) {
   const [playerNumber, setPlayerNumber] = useState(initialPlayerCount);
   const [players, setPlayers] = useState([]);
@@ -128,14 +129,14 @@ function usePlayerManagement(
           greeneries: prevScores[i]?.greeneries || "",
           cards: prevScores[i]?.cards || "",
           turmoilPoints: prevScores[i]?.turmoilPoints || "",
-          milestonePoints: 0,
-          awardPoints: 0,
-          totalPoints: 0,
+          milestonePoints: prevScores[i]?.milestonePoints || (isLegacyMode ? "" : 0),
+          awardPoints: prevScores[i]?.awardPoints || (isLegacyMode ? "" : 0),
+          totalPoints: prevScores[i]?.totalPoints || 0,
         });
       }
       return newScores;
     });
-  }, [playerNumber]);
+  }, [playerNumber, isLegacyMode]);
 
   const updatePlayerData = useCallback((index, field, value) => {
     setPlayers((prevPlayers) => {
@@ -157,6 +158,8 @@ function usePlayerManagement(
       const greeneries = parseInt(score.greeneries || 0);
       const cards = parseInt(score.cards || 0);
       const turmoilPoints = parseInt(score.turmoilPoints || 0);
+      const milestonePoints = parseInt(score.milestonePoints || 0);
+      const awardPoints = parseInt(score.awardPoints || 0);
 
       score.totalPoints =
         terraformingRating +
@@ -164,8 +167,8 @@ function usePlayerManagement(
         greeneries +
         cards +
         turmoilPoints +
-        (score.milestonePoints || 0) +
-        (score.awardPoints || 0);
+        milestonePoints +
+        awardPoints;
 
       return newScores;
     });
@@ -340,16 +343,26 @@ function GamePage() {
   const navigate = useNavigate();
   const { gameId } = useParams();
   const [searchParams] = useSearchParams();
-  
+
   // Determine mode: 'view', 'edit', or 'add'
   const [mode, setMode] = useState(() => {
     if (!gameId) return 'add'; // No gameId means adding new game
     return searchParams.get('edit') === 'true' ? 'edit' : 'view';
   });
-  
+
   // Loading state for fetching game data
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
+
+  // Legacy mode state - will be set from URL param (for add) or game data (for view/edit)
+  const [isLegacyMode, setIsLegacyMode] = useState(() => {
+    // For new games, check URL parameter
+    if (mode === 'add') {
+      return searchParams.get('legacy') === 'true';
+    }
+    // For existing games, will be set when game data loads
+    return false;
+  });
 
   // Use reducer for game configuration
   const [gameConfig, dispatch] = useReducer(
@@ -366,7 +379,7 @@ function GamePage() {
   );
 
   // Use custom hook for player management
-  const playerManager = usePlayerManagement(GAME_CONSTANTS.DEFAULT_PLAYER_COUNT, maxPlayers);
+  const playerManager = usePlayerManagement(GAME_CONSTANTS.DEFAULT_PLAYER_COUNT, maxPlayers, isLegacyMode);
 
   // Authentication state
   const [actorName, setActorName] = useState('');
@@ -405,16 +418,20 @@ function GamePage() {
         const gameData = await gameApi.getById(gameId);
         
         // Parse and populate the game data into state
-        // Game basic info
         dispatch({ type: "SET_FIELD", field: "name", value: gameData.game.name });
         dispatch({ type: "SET_FIELD", field: "date", value: gameData.game.date });
-        dispatch({ type: "SET_MAP", value: gameData.game.map });
-        dispatch({ type: "SET_GENERATIONS", value: gameData.game.generations });
+
+        setIsLegacyMode(gameData.game.legacy_mode || false);
+
+        if (!gameData.game.legacy_mode) {
+          dispatch({ type: "SET_MAP", value: gameData.game.map });
+          dispatch({ type: "SET_GENERATIONS", value: gameData.game.generations });
+        }
+
         dispatch({ type: "SET_NOTE", value: gameData.game.note || "" });
         dispatch({ type: "SET_IMAGES", images: gameData.images || [] });
         
-        // Set expansions one by one to maintain order
-        if (gameData.game.expansions) {
+        if (!gameData.game.legacy_mode && gameData.game.expansions) {
           Object.keys(gameConfigInitialState.expansions).forEach(exp => {
             const value = gameData.game.expansions[exp] || false;
             dispatch({ type: "SET_EXPANSION", expansion: exp, value: value });
@@ -440,13 +457,17 @@ function GamePage() {
             playerManager.updatePlayerData(index, 'corporation', player.corporation);
           });
           
-          // Update player scores
           gameData.game_players.forEach((gp, index) => {
             playerManager.updatePlayerScore(index, 'terraformingRating', String(gp.terraforming_rating));
             playerManager.updatePlayerScore(index, 'cities', String(gp.cities));
             playerManager.updatePlayerScore(index, 'greeneries', String(gp.greeneries));
             playerManager.updatePlayerScore(index, 'cards', String(gp.cards));
             playerManager.updatePlayerScore(index, 'turmoilPoints', String(gp.turmoil_points));
+
+            if (gameData.game.legacy_mode) {
+              playerManager.updatePlayerScore(index, 'milestonePoints', String(gp.milestone_points));
+              playerManager.updatePlayerScore(index, 'awardPoints', String(gp.award_points));
+            }
           });
         }
         
@@ -653,35 +674,41 @@ function GamePage() {
     if (playerManager.playerScores.length === 0) return;
 
     const newScores = playerManager.playerScores.map((score, playerIndex) => {
-      // Calculate milestone points - memoized for performance
-      const milestonePoints = Object.values(milestones.data).reduce(
-        (points, winnerIndex) => {
-          return winnerIndex === playerIndex
-            ? points + GAME_CONSTANTS.MILESTONE_POINTS
-            : points;
-        },
-        0,
-      );
+      let milestonePoints, awardPoints;
 
-      // Calculate award points based on placement - memoized for performance
-      const awardPoints = Object.entries(awards.data).reduce(
-        (points, [award, placements]) => {
-          const placement = placements?.[playerIndex];
-          if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD) {
-            return points + GAME_CONSTANTS.AWARD_POINTS.GOLD;
-          } else if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER) {
-            return points + GAME_CONSTANTS.AWARD_POINTS.SILVER;
-          }
-          return points;
-        },
-        0,
-      );
+      if (isLegacyMode) {
+        // In legacy mode, use manual points from playerScores
+        milestonePoints = parseInt(score.milestonePoints || 0);
+        awardPoints = parseInt(score.awardPoints || 0);
+      } else {
+        // In normal mode, calculate from milestones and awards
+        milestonePoints = Object.values(milestones.data).reduce(
+          (points, winnerIndex) => {
+            return winnerIndex === playerIndex
+              ? points + GAME_CONSTANTS.MILESTONE_POINTS
+              : points;
+          },
+          0,
+        );
 
-      // Only update if milestone or award points changed
-      if (
-        score.milestonePoints === milestonePoints &&
-        score.awardPoints === awardPoints
-      ) {
+        awardPoints = Object.entries(awards.data).reduce(
+          (points, [award, placements]) => {
+            const placement = placements?.[playerIndex];
+            if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.GOLD) {
+              return points + GAME_CONSTANTS.AWARD_POINTS.GOLD;
+            } else if (placement === GAME_CONSTANTS.AWARD_PLACEMENT.SILVER) {
+              return points + GAME_CONSTANTS.AWARD_POINTS.SILVER;
+            }
+            return points;
+          },
+          0,
+        );
+      }
+
+      // Only update if milestone or award points changed (skip for legacy mode since manual)
+      if (!isLegacyMode &&
+          score.milestonePoints === milestonePoints &&
+          score.awardPoints === awardPoints) {
         return score;
       }
 
@@ -722,7 +749,7 @@ function GamePage() {
     if (hasChanged) {
       playerManager.setPlayerScores(newScores);
     }
-  }, [milestones.data, awards.data]);
+  }, [milestones.data, awards.data, isLegacyMode, playerManager.playerScores]);
 
   const handleSubmitGame = async () => {
     // Validate authentication
@@ -731,34 +758,40 @@ function GamePage() {
       return;
     }
 
-    // Format the game data for submission
     const gameData = {
       name: gameConfig.name,
       date: gameConfig.date,
-      map: gameConfig.map,
-      generations: gameConfig.generations,
-      expansions: gameConfig.expansions,
+      map: isLegacyMode ? null : gameConfig.map,
+      generations: isLegacyMode ? null : gameConfig.generations,
+      expansions: isLegacyMode ? null : gameConfig.expansions,
       note: gameConfig.note || null,
+      legacy_mode: isLegacyMode,
 
-      // Format players with scores
-      players: playerManager.players.map((player, index) => ({
-        name: player.name,
-        corporation: player.corporation,
-        terraforming_rating: parseInt(playerManager.playerScores[index].terraformingRating) || 0,
-        cities: parseInt(playerManager.playerScores[index].cities) || 0,
-        greeneries: parseInt(playerManager.playerScores[index].greeneries) || 0,
-        cards: parseInt(playerManager.playerScores[index].cards) || 0,
-        turmoil_points: parseInt(playerManager.playerScores[index].turmoilPoints) || 0,
-      })),
+      players: playerManager.players.map((player, index) => {
+        const basePlayer = {
+          name: player.name,
+          corporation: isLegacyMode ? "" : player.corporation,
+          terraforming_rating: parseInt(playerManager.playerScores[index].terraformingRating) || 0,
+          cities: parseInt(playerManager.playerScores[index].cities) || 0,
+          greeneries: parseInt(playerManager.playerScores[index].greeneries) || 0,
+          cards: parseInt(playerManager.playerScores[index].cards) || 0,
+          turmoil_points: parseInt(playerManager.playerScores[index].turmoilPoints) || 0,
+        };
 
-      // Format milestones
-      milestones: Object.entries(milestones.data).map(([name, winnerIndex]) => ({
+        if (isLegacyMode) {
+          basePlayer.milestone_points = parseInt(playerManager.playerScores[index].milestonePoints) || 0;
+          basePlayer.award_points = parseInt(playerManager.playerScores[index].awardPoints) || 0;
+        }
+
+        return basePlayer;
+      }),
+
+      milestones: isLegacyMode ? [] : Object.entries(milestones.data).map(([name, winnerIndex]) => ({
         name: name,
         winner_game_player_index: winnerIndex === -1 ? null : winnerIndex,
       })),
 
-      // Format awards with placements
-      awards: Object.entries(awards.data).map(([name, placements]) => ({
+      awards: isLegacyMode ? [] : Object.entries(awards.data).map(([name, placements]) => ({
         name: name,
         placements: Object.entries(placements)
           .filter(([_, placement]) => placement > 0)
@@ -846,12 +879,13 @@ function GamePage() {
     <Layout>
       <Container title={getPageTitle()} />
 
-      <GameOptionsContainer 
+      <GameOptionsContainer
         gameConfig={gameConfig}
         dispatch={dispatch}
         playerManager={playerManager}
         maxPlayers={maxPlayers}
         readOnly={mode === 'view'}
+        isLegacyMode={isLegacyMode}
       />
 
       <GamePlayersContainer
@@ -860,31 +894,37 @@ function GamePage() {
         selectedCorporations={selectedCorporations}
         getAvailableCorporations={getAvailableCorporations}
         readOnly={mode === 'view'}
+        isLegacyMode={isLegacyMode}
       />
 
-      <MilestonesContainer
-        milestones={milestones}
-        gameConfig={gameConfig}
-        playerManager={playerManager}
-        getSelectedMilestonesCount={getSelectedMilestonesCount}
-        updateMilestoneWinner={updateMilestoneWinner}
-        readOnly={mode === 'view'}
-      />
+      {!isLegacyMode && (
+        <>
+          <MilestonesContainer
+            milestones={milestones}
+            gameConfig={gameConfig}
+            playerManager={playerManager}
+            getSelectedMilestonesCount={getSelectedMilestonesCount}
+            updateMilestoneWinner={updateMilestoneWinner}
+            readOnly={mode === 'view'}
+          />
 
-      <AwardsContainer
-        awards={awards}
-        gameConfig={gameConfig}
-        playerManager={playerManager}
-        cyclePlacement={cyclePlacement}
-        isAwardFunded={isAwardFunded}
-        getFundedAwardsCount={getFundedAwardsCount}
-        readOnly={mode === 'view'}
-      />
+          <AwardsContainer
+            awards={awards}
+            gameConfig={gameConfig}
+            playerManager={playerManager}
+            cyclePlacement={cyclePlacement}
+            isAwardFunded={isAwardFunded}
+            getFundedAwardsCount={getFundedAwardsCount}
+            readOnly={mode === 'view'}
+          />
+        </>
+      )}
 
       <PointsContainer
         playerManager={playerManager}
         gameConfig={gameConfig}
         readOnly={mode === 'view'}
+        isLegacyMode={isLegacyMode}
       />
 
       <GameNotesAndImagesContainer

@@ -60,6 +60,13 @@
   margin: 0.3rem 0;
 }
 
+.playerInputDivCentered {
+  composes: flexRowCentered;
+  justify-content: center;
+  text-align: center;
+  margin: 0.3rem 0;
+}
+
 /* Base Typography */
 .inheritFont {
   font-family: inherit;
