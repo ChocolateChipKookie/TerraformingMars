@@ -94,7 +94,7 @@ func ValidatePlayerCount(playerCount int, mapData *MapData) error {
 func ValidateExpansions(expansions map[string]bool) error {
 	// Base Game must always be enabled
 	if !expansions["Base Game"] {
-		return fmt.Errorf("Base Game expansion must always be enabled")
+		return fmt.Errorf("'Base Game' expansion must always be enabled")
 	}
 
 	for expansion := range expansions {
@@ -138,7 +138,7 @@ func ValidateCorporation(corporation string, enabledExpansions map[string]bool) 
 func ValidateMilestone(milestone string, mapName string, useCustom bool, expansions map[string]bool) error {
 	// Check for Venus Next specific milestone without Venus Next expansion
 	if milestone == "Hoverlord" && !expansions["Venus Next"] {
-		return fmt.Errorf("Hoverlord is only available with Venus Next")
+		return fmt.Errorf("'Hoverlord' is only available with 'Venus Next'")
 	}
 
 	if useCustom {
@@ -173,7 +173,7 @@ func ValidateMilestone(milestone string, mapName string, useCustom bool, expansi
 func ValidateAward(award string, mapName string, useCustom bool, expansions map[string]bool) error {
 	// Check for Venus Next specific award without Venus Next expansion
 	if award == "Venuphile" && !expansions["Venus Next"] {
-		return fmt.Errorf("Venuphile is only available with Venus Next")
+		return fmt.Errorf("'Venuphile' is only available with 'Venus Next'")
 	}
 
 	if useCustom {
@@ -225,7 +225,7 @@ func ValidateMilestoneCount(milestones []string, expansions map[string]bool) err
 			}
 		}
 		if !hasHoverlord {
-			return fmt.Errorf("Hoverlord milestone is mandatory when Venus Next expansion is enabled")
+			return fmt.Errorf("'Hoverlord' milestone is mandatory when 'Venus Next' expansion is enabled")
 		}
 	}
 
@@ -253,7 +253,7 @@ func ValidateAwardCount(awards []string, expansions map[string]bool) error {
 			}
 		}
 		if !hasVenuphile {
-			return fmt.Errorf("Venuphile award is mandatory when Venus Next expansion is enabled")
+			return fmt.Errorf("'Venuphile' award is mandatory when 'Venus Next' expansion is enabled")
 		}
 	}
 

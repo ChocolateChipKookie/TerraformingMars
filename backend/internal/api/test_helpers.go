@@ -1,10 +1,6 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"terraforming-mars-backend/internal/database"
@@ -52,55 +48,6 @@ func setupTestAPI(t *testing.T) *TestContext {
 		AdminPassword: adminPassword,
 	}
 }
-
-// makeRequest is a helper to make HTTP requests in tests
-func makeRequest(t *testing.T, handler *Handler, method, url string, body interface{}) *httptest.ResponseRecorder {
-	var reqBody []byte
-	var err error
-	
-	if body != nil {
-		reqBody, err = json.Marshal(body)
-		if err != nil {
-			t.Fatalf("Failed to marshal request body: %v", err)
-		}
-	}
-	
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
-	}
-	
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	
-	rr := httptest.NewRecorder()
-	router := http.NewServeMux()
-	
-	// Register handlers based on URL pattern
-	switch {
-	case method == "GET" && url == "/players":
-		router.HandleFunc("/players", handler.getPlayers)
-	case method == "POST" && url == "/players":
-		router.HandleFunc("/players", handler.createPlayer)
-	case method == "GET" && url == "/games":
-		router.HandleFunc("/games", handler.getGames)
-	case method == "POST" && url == "/games":
-		router.HandleFunc("/games", handler.createGame)
-	}
-	
-	router.ServeHTTP(rr, req)
-	return rr
-}
-
-// parseResponse is a helper to parse JSON responses
-func parseResponse(t *testing.T, rr *httptest.ResponseRecorder, v interface{}) {
-	err := json.NewDecoder(rr.Body).Decode(v)
-	if err != nil {
-		t.Fatalf("Failed to parse response: %v", err)
-	}
-}
-
 
 // TestFixture holds both context and test players
 type TestFixture struct {

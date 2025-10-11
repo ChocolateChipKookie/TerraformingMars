@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"encoding/base64"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -28,11 +27,5 @@ func createTestImage(mimeType string) []byte {
 	}
 	
 	return buf.Bytes()
-}
-
-// createTestImageBase64 creates a minimal valid image as base64 for testing
-func createTestImageBase64(mimeType string) string {
-	imageBytes := createTestImage(mimeType)
-	return base64.StdEncoding.EncodeToString(imageBytes)
 }
 

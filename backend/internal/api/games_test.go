@@ -225,7 +225,7 @@ func TestCreateGame(t *testing.T) {
 
 		var response map[string]string
 		json.NewDecoder(rr.Body).Decode(&response)
-		if response["error"] != "Base Game expansion must always be enabled" {
+		if response["error"] != "'Base Game' expansion must always be enabled" {
 			t.Errorf("Expected Base Game validation error, got: %s", response["error"])
 		}
 	})
@@ -1228,7 +1228,7 @@ func TestMilestoneAndAwardCountValidation(t *testing.T) {
 		}
 
 		responseBody := rr.Body.String()
-		if !strings.Contains(responseBody, "Hoverlord milestone is mandatory") {
+		if !strings.Contains(responseBody, "'Hoverlord' milestone is mandatory") {
 			t.Errorf("Expected error message about mandatory Hoverlord, got: %s", responseBody)
 		}
 	})
@@ -1280,7 +1280,7 @@ func TestMilestoneAndAwardCountValidation(t *testing.T) {
 		}
 
 		responseBody := rr.Body.String()
-		if !strings.Contains(responseBody, "Venuphile award is mandatory") {
+		if !strings.Contains(responseBody, "'Venuphile' award is mandatory") {
 			t.Errorf("Expected error message about mandatory Venuphile, got: %s", responseBody)
 		}
 	})

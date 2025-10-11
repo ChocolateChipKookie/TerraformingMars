@@ -266,7 +266,7 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 		})
 	}
 
-	// Create milestones
+	// Create milestones and track them for point calculation
 	var milestones []models.Milestone
 	for _, milestoneReq := range req.Milestones {
 		// Validate winner_game_player_index if provided
@@ -301,8 +301,7 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 		})
 	}
 
-	// Create awards and their placements
-	var awards []models.Award
+	// Create awards and their placements, tracking for point calculation
 	var placements []models.AwardPlacement
 	for _, awardReq := range req.Awards {
 		// Create the award
@@ -318,12 +317,6 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 		if err != nil {
 			return err
 		}
-
-		awards = append(awards, models.Award{
-			ID:     int(awardID),
-			GameID: int(gameID),
-			Name:   awardReq.Name,
-		})
 
 		// Create award placements
 		for _, placementReq := range awardReq.Placements {
