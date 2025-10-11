@@ -302,6 +302,38 @@ function useGameObjectives(type, map, expansions, playerNumber) {
     isAward,
   ]);
 
+  // Validate and reset data when player count changes
+  useEffect(() => {
+    setData(prevData => {
+      const newData = {};
+      let changed = false;
+
+      Object.keys(prevData).forEach(item => {
+        if (isAward) {
+          // For awards, reset placements for players that no longer exist
+          newData[item] = {};
+          Object.keys(prevData[item]).forEach(playerIndex => {
+            const idx = parseInt(playerIndex);
+            if (idx < playerNumber) {
+              newData[item][playerIndex] = prevData[item][playerIndex];
+            } else {
+              changed = true;
+            }
+          });
+        } else {
+          // For milestones, reset winner if they no longer exist
+          if (prevData[item] >= playerNumber) {
+            newData[item] = -1;
+            changed = true;
+          } else {
+            newData[item] = prevData[item];
+          }
+        }
+      });
+
+      return changed ? newData : prevData;
+    });
+  }, [playerNumber, isAward]);
 
   // Update selected objective at index
   const updateSelected = useCallback(
