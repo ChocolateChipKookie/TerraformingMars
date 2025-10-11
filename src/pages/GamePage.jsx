@@ -294,7 +294,6 @@ function useGameObjectives(type, map, expansions, playerNumber) {
   }, [
     map,
     expansions,
-    playerNumber,
     dataKey,
     additionalDataKey,
     venusSlots,
