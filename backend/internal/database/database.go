@@ -126,6 +126,7 @@ func migrate(db *sql.DB) error {
 		) STRICT`,
 
 		// Award placement table (linked to specific game revision)
+		// Note: placement values 1=gold, 2=silver are defined in game-data.json
 		`CREATE TABLE IF NOT EXISTS award_placement (
 			id INTEGER PRIMARY KEY,
 			award_id INTEGER NOT NULL,

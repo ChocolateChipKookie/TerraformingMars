@@ -7,6 +7,7 @@ import (
 
 	"terraforming-mars-backend/internal/auth"
 	"terraforming-mars-backend/internal/models"
+	gamedata "terraforming-mars-backend/shared"
 )
 
 type Repository struct {
@@ -334,8 +335,8 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 
 			// Validate placement value
 			if !placementReq.Placement.IsValid() {
-				return fmt.Errorf("invalid placement %d for award '%s': must be 1 (first) or 2 (second)",
-					placementReq.Placement, awardReq.Name)
+				return fmt.Errorf("invalid placement %d for award '%s': must be %d (gold) or %d (silver)",
+					placementReq.Placement, awardReq.Name, models.PlacementFirst, models.PlacementSecond)
 			}
 
 			// Create the placement
@@ -369,7 +370,7 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 		milestonePoints := 0
 		for _, milestone := range milestones {
 			if milestone.WinnerGamePlayerID != nil && *milestone.WinnerGamePlayerID == gp.ID {
-				milestonePoints += 5
+				milestonePoints += gamedata.Data.Constants.MilestonePoints
 			}
 		}
 
@@ -378,9 +379,9 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 			if placement.GamePlayerID == gp.ID {
 				switch placement.Placement {
 				case models.PlacementFirst:
-					awardPoints += 5
+					awardPoints += gamedata.Data.Constants.AwardPointsGold
 				case models.PlacementSecond:
-					awardPoints += 2
+					awardPoints += gamedata.Data.Constants.AwardPointsSilver
 				}
 			}
 		}

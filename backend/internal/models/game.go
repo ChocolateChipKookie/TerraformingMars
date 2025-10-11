@@ -30,11 +30,12 @@ const (
 )
 
 // Placement represents the placement in an award (1st or 2nd place)
+// Values are defined in backend/shared/game-data.json
 type Placement int
 
 const (
-	PlacementFirst  Placement = 1
-	PlacementSecond Placement = 2
+	PlacementFirst  Placement = 1 // Gold = awardPlacementGold
+	PlacementSecond Placement = 2 // Silver = awardPlacementSilver
 )
 
 // IsValid checks if the placement value is valid

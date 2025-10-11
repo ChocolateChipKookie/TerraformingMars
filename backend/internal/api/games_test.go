@@ -184,18 +184,18 @@ func TestCreateGame(t *testing.T) {
 			},
 		},
 		Milestones: []models.MilestoneRequest{
-			{
-				Name:                  "Builder",
-				WinnerGamePlayerIndex: models.Ptr(0),
-			},
+			{Name: "Builder", WinnerGamePlayerIndex: models.Ptr(0)},
+			{Name: "Gardener", WinnerGamePlayerIndex: nil},
+			{Name: "Mayor", WinnerGamePlayerIndex: nil},
+			{Name: "Planner", WinnerGamePlayerIndex: nil},
+			{Name: "Terraformer", WinnerGamePlayerIndex: nil},
 		},
 		Awards: []models.AwardRequest{
-			{
-				Name: "Landlord",
-				Placements: []models.PlacementRequest{
-					{PlayerIndex: 0, Placement: models.PlacementFirst},
-				},
-			},
+			{Name: "Landlord", Placements: []models.PlacementRequest{{PlayerIndex: 0, Placement: models.PlacementFirst}}},
+			{Name: "Banker", Placements: []models.PlacementRequest{}},
+			{Name: "Scientist", Placements: []models.PlacementRequest{}},
+			{Name: "Thermalist", Placements: []models.PlacementRequest{}},
+			{Name: "Miner", Placements: []models.PlacementRequest{}},
 		},
 	}
 
@@ -325,11 +325,11 @@ func TestCreateGame(t *testing.T) {
 		if len(game.GamePlayers) != 1 {
 			t.Errorf("Expected 1 player, got %d", len(game.GamePlayers))
 		}
-		if len(game.Milestones) != 1 {
-			t.Errorf("Expected 1 milestone, got %d", len(game.Milestones))
+		if len(game.Milestones) != 5 {
+			t.Errorf("Expected 5 milestones, got %d", len(game.Milestones))
 		}
-		if len(game.Awards) != 1 {
-			t.Errorf("Expected 1 award, got %d", len(game.Awards))
+		if len(game.Awards) != 5 {
+			t.Errorf("Expected 5 awards, got %d", len(game.Awards))
 		}
 	})
 }
@@ -350,6 +350,20 @@ func TestGameImages(t *testing.T) {
 		Expansions:  models.Expansions{"Base Game": true},
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
+		},
+		Milestones: []models.MilestoneRequest{
+			{Name: "Builder", WinnerGamePlayerIndex: nil},
+			{Name: "Gardener", WinnerGamePlayerIndex: nil},
+			{Name: "Mayor", WinnerGamePlayerIndex: nil},
+			{Name: "Planner", WinnerGamePlayerIndex: nil},
+			{Name: "Terraformer", WinnerGamePlayerIndex: nil},
+		},
+		Awards: []models.AwardRequest{
+			{Name: "Landlord", Placements: []models.PlacementRequest{}},
+			{Name: "Banker", Placements: []models.PlacementRequest{}},
+			{Name: "Scientist", Placements: []models.PlacementRequest{}},
+			{Name: "Thermalist", Placements: []models.PlacementRequest{}},
+			{Name: "Miner", Placements: []models.PlacementRequest{}},
 		},
 		Images: []models.ImageRequest{
 			{ImageData: image1, MimeType: "image/png"},
@@ -485,6 +499,20 @@ func TestGameWithNote(t *testing.T) {
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
 		},
+		Milestones: []models.MilestoneRequest{
+			{Name: "Builder", WinnerGamePlayerIndex: nil},
+			{Name: "Gardener", WinnerGamePlayerIndex: nil},
+			{Name: "Mayor", WinnerGamePlayerIndex: nil},
+			{Name: "Planner", WinnerGamePlayerIndex: nil},
+			{Name: "Terraformer", WinnerGamePlayerIndex: nil},
+		},
+		Awards: []models.AwardRequest{
+			{Name: "Landlord", Placements: []models.PlacementRequest{}},
+			{Name: "Banker", Placements: []models.PlacementRequest{}},
+			{Name: "Scientist", Placements: []models.PlacementRequest{}},
+			{Name: "Thermalist", Placements: []models.PlacementRequest{}},
+			{Name: "Miner", Placements: []models.PlacementRequest{}},
+		},
 	}
 
 	req := GameRequestWithAuth{
@@ -552,6 +580,9 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 		Milestones: []models.MilestoneRequest{
 			{Name: "Terraformer", WinnerGamePlayerIndex: &winnerIndex},
 			{Name: "Mayor", WinnerGamePlayerIndex: nil},
+			{Name: "Builder", WinnerGamePlayerIndex: nil},
+			{Name: "Gardener", WinnerGamePlayerIndex: nil},
+			{Name: "Planner", WinnerGamePlayerIndex: nil},
 		},
 		Awards: []models.AwardRequest{
 			{
@@ -561,10 +592,10 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 					{PlayerIndex: 1, Placement: models.PlacementSecond},
 				},
 			},
-			{
-				Name:       "Banker",
-				Placements: []models.PlacementRequest{},
-			},
+			{Name: "Banker", Placements: []models.PlacementRequest{}},
+			{Name: "Scientist", Placements: []models.PlacementRequest{}},
+			{Name: "Thermalist", Placements: []models.PlacementRequest{}},
+			{Name: "Miner", Placements: []models.PlacementRequest{}},
 		},
 	}
 
@@ -596,11 +627,11 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 	gameID := createdGame.Game.GameID
 
 	// Verify initial state
-	if len(createdGame.Milestones) != 2 {
-		t.Errorf("Expected 2 milestones, got %d", len(createdGame.Milestones))
+	if len(createdGame.Milestones) != 5 {
+		t.Errorf("Expected 5 milestones, got %d", len(createdGame.Milestones))
 	}
-	if len(createdGame.Awards) != 2 {
-		t.Errorf("Expected 2 awards, got %d", len(createdGame.Awards))
+	if len(createdGame.Awards) != 5 {
+		t.Errorf("Expected 5 awards, got %d", len(createdGame.Awards))
 	}
 
 	// Count funded awards (those with placements)
@@ -658,6 +689,8 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 			{Name: "Terraformer", WinnerGamePlayerIndex: &winnerIndex}, // Same winner
 			{Name: "Mayor", WinnerGamePlayerIndex: &winnerIndex1},      // Now achieved by Bob
 			{Name: "Gardener", WinnerGamePlayerIndex: &winnerIndex},    // New milestone
+			{Name: "Builder", WinnerGamePlayerIndex: nil},
+			{Name: "Planner", WinnerGamePlayerIndex: nil},
 		},
 		Awards: []models.AwardRequest{
 			{
@@ -679,6 +712,8 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 					{PlayerIndex: 1, Placement: models.PlacementFirst},
 				},
 			},
+			{Name: "Thermalist", Placements: []models.PlacementRequest{}},
+			{Name: "Miner", Placements: []models.PlacementRequest{}},
 		},
 	}
 
@@ -712,8 +747,8 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 	// Step 3: Verify the updates
 
 	// Verify milestones
-	if len(updatedGame.Milestones) != 3 {
-		t.Errorf("Expected 3 milestones after update, got %d", len(updatedGame.Milestones))
+	if len(updatedGame.Milestones) != 5 {
+		t.Errorf("Expected 5 milestones after update, got %d", len(updatedGame.Milestones))
 	}
 
 	milestoneNames := make(map[string]bool)
@@ -749,8 +784,8 @@ func TestUpdateGameMilestonesAndAwards(t *testing.T) {
 	}
 
 	// Verify awards
-	if len(updatedGame.Awards) != 3 {
-		t.Errorf("Expected 3 awards after update, got %d", len(updatedGame.Awards))
+	if len(updatedGame.Awards) != 5 {
+		t.Errorf("Expected 5 awards after update, got %d", len(updatedGame.Awards))
 	}
 
 	awardNames := make(map[string]bool)
@@ -854,6 +889,20 @@ func TestUpdateGameWithImageOwnershipValidation(t *testing.T) {
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
 		},
+		Milestones: []models.MilestoneRequest{
+			{Name: "Builder", WinnerGamePlayerIndex: nil},
+			{Name: "Gardener", WinnerGamePlayerIndex: nil},
+			{Name: "Mayor", WinnerGamePlayerIndex: nil},
+			{Name: "Planner", WinnerGamePlayerIndex: nil},
+			{Name: "Terraformer", WinnerGamePlayerIndex: nil},
+		},
+		Awards: []models.AwardRequest{
+			{Name: "Landlord", Placements: []models.PlacementRequest{}},
+			{Name: "Banker", Placements: []models.PlacementRequest{}},
+			{Name: "Scientist", Placements: []models.PlacementRequest{}},
+			{Name: "Thermalist", Placements: []models.PlacementRequest{}},
+			{Name: "Miner", Placements: []models.PlacementRequest{}},
+		},
 		Images: []models.ImageRequest{
 			{ImageData: image1, MimeType: "image/png"},
 			{ImageData: image2, MimeType: "image/jpeg"},
@@ -892,6 +941,20 @@ func TestUpdateGameWithImageOwnershipValidation(t *testing.T) {
 		Players: []models.PlayerRequest{
 			{Name: "Bob", Corporation: "Mining Guild", TerraformingRating: 20},
 		},
+		Milestones: []models.MilestoneRequest{
+			{Name: "Diversifier", WinnerGamePlayerIndex: nil},
+			{Name: "Tactician", WinnerGamePlayerIndex: nil},
+			{Name: "Polar Explorer", WinnerGamePlayerIndex: nil},
+			{Name: "Energizer", WinnerGamePlayerIndex: nil},
+			{Name: "Rim Settler", WinnerGamePlayerIndex: nil},
+		},
+		Awards: []models.AwardRequest{
+			{Name: "Cultivator", Placements: []models.PlacementRequest{}},
+			{Name: "Magnate", Placements: []models.PlacementRequest{}},
+			{Name: "Space Baron", Placements: []models.PlacementRequest{}},
+			{Name: "Excentric", Placements: []models.PlacementRequest{}},
+			{Name: "Contractor", Placements: []models.PlacementRequest{}},
+		},
 	}
 
 	bobCreateReq := GameRequestWithAuth{
@@ -925,6 +988,20 @@ func TestUpdateGameWithImageOwnershipValidation(t *testing.T) {
 		Expansions:  models.Expansions{"Base Game": true},
 		Players: []models.PlayerRequest{
 			{Name: "Bob", Corporation: "Mining Guild", TerraformingRating: 22},
+		},
+		Milestones: []models.MilestoneRequest{
+			{Name: "Diversifier", WinnerGamePlayerIndex: nil},
+			{Name: "Tactician", WinnerGamePlayerIndex: nil},
+			{Name: "Polar Explorer", WinnerGamePlayerIndex: nil},
+			{Name: "Energizer", WinnerGamePlayerIndex: nil},
+			{Name: "Rim Settler", WinnerGamePlayerIndex: nil},
+		},
+		Awards: []models.AwardRequest{
+			{Name: "Cultivator", Placements: []models.PlacementRequest{}},
+			{Name: "Magnate", Placements: []models.PlacementRequest{}},
+			{Name: "Space Baron", Placements: []models.PlacementRequest{}},
+			{Name: "Excentric", Placements: []models.PlacementRequest{}},
+			{Name: "Contractor", Placements: []models.PlacementRequest{}},
 		},
 		Images: []models.ImageRequest{
 			{ID: &adminGame.Images[0].ID}, // Bob trying to use admin's image in his own game

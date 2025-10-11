@@ -5,12 +5,20 @@
     "milestonePoints": 5,
     "awardPointsGold": 5,
     "awardPointsSilver": 2,
+    "awardPlacementNone": 0,
+    "awardPlacementGold": 1,
+    "awardPlacementSilver": 2,
+    "defaultMilestoneSlots": 5,
+    "venusMilestoneSlots": 6,
+    "defaultAwardSlots": 5,
+    "venusAwardSlots": 6,
     "minPlayers": 1,
     "defaultMaxPlayers": 5,
     "minGenerations": 1,
     "maxGenerations": 20,
     "defaultGenerations": 14,
-    "defaultPlayerCount": 4
+    "defaultPlayerCount": 4,
+    "defaultTR": 20
   },
   "maps": {
     "Tharsis": {
@@ -47,6 +55,10 @@
       "maxPlayers": 6,
       "milestones": ["Terran", "Landshaper", "Merchant", "Sponsor", "Lobbyist"],
       "awards": ["Promoter", "Edgedancer", "Visionary", "Tokenizer", "Historican"]
+    },
+    "Venus": {
+      "milestones": ["Hoverlord"],
+      "awards": ["Venuphile"]
     }
   },
   "expansions": [

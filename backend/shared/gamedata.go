@@ -21,17 +21,25 @@ type GameData struct {
 
 // Constants holds game rule constants
 type Constants struct {
-	MaxMilestonesClaimed int `json:"maxMilestonesClaimed"`
-	MaxAwardsFunded      int `json:"maxAwardsFunded"`
-	MilestonePoints      int `json:"milestonePoints"`
-	AwardPointsGold      int `json:"awardPointsGold"`
-	AwardPointsSilver    int `json:"awardPointsSilver"`
-	MinPlayers           int `json:"minPlayers"`
-	DefaultMaxPlayers    int `json:"defaultMaxPlayers"`
-	MinGenerations       int `json:"minGenerations"`
-	MaxGenerations       int `json:"maxGenerations"`
-	DefaultGenerations   int `json:"defaultGenerations"`
-	DefaultPlayerCount   int `json:"defaultPlayerCount"`
+	MaxMilestonesClaimed  int `json:"maxMilestonesClaimed"`
+	MaxAwardsFunded       int `json:"maxAwardsFunded"`
+	MilestonePoints       int `json:"milestonePoints"`
+	AwardPointsGold       int `json:"awardPointsGold"`
+	AwardPointsSilver     int `json:"awardPointsSilver"`
+	AwardPlacementNone    int `json:"awardPlacementNone"`
+	AwardPlacementGold    int `json:"awardPlacementGold"`
+	AwardPlacementSilver  int `json:"awardPlacementSilver"`
+	DefaultMilestoneSlots int `json:"defaultMilestoneSlots"`
+	VenusMilestoneSlots   int `json:"venusMilestoneSlots"`
+	DefaultAwardSlots     int `json:"defaultAwardSlots"`
+	VenusAwardSlots       int `json:"venusAwardSlots"`
+	MinPlayers            int `json:"minPlayers"`
+	DefaultMaxPlayers     int `json:"defaultMaxPlayers"`
+	MinGenerations        int `json:"minGenerations"`
+	MaxGenerations        int `json:"maxGenerations"`
+	DefaultGenerations    int `json:"defaultGenerations"`
+	DefaultPlayerCount    int `json:"defaultPlayerCount"`
+	DefaultTR             int `json:"defaultTR"`
 }
 
 // MapData represents configuration for a specific map
@@ -198,9 +206,9 @@ func ValidateAward(award string, mapName string, useCustom bool, expansions map[
 
 // ValidateMilestoneCount checks if the milestone count is correct based on expansions
 func ValidateMilestoneCount(milestones []string, expansions map[string]bool) error {
-	expectedCount := 5
+	expectedCount := Data.Constants.DefaultMilestoneSlots
 	if expansions["Venus Next"] {
-		expectedCount = 6
+		expectedCount = Data.Constants.VenusMilestoneSlots
 	}
 
 	if len(milestones) != expectedCount {
@@ -226,9 +234,9 @@ func ValidateMilestoneCount(milestones []string, expansions map[string]bool) err
 
 // ValidateAwardCount checks if the award count is correct based on expansions
 func ValidateAwardCount(awards []string, expansions map[string]bool) error {
-	expectedCount := 5
+	expectedCount := Data.Constants.DefaultAwardSlots
 	if expansions["Venus Next"] {
-		expectedCount = 6
+		expectedCount = Data.Constants.VenusAwardSlots
 	}
 
 	if len(awards) != expectedCount {
