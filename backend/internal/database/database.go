@@ -61,7 +61,7 @@ func migrate(db *sql.DB) error {
 	queries := []string{
 		// Player table (simple, additive only)
 		`CREATE TABLE IF NOT EXISTS player (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			name TEXT NOT NULL UNIQUE,
 			password_hash TEXT,
 			role TEXT NOT NULL DEFAULT 'player' CHECK (role IN ('admin', 'user', 'player')),
@@ -73,7 +73,7 @@ func migrate(db *sql.DB) error {
 
 		// Game table with revision system
 		`CREATE TABLE IF NOT EXISTS game (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			game_id INTEGER NOT NULL,
 			revision INTEGER NOT NULL DEFAULT 1,
 			name TEXT NOT NULL,
@@ -91,7 +91,7 @@ func migrate(db *sql.DB) error {
 
 		// Game player table (linked to specific game revision)
 		`CREATE TABLE IF NOT EXISTS game_player (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			game_id INTEGER NOT NULL,
 			player_id INTEGER NOT NULL,
 			corporation TEXT,
@@ -109,7 +109,7 @@ func migrate(db *sql.DB) error {
 
 		// Milestone table (linked to specific game revision)
 		`CREATE TABLE IF NOT EXISTS milestone (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			game_id INTEGER NOT NULL,
 			name TEXT NOT NULL,
 			winner_game_player_id INTEGER,
@@ -119,7 +119,7 @@ func migrate(db *sql.DB) error {
 
 		// Award table (linked to specific game revision)
 		`CREATE TABLE IF NOT EXISTS award (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			game_id INTEGER NOT NULL,
 			name TEXT NOT NULL,
 			FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE
@@ -127,7 +127,7 @@ func migrate(db *sql.DB) error {
 
 		// Award placement table (linked to specific game revision)
 		`CREATE TABLE IF NOT EXISTS award_placement (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			award_id INTEGER NOT NULL,
 			game_player_id INTEGER NOT NULL,
 			placement INTEGER NOT NULL CHECK (placement IN (1, 2)),
@@ -137,7 +137,7 @@ func migrate(db *sql.DB) error {
 
 		// Game image table (stored as base64)
 		`CREATE TABLE IF NOT EXISTS game_image (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			game_id INTEGER NOT NULL,
 			image_data BLOB NOT NULL,
 			mime_type TEXT NOT NULL,
