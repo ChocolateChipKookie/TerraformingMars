@@ -16,7 +16,7 @@
     "defaultMaxPlayers": 5,
     "minGenerations": 1,
     "maxGenerations": 20,
-    "defaultGenerations": 14,
+    "defaultGenerations": 1,
     "defaultPlayerCount": 4,
     "defaultTR": 20
   },
