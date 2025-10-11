@@ -154,9 +154,9 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 	gameReq1 := models.CreateGameRequest{
 		Name:        "Admin Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(10),
-		Expansions:  models.Ptr(models.Expansions{"Venus Next": true, "Prelude": true}),
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"Venus Next": true, "Prelude": true},
 		Players: []models.PlayerRequest{
 			{
 				Name:               "Alice",
@@ -229,9 +229,9 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 	gameReq2 := models.CreateGameRequest{
 		Name:        "User Game With Multiple Users",
 		Date:        "2024-01-20",
-		Map:         models.Ptr("Hellas"),
-		Generations: models.Ptr(12),
-		Expansions:  models.Ptr(models.Expansions{"Colonies": true}),
+		Map:         "Hellas",
+		Generations: 12,
+		Expansions:  models.Expansions{"Colonies": true},
 		Players: []models.PlayerRequest{
 			{
 				Name:               "Bob",
@@ -299,8 +299,8 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 		},
 	}
 	
-	game1, _ := fixture.Repo.CreateGame(gameReq1, *fixture.Admin)
-	game2, _ := fixture.Repo.CreateGame(gameReq2, *fixture.Bob)
+	game1, _ := fixture.Repo.CreateGame(&models.ParsedGameRequest{Normal: &gameReq1}, *fixture.Admin)
+	game2, _ := fixture.Repo.CreateGame(&models.ParsedGameRequest{Normal: &gameReq2}, *fixture.Bob)
 	
 	return &TestGameFixture{
 		TestFixture: fixture,

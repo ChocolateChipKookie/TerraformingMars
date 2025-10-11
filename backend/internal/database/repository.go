@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"terraforming-mars-backend/internal/auth"
 	"terraforming-mars-backend/internal/models"
@@ -208,45 +207,12 @@ func (r *Repository) UpdatePlayer(playerID int, name string, password *string, r
 	return r.GetPlayerByID(playerID)
 }
 
-// createGameData creates all game-related data (players, milestones, awards) for a game revision
-// This is used by both CreateGame and UpdateGame
-func (r *Repository) createGameData(tx *sql.Tx, gameID int64, req models.CreateGameRequest) error {
+// createNormalGameData creates all game-related data (players, milestones, awards) for a normal game revision
+// This is used by both CreateGame and UpdateGame for normal games
+func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.CreateGameRequest) error {
 	// Validate that we have at least one player
 	if len(req.Players) == 0 {
 		return fmt.Errorf("validation error: at least one player is required to create a game")
-	}
-
-	// Validate fields based on legacy mode
-	if !req.LegacyMode {
-		// Non-legacy games: require corporations, forbid manual points
-		for i, playerReq := range req.Players {
-			if playerReq.Corporation == "" {
-				return fmt.Errorf("corporation is required for player %d (%s) in non-legacy games", i+1, playerReq.Name)
-			}
-			if playerReq.MilestonePoints != nil {
-				return fmt.Errorf("milestone_points must not be provided for player %d (%s) in non-legacy games", i+1, playerReq.Name)
-			}
-			if playerReq.AwardPoints != nil {
-				return fmt.Errorf("award_points must not be provided for player %d (%s) in non-legacy games", i+1, playerReq.Name)
-			}
-		}
-	} else {
-		// Legacy games: require manual points, corporation is optional, no milestones/awards
-		for i, playerReq := range req.Players {
-			if playerReq.MilestonePoints == nil {
-				return fmt.Errorf("milestone_points is required for player %d (%s) in legacy games", i+1, playerReq.Name)
-			}
-			if playerReq.AwardPoints == nil {
-				return fmt.Errorf("award_points is required for player %d (%s) in legacy games", i+1, playerReq.Name)
-			}
-		}
-		// Legacy games should not have milestones or awards data
-		if len(req.Milestones) > 0 {
-			return fmt.Errorf("milestones should not be provided in legacy games")
-		}
-		if len(req.Awards) > 0 {
-			return fmt.Errorf("awards should not be provided in legacy games")
-		}
 	}
 
 	// Create game_players entries
@@ -262,24 +228,18 @@ func (r *Repository) createGameData(tx *sql.Tx, gameID int64, req models.CreateG
 			return fmt.Errorf("error finding player '%s': %v", playerReq.Name, err)
 		}
 
-		// For legacy games, use manual points; for non-legacy, use 0 (will be calculated later)
-		var milestonePoints, awardPoints int
-		if req.LegacyMode {
-			milestonePoints = *playerReq.MilestonePoints
-			awardPoints = *playerReq.AwardPoints
-		}
-
 		// Create game_player entry with scores from the player request
+		// Milestone and award points will be calculated later for normal games
 		gamePlayerResult, err := tx.Exec(`
 			INSERT INTO game_player (
 				game_id, player_id, corporation,
 				terraforming_rating, cities, greeneries, cards, turmoil_points,
 				milestone_points, award_points, total_points
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)
 		`, gameID, playerID, playerReq.Corporation,
 			playerReq.TerraformingRating, playerReq.Cities, playerReq.Greeneries,
-			playerReq.Cards, playerReq.TurmoilPoints, milestonePoints, awardPoints)
+			playerReq.Cards, playerReq.TurmoilPoints)
 		if err != nil {
 			return err
 		}
@@ -293,14 +253,14 @@ func (r *Repository) createGameData(tx *sql.Tx, gameID int64, req models.CreateG
 			ID:                 int(gamePlayerID),
 			GameID:             int(gameID),
 			PlayerID:           playerID,
-			Corporation:        playerReq.Corporation,
+			Corporation:        &playerReq.Corporation,
 			TerraformingRating: playerReq.TerraformingRating,
 			Cities:             playerReq.Cities,
 			Greeneries:         playerReq.Greeneries,
 			Cards:              playerReq.Cards,
 			TurmoilPoints:      playerReq.TurmoilPoints,
-			MilestonePoints:    milestonePoints,
-			AwardPoints:        awardPoints,
+			MilestonePoints:    0, // Will be calculated later
+			AwardPoints:        0, // Will be calculated later
 			TotalPoints:        0, // Will be calculated later
 		})
 	}
@@ -401,59 +361,42 @@ func (r *Repository) createGameData(tx *sql.Tx, gameID int64, req models.CreateG
 		}
 	}
 
-	// Calculate and update total points for each game player
+	// Calculate and update total points for each game player (normal games only)
 	for i := range gamePlayers {
 		gp := &gamePlayers[i]
 
-		var milestonePoints, awardPoints int
-		if req.LegacyMode {
-			// For legacy games, points are already set from user input
-			milestonePoints = gp.MilestonePoints
-			awardPoints = gp.AwardPoints
-		} else {
-			// For non-legacy games, calculate points from milestones and awards
-			milestonePoints = 0
-			for _, milestone := range milestones {
-				if milestone.WinnerGamePlayerID != nil && *milestone.WinnerGamePlayerID == gp.ID {
-					milestonePoints += 5
-				}
-			}
-
-			awardPoints = 0
-			for _, placement := range placements {
-				if placement.GamePlayerID == gp.ID {
-					switch placement.Placement {
-					case models.PlacementFirst:
-						awardPoints += 5
-					case models.PlacementSecond:
-						awardPoints += 2
-					}
-				}
-			}
-
-			// Update the game_player record with calculated points (only for non-legacy)
-			_, err := tx.Exec(`
-				UPDATE game_player
-				SET milestone_points = ?, award_points = ?
-				WHERE id = ?
-			`, milestonePoints, awardPoints, gp.ID)
-			if err != nil {
-				return fmt.Errorf("error updating points for game_player %d: %v", gp.ID, err)
+		// Calculate points from milestones and awards
+		milestonePoints := 0
+		for _, milestone := range milestones {
+			if milestone.WinnerGamePlayerID != nil && *milestone.WinnerGamePlayerID == gp.ID {
+				milestonePoints += 5
 			}
 		}
 
-		// Calculate total points (for both legacy and non-legacy)
+		awardPoints := 0
+		for _, placement := range placements {
+			if placement.GamePlayerID == gp.ID {
+				switch placement.Placement {
+				case models.PlacementFirst:
+					awardPoints += 5
+				case models.PlacementSecond:
+					awardPoints += 2
+				}
+			}
+		}
+
+		// Calculate total points
 		totalPoints := gp.TerraformingRating + gp.Cities + gp.Greeneries +
 			gp.Cards + gp.TurmoilPoints + milestonePoints + awardPoints
 
-		// Update total points in database
+		// Update the game_player record with calculated points
 		_, err := tx.Exec(`
 			UPDATE game_player
-			SET total_points = ?
+			SET milestone_points = ?, award_points = ?, total_points = ?
 			WHERE id = ?
-		`, totalPoints, gp.ID)
+		`, milestonePoints, awardPoints, totalPoints, gp.ID)
 		if err != nil {
-			return fmt.Errorf("error updating total points for game_player %d: %v", gp.ID, err)
+			return fmt.Errorf("error updating points for game_player %d: %v", gp.ID, err)
 		}
 
 		// Update the struct for consistency
@@ -466,49 +409,39 @@ func (r *Repository) createGameData(tx *sql.Tx, gameID int64, req models.CreateG
 }
 
 // CreateGame creates a new game with all related data
-func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Player) (*models.GameWithDetails, error) {
+func (r *Repository) CreateGame(req *models.ParsedGameRequest, actor models.Player) (*models.GameWithDetails, error) {
+	if req == nil {
+		return nil, fmt.Errorf("request cannot be nil")
+	}
+
 	// Check if the actor can create games
 	if err := auth.CanCreateGames(actor); err != nil {
 		return nil, err
 	}
 
-	// Ensure the actor is creating the game (set CreatedBy to actor's ID)
-	req.CreatedBy = actor.ID
+	// Determine which type of game to create
+	if req.Normal != nil {
+		return r.createNormalGame(req.Normal, actor)
+	}
+	if req.Legacy != nil {
+		return r.createLegacyGame(req.Legacy, actor)
+	}
 
+	return nil, fmt.Errorf("invalid request: neither normal nor legacy game data provided")
+}
+
+// createNormalGame handles creating a non-legacy game
+func (r *Repository) createNormalGame(req *models.CreateGameRequest, actor models.Player) (*models.GameWithDetails, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	// Validate date format (but store as string)
-	_, err = time.Parse("2006-01-02", req.Date)
+	// Marshal expansions to JSON (always present for normal games)
+	expansionsJSON, err := json.Marshal(req.Expansions)
 	if err != nil {
-		return nil, fmt.Errorf("invalid date format: %v (expected YYYY-MM-DD)", err)
-	}
-
-	// Validate non-legacy games have required fields
-	if !req.LegacyMode {
-		if req.Map == nil {
-			return nil, fmt.Errorf("map is required for non-legacy games")
-		}
-		if req.Generations == nil {
-			return nil, fmt.Errorf("generations is required for non-legacy games")
-		}
-		if req.Expansions == nil {
-			return nil, fmt.Errorf("expansions is required for non-legacy games")
-		}
-	}
-
-	// Marshal expansions to JSON (handle nil for legacy games)
-	var expansionsJSON []byte
-	if req.Expansions != nil {
-		expansionsJSON, err = json.Marshal(req.Expansions)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		expansionsJSON = []byte("null")
+		return nil, err
 	}
 
 	// Get next game ID using max(game_id) + 1
@@ -518,11 +451,11 @@ func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Playe
 		return nil, err
 	}
 
-	// Create game with first revision
+	// Create game with first revision (normal game, legacy_mode = FALSE)
 	result, err := tx.Exec(`
 		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, legacy_mode, created_by)
-		VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, gameID, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), req.Note, req.LegacyMode, req.CreatedBy)
+		VALUES (?, 1, ?, ?, ?, ?, ?, ?, FALSE, ?)
+	`, gameID, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), req.Note, actor.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -534,7 +467,7 @@ func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Playe
 	}
 
 	// Create all game-related data
-	if err := r.createGameData(tx, internalID, req); err != nil {
+	if err := r.createNormalGameData(tx, internalID, req); err != nil {
 		return nil, err
 	}
 
@@ -557,8 +490,90 @@ func (r *Repository) CreateGame(req models.CreateGameRequest, actor models.Playe
 	return r.GetGameByID(gameID)
 }
 
+// createLegacyGame handles creating a legacy game
+func (r *Repository) createLegacyGame(req *models.CreateLegacyGameRequest, actor models.Player) (*models.GameWithDetails, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// Get next game ID using max(game_id) + 1
+	var gameID int
+	err = tx.QueryRow("SELECT COALESCE(MAX(game_id), 0) + 1 FROM game").Scan(&gameID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create game with first revision (legacy game, legacy_mode = TRUE)
+	result, err := tx.Exec(`
+		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, legacy_mode, created_by)
+		VALUES (?, 1, ?, ?, NULL, NULL, NULL, ?, TRUE, ?)
+	`, gameID, req.Name, req.Date, req.Note, actor.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the auto-increment primary key for foreign key references
+	internalID, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create game players for legacy game
+	for _, player := range req.Players {
+		// Get player ID
+		var playerID int
+		err = tx.QueryRow("SELECT id FROM player WHERE name = ?", player.Name).Scan(&playerID)
+		if err != nil {
+			return nil, fmt.Errorf("player %s not found: %v", player.Name, err)
+		}
+
+		// Calculate total points
+		totalPoints := player.TerraformingRating + player.Cities + player.Greeneries +
+			player.Cards + player.TurmoilPoints + player.MilestonePoints + player.AwardPoints
+
+		// Insert game_player record with legacy points
+		_, err = tx.Exec(`
+			INSERT INTO game_player (
+				game_id, player_id, corporation,
+				terraforming_rating, cities, greeneries, cards, turmoil_points,
+				milestone_points, award_points, total_points
+			) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+		`, internalID, playerID,
+			player.TerraformingRating, player.Cities, player.Greeneries,
+			player.Cards, player.TurmoilPoints, player.MilestonePoints, player.AwardPoints,
+			totalPoints)
+		if err != nil {
+			return nil, fmt.Errorf("error creating game_player for %s: %v", player.Name, err)
+		}
+	}
+
+	// Create game images for legacy game
+	for i, imageReq := range req.Images {
+		_, err = tx.Exec(`
+			INSERT INTO game_image (game_id, image_data, mime_type, display_order)
+			VALUES (?, ?, ?, ?)
+		`, internalID, imageReq.ImageData, imageReq.MimeType, i)
+		if err != nil {
+			return nil, fmt.Errorf("error creating image %d: %v", i, err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	// Return the created game with all its details
+	return r.GetGameByID(gameID)
+}
+
 // UpdateGame creates a new revision of an existing game (for API use with permission checking)
-func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor models.Player) (*models.GameWithDetails, error) {
+func (r *Repository) UpdateGame(gameID int, req *models.ParsedGameRequest, actor models.Player) (*models.GameWithDetails, error) {
+	if req == nil {
+		return nil, fmt.Errorf("request cannot be nil")
+	}
+
 	// First, get the created_by of the game we're updating (from any revision)
 	var createdBy int
 	err := r.db.QueryRow("SELECT created_by FROM game WHERE game_id = ? LIMIT 1", gameID).Scan(&createdBy)
@@ -574,6 +589,19 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 		return nil, err
 	}
 
+	// Determine which type of game update to perform
+	if req.Normal != nil {
+		return r.updateNormalGame(gameID, req.Normal, createdBy)
+	}
+	if req.Legacy != nil {
+		return r.updateLegacyGame(gameID, req.Legacy, createdBy)
+	}
+
+	return nil, fmt.Errorf("invalid request: neither normal nor legacy game data provided")
+}
+
+// updateNormalGame handles updating a non-legacy game
+func (r *Repository) updateNormalGame(gameID int, req *models.CreateGameRequest, createdBy int) (*models.GameWithDetails, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
@@ -587,41 +615,17 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 		return nil, err
 	}
 
-	// Validate date format (but store as string)
-	_, err = time.Parse("2006-01-02", req.Date)
+	// Marshal expansions to JSON (always present for normal games)
+	expansionsJSON, err := json.Marshal(req.Expansions)
 	if err != nil {
-		return nil, fmt.Errorf("invalid date format: %v", err)
-	}
-
-	// Validate non-legacy games have required fields
-	if !req.LegacyMode {
-		if req.Map == nil {
-			return nil, fmt.Errorf("map is required for non-legacy games")
-		}
-		if req.Generations == nil {
-			return nil, fmt.Errorf("generations is required for non-legacy games")
-		}
-		if req.Expansions == nil {
-			return nil, fmt.Errorf("expansions is required for non-legacy games")
-		}
-	}
-
-	// Marshal expansions to JSON (handle nil for legacy games)
-	var expansionsJSON []byte
-	if req.Expansions != nil {
-		expansionsJSON, err = json.Marshal(req.Expansions)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		expansionsJSON = []byte("null")
+		return nil, err
 	}
 
 	// Create new revision (keep the original creator)
 	result, err := tx.Exec(`
 		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, legacy_mode, created_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, gameID, maxRevision+1, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), req.Note, req.LegacyMode, createdBy)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE, ?)
+	`, gameID, maxRevision+1, req.Name, req.Date, req.Map, req.Generations, string(expansionsJSON), req.Note, createdBy)
 	if err != nil {
 		return nil, err
 	}
@@ -633,14 +637,106 @@ func (r *Repository) UpdateGame(gameID int, req models.CreateGameRequest, actor 
 	}
 
 	// Create all game-related data using the shared helper
-	if err := r.createGameData(tx, internalID, req); err != nil {
+	if err := r.createNormalGameData(tx, internalID, req); err != nil {
 		return nil, err
 	}
 
 	// Create game images (images should already be processed by API layer)
-	for i, imageReq := range req.Images {
+	images := req.Images
+	for i, imageReq := range images {
 		if imageReq.ID != nil {
 			// For existing images, just create a reference (copy the image to new revision)
+			_, err = tx.Exec(`
+				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
+				SELECT ?, image_data, mime_type, ?
+				FROM game_image
+				WHERE id = ?
+			`, internalID, i, *imageReq.ID)
+			if err != nil {
+				return nil, fmt.Errorf("error copying existing image %d: %v", *imageReq.ID, err)
+			}
+		} else {
+			// For new images, insert the processed data
+			_, err = tx.Exec(`
+				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
+				VALUES (?, ?, ?, ?)
+			`, internalID, imageReq.ImageData, imageReq.MimeType, i)
+			if err != nil {
+				return nil, fmt.Errorf("error creating image %d: %v", i, err)
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return r.GetGameByID(gameID)
+}
+
+// updateLegacyGame handles updating a legacy game
+func (r *Repository) updateLegacyGame(gameID int, req *models.CreateLegacyGameRequest, createdBy int) (*models.GameWithDetails, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// Get the next revision number
+	var maxRevision int
+	err = tx.QueryRow("SELECT MAX(revision) FROM game WHERE game_id = ?", gameID).Scan(&maxRevision)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create new revision (keep the original creator)
+	result, err := tx.Exec(`
+		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, legacy_mode, created_by)
+		VALUES (?, ?, ?, ?, NULL, NULL, NULL, ?, TRUE, ?)
+	`, gameID, maxRevision+1, req.Name, req.Date, req.Note, createdBy)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the auto-increment primary key for foreign key references
+	internalID, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create game players for legacy game
+	for _, player := range req.Players {
+		// Get player ID
+		var playerID int
+		err = tx.QueryRow("SELECT id FROM player WHERE name = ?", player.Name).Scan(&playerID)
+		if err != nil {
+			return nil, fmt.Errorf("player %s not found: %v", player.Name, err)
+		}
+
+		// Calculate total points
+		totalPoints := player.TerraformingRating + player.Cities + player.Greeneries +
+			player.Cards + player.TurmoilPoints + player.MilestonePoints + player.AwardPoints
+
+		// Insert game_player record with legacy points
+		_, err = tx.Exec(`
+			INSERT INTO game_player (
+				game_id, player_id, corporation,
+				terraforming_rating, cities, greeneries, cards, turmoil_points,
+				milestone_points, award_points, total_points
+			) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+		`, internalID, playerID,
+			player.TerraformingRating, player.Cities, player.Greeneries,
+			player.Cards, player.TurmoilPoints, player.MilestonePoints, player.AwardPoints,
+			totalPoints)
+		if err != nil {
+			return nil, fmt.Errorf("error creating game_player for %s: %v", player.Name, err)
+		}
+	}
+
+	// Create game images for legacy game
+	for i, imageReq := range req.Images {
+		if imageReq.ID != nil {
+			// For existing images, copy to new revision
 			_, err = tx.Exec(`
 				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
 				SELECT ?, image_data, mime_type, ?
@@ -686,7 +782,7 @@ func (r *Repository) GetAllGames() ([]models.Game, error) {
 	var games []models.Game
 	for rows.Next() {
 		var g models.Game
-		var expansionsJSON string
+		var expansionsJSON sql.NullString
 		err := rows.Scan(
 			&g.ID, &g.GameID, &g.Revision, &g.Name, &g.Date,
 			&g.Map, &g.Generations, &expansionsJSON, &g.Note, &g.CreatedBy, &g.CreatedAt,
@@ -695,9 +791,14 @@ func (r *Repository) GetAllGames() ([]models.Game, error) {
 			return nil, err
 		}
 
-		// Parse expansions JSON
-		if err := json.Unmarshal([]byte(expansionsJSON), &g.Expansions); err != nil {
-			return nil, fmt.Errorf("error parsing expansions JSON: %v", err)
+		// Parse expansions JSON (handle NULL for legacy games)
+		if expansionsJSON.Valid {
+			if err := json.Unmarshal([]byte(expansionsJSON.String), &g.Expansions); err != nil {
+				return nil, fmt.Errorf("error parsing expansions JSON: %v", err)
+			}
+		} else {
+			// For legacy games, expansions is NULL
+			g.Expansions = nil
 		}
 
 		games = append(games, g)
@@ -709,7 +810,7 @@ func (r *Repository) GetAllGames() ([]models.Game, error) {
 func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 	// Get the game
 	var game models.Game
-	var expansionsJSON string
+	var expansionsJSON sql.NullString
 	err := r.db.QueryRow(`
 		SELECT id, game_id, revision, name, date, map, generations, expansions, note, legacy_mode, created_by, created_at
 		FROM game
@@ -727,9 +828,14 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 		return nil, err
 	}
 
-	// Parse expansions JSON
-	if err := json.Unmarshal([]byte(expansionsJSON), &game.Expansions); err != nil {
-		return nil, fmt.Errorf("error parsing expansions JSON: %v", err)
+	// Parse expansions JSON (handle NULL for legacy games)
+	if expansionsJSON.Valid {
+		if err := json.Unmarshal([]byte(expansionsJSON.String), &game.Expansions); err != nil {
+			return nil, fmt.Errorf("error parsing expansions JSON: %v", err)
+		}
+	} else {
+		// For legacy games, expansions is NULL
+		game.Expansions = nil
 	}
 
 	// Get game players and their associated player info (preserve original order)
@@ -756,14 +862,22 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 	for rows.Next() {
 		var gp models.GamePlayer
 		var p models.Player
+		var corporationDB sql.NullString
 		err := rows.Scan(
-			&gp.ID, &gp.GameID, &gp.PlayerID, &gp.Corporation,
+			&gp.ID, &gp.GameID, &gp.PlayerID, &corporationDB,
 			&gp.TerraformingRating, &gp.Cities, &gp.Greeneries, &gp.Cards,
 			&gp.TurmoilPoints, &gp.MilestonePoints, &gp.AwardPoints, &gp.TotalPoints,
 			&p.ID, &p.Name,
 		)
 		if err != nil {
 			return nil, err
+		}
+
+		// Handle NULL corporation for legacy games
+		if corporationDB.Valid {
+			gp.Corporation = &corporationDB.String
+		} else {
+			gp.Corporation = nil
 		}
 
 		gamePlayers = append(gamePlayers, gp)

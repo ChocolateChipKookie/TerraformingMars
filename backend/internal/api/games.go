@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -11,11 +13,8 @@ import (
 	"terraforming-mars-backend/internal/models"
 )
 
-// Request structure for creating/updating a game with authentication
-type AuthenticatedGameRequest struct {
-	models.CreateGameRequest
-
-	// Actor authentication (who is creating/updating this game)
+// RequestAuthentication contains the actor credentials for authenticated requests
+type RequestAuthentication struct {
 	ActorName     string `json:"actor_name"`
 	ActorPassword string `json:"actor_password"`
 }
@@ -51,29 +50,53 @@ func (h *Handler) getGame(w http.ResponseWriter, r *http.Request) {
 
 // POST /games - Create a new game
 func (h *Handler) createGame(w http.ResponseWriter, r *http.Request) {
-	var req AuthenticatedGameRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	// Read the entire body
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.sendError(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+
+	// Extract authentication credentials
+	var auth RequestAuthentication
+	if err := json.Unmarshal(bodyBytes, &auth); err != nil {
 		h.sendError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	// Authenticate the actor
-	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
+	actor, err := h.repo.AuthenticatePlayer(auth.ActorName, auth.ActorPassword)
 	if err != nil {
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
 
-	// Process images before creating the game (no gameID for new games)
-	if err := h.processImages(&req.CreateGameRequest, nil); err != nil {
+	// Parse and validate the game request (for new game creation)
+	parsedReq, err := models.ParseGameRequest(bytes.NewReader(bodyBytes), false)
+	if err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	// Create the game
-	game, err := h.repo.CreateGame(req.CreateGameRequest, *actor)
-	if err != nil {
+	// Validate against database (players exist, etc.)
+	if err := h.repo.ValidateGameRequest(parsedReq); err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Process images if there are any
+	images := parsedReq.GetImages()
+	if len(images) > 0 {
+		if err := h.processImages(images, nil); err != nil {
+			h.sendError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+
+	// Create the game in the database
+	game, err := h.repo.CreateGame(parsedReq, *actor)
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to create game: %v", err))
 		return
 	}
 
@@ -89,29 +112,53 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req AuthenticatedGameRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	// Read the entire body
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.sendError(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+
+	// Extract authentication credentials
+	var auth RequestAuthentication
+	if err := json.Unmarshal(bodyBytes, &auth); err != nil {
 		h.sendError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	// Authenticate the actor
-	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
+	actor, err := h.repo.AuthenticatePlayer(auth.ActorName, auth.ActorPassword)
 	if err != nil {
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
 
-	// Process images before updating the game (validate ownership for existing images)
-	if err := h.processImages(&req.CreateGameRequest, &id); err != nil {
+	// Parse and validate the game request (for updating existing game)
+	parsedReq, err := models.ParseGameRequest(bytes.NewReader(bodyBytes), true)
+	if err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	// Update the game (creates new revision)
-	game, err := h.repo.UpdateGame(id, req.CreateGameRequest, *actor)
-	if err != nil {
+	// Validate against database (game exists, players exist, image ownership, etc.)
+	if err := h.repo.ValidateGameUpdateRequest(id, parsedReq); err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Process images if there are any
+	images := parsedReq.GetImages()
+	if len(images) > 0 {
+		if err := h.processImages(images, &id); err != nil {
+			h.sendError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+
+	// Update the game in the database
+	game, err := h.repo.UpdateGame(id, parsedReq, *actor)
+	if err != nil {
+		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update game: %v", err))
 		return
 	}
 
@@ -138,15 +185,15 @@ func (h *Handler) getImage(w http.ResponseWriter, r *http.Request) {
 	w.Write(imageData)
 }
 
-// processImages validates and processes all images in a game request
-func (h *Handler) processImages(req *models.CreateGameRequest, gameID *int) error {
+// processImages validates and processes all images in a slice
+func (h *Handler) processImages(images []models.ImageRequest, gameID *int) error {
 	// Check maximum number of images
-	if len(req.Images) > 4 {
-		return fmt.Errorf("too many images: maximum 4 images allowed, got %d", len(req.Images))
+	if len(images) > 4 {
+		return fmt.Errorf("too many images: maximum 4 images allowed, got %d", len(images))
 	}
 
 	// Process each image
-	for i, imageReq := range req.Images {
+	for i, imageReq := range images {
 		// Check if this is a reference to an existing image
 		if imageReq.ID != nil {
 			// Validate that the existing image exists
@@ -180,9 +227,9 @@ func (h *Handler) processImages(req *models.CreateGameRequest, gameID *int) erro
 			return fmt.Errorf("error processing image %d: %v", i+1, err)
 		}
 
-		// Update the request with processed image
-		req.Images[i].ImageData = processedData
-		req.Images[i].MimeType = finalMimeType
+		// Update the slice with processed data
+		images[i].ImageData = processedData
+		images[i].MimeType = finalMimeType
 	}
 
 	return nil

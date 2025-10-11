@@ -56,7 +56,7 @@ type GamePlayer struct {
 	ID                 int    `json:"id" db:"id"`
 	GameID             int    `json:"game_id" db:"game_id"`
 	PlayerID           int    `json:"player_id" db:"player_id"`
-	Corporation        string `json:"corporation" db:"corporation"`
+	Corporation        *string `json:"corporation" db:"corporation"`  // NULL for legacy games
 	TerraformingRating int    `json:"terraforming_rating" db:"terraforming_rating"`
 	Cities             int    `json:"cities" db:"cities"`
 	Greeneries         int    `json:"greeneries" db:"greeneries"`
@@ -141,59 +141,3 @@ type GameWithDetails struct {
 }
 
 // PlayerRequest represents a player in the create game request
-type PlayerRequest struct {
-	Name               string `json:"name"`
-	Corporation        string `json:"corporation"`
-	TerraformingRating int    `json:"terraforming_rating"`
-	Cities             int    `json:"cities"`
-	Greeneries         int    `json:"greeneries"`
-	Cards              int    `json:"cards"`
-	TurmoilPoints      int    `json:"turmoil_points"`
-	MilestonePoints    *int   `json:"milestone_points,omitempty"` // For legacy mode
-	AwardPoints        *int   `json:"award_points,omitempty"`     // For legacy mode
-}
-
-// MilestoneRequest represents a milestone in the create game request
-type MilestoneRequest struct {
-	Name                  string `json:"name"`
-	WinnerGamePlayerIndex *int   `json:"winner_game_player_index"` // Index in the Players array
-}
-
-// PlacementRequest represents an award placement
-type PlacementRequest struct {
-	PlayerIndex int       `json:"player_index"`
-	Placement   Placement `json:"placement"`
-}
-
-// AwardRequest represents an award in the create game request
-type AwardRequest struct {
-	Name       string             `json:"name"`
-	Placements []PlacementRequest `json:"placements"`
-}
-
-// ImageRequest represents an image in the create game request
-// Can either be new image data or reference to existing image
-type ImageRequest struct {
-	// For new images
-	ImageData []byte `json:"image_data,omitempty"`
-	MimeType  string `json:"mime_type,omitempty"`
-
-	// For existing images (reference by ID)
-	ID *int `json:"id,omitempty"`
-}
-
-// CreateGameRequest represents the request body for creating a game
-type CreateGameRequest struct {
-	Name        string             `json:"name"`
-	Date        string             `json:"date"` // Will be parsed to time.Time
-	Map         *string            `json:"map,omitempty"`         // Optional for legacy
-	Generations *int               `json:"generations,omitempty"` // Optional for legacy
-	Expansions  *Expansions        `json:"expansions,omitempty"`  // Optional for legacy
-	Note        *string            `json:"note,omitempty"`
-	LegacyMode  bool               `json:"legacy_mode"`
-	Players     []PlayerRequest    `json:"players"`
-	Milestones  []MilestoneRequest `json:"milestones"`
-	Awards      []AwardRequest     `json:"awards"`
-	Images      []ImageRequest     `json:"images"`
-	CreatedBy   int                `json:"created_by"`
-}

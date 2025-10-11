@@ -94,7 +94,7 @@ func migrate(db *sql.DB) error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			game_id INTEGER NOT NULL,
 			player_id INTEGER NOT NULL,
-			corporation TEXT NOT NULL,
+			corporation TEXT,
 			terraforming_rating INTEGER NOT NULL DEFAULT 0,
 			cities INTEGER NOT NULL DEFAULT 0,
 			greeneries INTEGER NOT NULL DEFAULT 0,
@@ -165,3 +165,4 @@ func migrate(db *sql.DB) error {
 
 	return nil
 }
+

@@ -200,6 +200,7 @@ function useGameObjectives(type, map, expansions, playerNumber) {
   const [selected, setSelected] = useState([]);
   const [data, setData] = useState({});
   const [isInitialized, setIsInitialized] = useState(false);
+  const [prevVenusNext, setPrevVenusNext] = useState(undefined);
 
   const isAward = type === "award";
   const dataKey = isAward ? "awards" : "milestones";
@@ -236,9 +237,12 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 
   // Initialize objectives when map or expansions change
   useEffect(() => {
-    // Skip initialization if already initialized (loading existing game)
-    if (isInitialized) return;
-    
+    const currentVenusNext = expansions["Venus Next"];
+    const venusNextJustToggled = prevVenusNext !== undefined && prevVenusNext !== currentVenusNext;
+
+    // Skip initialization if already initialized (loading existing game) AND Venus Next didn't just toggle
+    if (isInitialized && !venusNextJustToggled) return;
+
     if (expansions["Milestones & Awards"]) {
       const mapObjectives = gameData[dataKey][map] || [];
       const numSlots = expansions["Venus Next"] ? venusSlots : defaultSlots;
@@ -262,24 +266,31 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 
       setSelected(available);
 
-      // Initialize data structure
-      if (isAward) {
+      // Initialize/update data structure
+      setData(prevData => {
         const newData = {};
         available.forEach((item) => {
-          newData[item] = {};
-          for (let i = 0; i < playerNumber; i++) {
-            newData[item][i] = 0;
+          if (venusNextJustToggled && prevData[item] !== undefined) {
+            // Preserve existing data when Venus Next toggles
+            newData[item] = prevData[item];
+          } else {
+            // Initialize new items
+            if (isAward) {
+              newData[item] = {};
+              for (let i = 0; i < playerNumber; i++) {
+                newData[item][i] = 0;
+              }
+            } else {
+              newData[item] = -1;
+            }
           }
         });
-        setData(newData);
-      } else {
-        const newData = {};
-        available.forEach((item) => {
-          newData[item] = -1;
-        });
-        setData(newData);
-      }
+        return newData;
+      });
     }
+
+    setPrevVenusNext(currentVenusNext);
+
   }, [
     map,
     expansions,
@@ -290,6 +301,7 @@ function useGameObjectives(type, map, expansions, playerNumber) {
     defaultSlots,
     isAward,
   ]);
+
 
   // Update selected objective at index
   const updateSelected = useCallback(
@@ -384,11 +396,11 @@ function GamePage() {
   // Authentication state
   const [actorName, setActorName] = useState('');
   const [actorPassword, setActorPassword] = useState('');
-  
+
   // Available players from backend
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
-  
+
   // Trigger for refetching data
   const [shouldRefetch, setShouldRefetch] = useState(false);
 
@@ -397,26 +409,26 @@ function GamePage() {
     "milestone",
     gameConfig.map,
     gameConfig.expansions,
-    playerManager.playerNumber,
+    playerManager.playerNumber
   );
   const awards = useGameObjectives(
     "award",
     gameConfig.map,
     gameConfig.expansions,
-    playerManager.playerNumber,
+    playerManager.playerNumber
   );
 
   // Fetch game data if in view/edit mode
   useEffect(() => {
     const fetchGameData = async () => {
       if (!gameId) return;
-      
+
       setIsLoading(true);
       setLoadError(null);
-      
+
       try {
         const gameData = await gameApi.getById(gameId);
-        
+
         // Parse and populate the game data into state
         dispatch({ type: "SET_FIELD", field: "name", value: gameData.game.name });
         dispatch({ type: "SET_FIELD", field: "date", value: gameData.game.date });
@@ -430,18 +442,18 @@ function GamePage() {
 
         dispatch({ type: "SET_NOTE", value: gameData.game.note || "" });
         dispatch({ type: "SET_IMAGES", images: gameData.images || [] });
-        
+
         if (!gameData.game.legacy_mode && gameData.game.expansions) {
           Object.keys(gameConfigInitialState.expansions).forEach(exp => {
             const value = gameData.game.expansions[exp] || false;
             dispatch({ type: "SET_EXPANSION", expansion: exp, value: value });
           });
         }
-        
+
         // Set players
         if (gameData.game_players && gameData.players) {
           playerManager.setPlayerNumber(gameData.game_players.length);
-          
+
           // Map game_players to our player format
           const mappedPlayers = gameData.game_players.map((gp, index) => {
             const player = gameData.players.find(p => p.id === gp.player_id);
@@ -450,13 +462,13 @@ function GamePage() {
               corporation: gp.corporation
             };
           });
-          
+
           // Update player data
           mappedPlayers.forEach((player, index) => {
             playerManager.updatePlayerData(index, 'name', player.name);
             playerManager.updatePlayerData(index, 'corporation', player.corporation);
           });
-          
+
           gameData.game_players.forEach((gp, index) => {
             playerManager.updatePlayerScore(index, 'terraformingRating', String(gp.terraforming_rating));
             playerManager.updatePlayerScore(index, 'cities', String(gp.cities));
@@ -470,14 +482,14 @@ function GamePage() {
             }
           });
         }
-        
+
         // Set milestones
         if (gameData.milestones) {
           const milestoneData = {};
           const milestoneNames = [];
           gameData.milestones.forEach(m => {
             // Find the player index from game_player_id
-            const winnerIndex = m.winner_game_player_id 
+            const winnerIndex = m.winner_game_player_id
               ? gameData.game_players.findIndex(gp => gp.id === m.winner_game_player_id)
               : -1;
             milestoneData[m.name] = winnerIndex;
@@ -485,7 +497,7 @@ function GamePage() {
           });
           milestones.loadGameData(milestoneNames, milestoneData);
         }
-        
+
         // Set awards
         if (gameData.awards && gameData.award_placements) {
           const awardData = {};
@@ -510,14 +522,14 @@ function GamePage() {
           });
           awards.loadGameData(awardNames, awardData);
         }
-        
+
       } catch (err) {
         setLoadError(err.message);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     if (shouldRefetch || gameId) {
       fetchGameData();
       setShouldRefetch(false);
@@ -534,7 +546,7 @@ function GamePage() {
       const day = String(today.getDate()).padStart(2, "0");
       dispatch({ type: "SET_DATE", value: `${year}-${month}-${day}` });
     }
-    
+
     // Always fetch available players
     const fetchPlayers = async () => {
       try {
@@ -548,7 +560,7 @@ function GamePage() {
         setPlayersLoading(false);
       }
     };
-    
+
     fetchPlayers();
   }, [mode]);
 
@@ -707,8 +719,8 @@ function GamePage() {
 
       // Only update if milestone or award points changed (skip for legacy mode since manual)
       if (!isLegacyMode &&
-          score.milestonePoints === milestonePoints &&
-          score.awardPoints === awardPoints) {
+        score.milestonePoints === milestonePoints &&
+        score.awardPoints === awardPoints) {
         return score;
       }
 
@@ -822,12 +834,12 @@ function GamePage() {
 
     try {
       const isEditing = mode === 'edit' && gameId;
-      
-      const result = isEditing 
+
+      const result = isEditing
         ? await gameApi.update(gameId, gameData)
         : await gameApi.create(gameData);
-      
-      const message = isEditing 
+
+      const message = isEditing
         ? `Game updated successfully!`
         : `Game created successfully! Game ID: ${result.game.id}`;
       alert(message);
@@ -947,24 +959,24 @@ function GamePage() {
       )}
 
       {/* Dynamic buttons based on mode */}
-      <div style={{ 
-        display: 'flex', 
+      <div style={{
+        display: 'flex',
         justifyContent: 'space-between',
-        gap: '2rem', 
+        gap: '2rem',
         margin: '1% auto',
         maxWidth: '900px',
         padding: '0'
       }}>
         {mode === 'view' ? (
           <>
-            <LinkButton 
+            <LinkButton
               onClick={() => navigate(ROUTES.PLAYED_GAMES)}
               style={{ width: 'calc(50% - 1rem)' }}
             >
               Back to Games
             </LinkButton>
-            <LinkButton 
-              onClick={() => setMode('edit')} 
+            <LinkButton
+              onClick={() => setMode('edit')}
               style={{ backgroundColor: '#2196F3', width: 'calc(50% - 1rem)' }}
             >
               Edit Game
@@ -972,14 +984,14 @@ function GamePage() {
           </>
         ) : mode === 'edit' ? (
           <>
-            <LinkButton 
+            <LinkButton
               onClick={handleCancelEdit}
               style={{ width: 'calc(50% - 1rem)' }}
             >
               Cancel
             </LinkButton>
-            <LinkButton 
-              onClick={handleSubmitGame} 
+            <LinkButton
+              onClick={handleSubmitGame}
               style={{ backgroundColor: '#4CAF50', width: 'calc(50% - 1rem)' }}
             >
               Save Changes
@@ -987,14 +999,14 @@ function GamePage() {
           </>
         ) : (
           <>
-            <LinkButton 
+            <LinkButton
               onClick={() => navigate(ROUTES.HOME)}
               style={{ width: 'calc(50% - 1rem)' }}
             >
               Main page
             </LinkButton>
-            <LinkButton 
-              onClick={handleSubmitGame} 
+            <LinkButton
+              onClick={handleSubmitGame}
               style={{ backgroundColor: '#4CAF50', width: 'calc(50% - 1rem)' }}
             >
               Submit Game

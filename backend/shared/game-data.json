@@ -1,0 +1,220 @@
+{
+  "constants": {
+    "maxMilestonesClaimed": 3,
+    "maxAwardsFunded": 3,
+    "milestonePoints": 5,
+    "awardPointsGold": 5,
+    "awardPointsSilver": 2,
+    "minPlayers": 1,
+    "defaultMaxPlayers": 5,
+    "minGenerations": 1,
+    "maxGenerations": 20,
+    "defaultGenerations": 14,
+    "defaultPlayerCount": 4
+  },
+  "maps": {
+    "Tharsis": {
+      "maxPlayers": 5,
+      "milestones": ["Builder", "Gardener", "Mayor", "Planner", "Terraformer"],
+      "awards": ["Landlord", "Banker", "Scientist", "Thermalist", "Miner"]
+    },
+    "Hellas": {
+      "maxPlayers": 5,
+      "milestones": ["Diversifier", "Tactician", "Polar Explorer", "Energizer", "Rim Settler"],
+      "awards": ["Cultivator", "Magnate", "Space Baron", "Excentric", "Contractor"]
+    },
+    "Elysium": {
+      "maxPlayers": 5,
+      "milestones": ["Generalist", "Specialist", "Ecologist", "Tycoon", "Legend"],
+      "awards": ["Celebrity", "Industrialist", "Desert Settler", "Estate Dealer", "Benefactor"]
+    },
+    "Utopia Planitia": {
+      "maxPlayers": 5,
+      "milestones": ["Specialist", "Pioneer", "Trader", "Metallurgist", "Researcher"],
+      "awards": ["Collector", "Agriculturist", "Urbanist", "Warmonger", "Titan"]
+    },
+    "Terra Cimmeria": {
+      "maxPlayers": 5,
+      "milestones": ["Planetologist", "Architect", "Coastguard", "Forester", "Investor"],
+      "awards": ["Manufacturer", "Highlander", "Biologist", "Constructor", "Zoologist"]
+    },
+    "Vastitas Borealis": {
+      "maxPlayers": 6,
+      "milestones": ["Agronomist", "Spacefarer", "Geologist", "Engineer", "Farmer"],
+      "awards": ["Curator", "Investor", "Landscaper", "Technologist", "Terrascaper"]
+    },
+    "Amazonis Planitia": {
+      "maxPlayers": 6,
+      "milestones": ["Terran", "Landshaper", "Merchant", "Sponsor", "Lobbyist"],
+      "awards": ["Promoter", "Edgedancer", "Visionary", "Tokenizer", "Historican"]
+    }
+  },
+  "expansions": [
+    "Base Game",
+    "Corporate Era",
+    "Venus Next",
+    "Prelude",
+    "Prelude 2",
+    "Colonies",
+    "Turmoil",
+    "Milestones & Awards",
+    "Promo",
+    "Draft"
+  ],
+  "corporations": {
+    "Base Game": [
+      "Beginner",
+      "Credicor",
+      "Ecoline",
+      "Helion",
+      "Mining Guild",
+      "Interplanetary Cinematics",
+      "Inventrix",
+      "Phobolog",
+      "Tharsis Republic",
+      "Thorgate",
+      "United Nations Mars Initiative"
+    ],
+    "Corporate Era": ["Teractor", "Saturn Systems"],
+    "Venus Next": [
+      "Aphrodite",
+      "Celestic",
+      "Manutech",
+      "Morning Star Inc.",
+      "Viron"
+    ],
+    "Prelude": [
+      "Cheung Shing Mars",
+      "Point Luna",
+      "Robinson Industries",
+      "Valley Trust",
+      "Vitor",
+      "Ecotec"
+    ],
+    "Prelude 2": [
+      "Spire",
+      "Sagitta",
+      "Palladin Shipping",
+      "Nirgal Enterprises"
+    ],
+    "Colonies": [
+      "Aridor",
+      "Arklight",
+      "Polyphemos",
+      "Poseidon",
+      "Stormcraft Incorporated"
+    ],
+    "Turmoil": [
+      "Lakefront Resorts",
+      "Pristar",
+      "Septem Tribus",
+      "Terralabs Research",
+      "Utopia Invest"
+    ],
+    "Promo": [
+      "Factorum",
+      "Mons Insurance",
+      "Philares",
+      "Arcadian Communities",
+      "Recyclon",
+      "Splice Tactical Genomics",
+      "Astrodrill",
+      "Pharmacy Union",
+      "Tycho Magnetics",
+      "Kuiper Cooperative"
+    ]
+  },
+  "allMilestones": [
+    "Agronomist",
+    "Architect",
+    "Briber",
+    "Builder",
+    "Coastguard",
+    "Diversifier",
+    "Ecologist",
+    "Energizer",
+    "Engineer",
+    "Farmer",
+    "Forester",
+    "Fundraiser",
+    "Gardener",
+    "Generalist",
+    "Geologist",
+    "Hoverlord",
+    "Hydrologist",
+    "Investor",
+    "Landshaper",
+    "Legend",
+    "Lobbyist",
+    "Mayor",
+    "Merchant",
+    "Metallurgist",
+    "Philantropist",
+    "Pioneer",
+    "Planetologist",
+    "Planner",
+    "Polar Explorer",
+    "Producer",
+    "Researcher",
+    "Rim Settler",
+    "Spacefarer",
+    "Specialist",
+    "Sponsor",
+    "Tactician",
+    "Terraformer",
+    "Terran",
+    "Thawer",
+    "Trader",
+    "Tycoon"
+  ],
+  "allAwards": [
+    "Administrator",
+    "Agriculturist",
+    "Banker",
+    "Benefactor",
+    "Biologist",
+    "Botanist",
+    "Celebrity",
+    "Collector",
+    "Constructor",
+    "Contractor",
+    "Cultivator",
+    "Curator",
+    "Desert Settler",
+    "Edgedancer",
+    "Electrician",
+    "Estate Dealer",
+    "Excentric",
+    "Forecaster",
+    "Founder",
+    "Highlander",
+    "Historican",
+    "Industrialist",
+    "Incorporator",
+    "Investor",
+    "Landlord",
+    "Landscaper",
+    "Magnate",
+    "Manufacturer",
+    "Metropolist",
+    "Miner",
+    "Mogul",
+    "Physicist",
+    "Politician",
+    "Promoter",
+    "Scientist",
+    "Space Baron",
+    "Suburbian",
+    "Technologist",
+    "Terrascaper",
+    "Thermalist",
+    "Titan",
+    "Tokenizer",
+    "Traveller",
+    "Urbanist",
+    "Venuphile",
+    "Visionary",
+    "Warmonger",
+    "Zoologist"
+  ]
+}

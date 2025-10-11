@@ -150,17 +150,16 @@ func TestCreateGame(t *testing.T) {
 	req := models.CreateGameRequest{
 		Name:        "Test Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Hellas"),
-		Generations: models.Ptr(12),
+		Map:         "Hellas",
+		Generations: 12,
 		Note:        &noteText,
-		Expansions: models.Ptr(models.Expansions{
-			"base":     true,
-			"prelude":  true,
-			"colonies": false,
-			"venus":    true,
-			"turmoil":  false,
-		}),
-		CreatedBy: systemAdmin.ID,
+		Expansions: models.Expansions{
+			"Base Game":  true,
+			"Prelude":    true,
+			"Colonies":   false,
+			"Venus Next": true,
+			"Turmoil":    false,
+		},
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20, Cities: 5, Greeneries: 8, Cards: 15, TurmoilPoints: 0},
 			{Name: "Bob", Corporation: "Helion", TerraformingRating: 22, Cities: 6, Greeneries: 4, Cards: 12, TurmoilPoints: 5},
@@ -197,7 +196,7 @@ func TestCreateGame(t *testing.T) {
 		},
 	}
 	
-	game, err := repo.CreateGame(req, *systemAdmin)
+	game, err := repo.CreateGame(&models.ParsedGameRequest{Normal: &req}, *systemAdmin)
 	if err != nil {
 		t.Fatalf("Failed to create game: %v", err)
 	}
@@ -229,19 +228,19 @@ func TestCreateGame(t *testing.T) {
 	if game.Game.Expansions == nil {
 		t.Error("Expected expansions to be set")
 	} else {
-		if !(*game.Game.Expansions)["base"] {
+		if !(*game.Game.Expansions)["Base Game"] {
 			t.Error("Expected base expansion to be true")
 		}
-		if !(*game.Game.Expansions)["prelude"] {
+		if !(*game.Game.Expansions)["Prelude"] {
 			t.Error("Expected prelude expansion to be true")
 		}
-		if (*game.Game.Expansions)["colonies"] {
+		if (*game.Game.Expansions)["Colonies"] {
 			t.Error("Expected colonies expansion to be false")
 		}
-		if !(*game.Game.Expansions)["venus"] {
+		if !(*game.Game.Expansions)["Venus Next"] {
 			t.Error("Expected venus expansion to be true")
 		}
-		if (*game.Game.Expansions)["turmoil"] {
+		if (*game.Game.Expansions)["Turmoil"] {
 			t.Error("Expected turmoil expansion to be false")
 		}
 	}
@@ -254,7 +253,9 @@ func TestCreateGame(t *testing.T) {
 	// Create a map for easier player lookup
 	playerMap := make(map[string]models.GamePlayer)
 	for _, gp := range game.GamePlayers {
-		playerMap[gp.Corporation] = gp
+		if gp.Corporation != nil {
+			playerMap[*gp.Corporation] = gp
+		}
 	}
 	
 	// Verify Alice's data
@@ -421,16 +422,15 @@ func TestGetGameByID(t *testing.T) {
 	req := models.CreateGameRequest{
 		Name:        "Test Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(10),
-		Expansions:  models.Ptr(models.Expansions{"base": true}),
-		CreatedBy:   systemAdmin.ID,
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"Base Game": true},
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20, Cities: 5, Greeneries: 8, Cards: 15, TurmoilPoints: 0},
 		},
 	}
 	
-	createdGame, err := repo.CreateGame(req, *systemAdmin)
+	createdGame, err := repo.CreateGame(&models.ParsedGameRequest{Normal: &req}, *systemAdmin)
 	if err != nil {
 		t.Fatalf("Failed to create game: %v", err)
 	}
@@ -456,14 +456,13 @@ func TestCreateGameWithoutPlayers(t *testing.T) {
 	req := models.CreateGameRequest{
 		Name:        "Empty Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(10),
-		Expansions:  models.Ptr(models.Expansions{"base": true}),
-		CreatedBy:   systemAdmin.ID,
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"Base Game": true},
 		Players:     []models.PlayerRequest{},
 	}
 	
-	_, err := repo.CreateGame(req, *systemAdmin)
+	_, err := repo.CreateGame(&models.ParsedGameRequest{Normal: &req}, *systemAdmin)
 	if err == nil {
 		t.Error("Expected error when creating game without players, got nil")
 	}
@@ -475,16 +474,15 @@ func TestCreateGameWithNonExistentPlayer(t *testing.T) {
 	req := models.CreateGameRequest{
 		Name:        "Test Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(10),
-		Expansions:  models.Ptr(models.Expansions{"base": true}),
-		CreatedBy:   systemAdmin.ID,
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"Base Game": true},
 		Players: []models.PlayerRequest{
 			{Name: "NonExistent", Corporation: "Ecoline", TerraformingRating: 20, Cities: 5, Greeneries: 8, Cards: 15, TurmoilPoints: 0},
 		},
 	}
 	
-	_, err := repo.CreateGame(req, *systemAdmin)
+	_, err := repo.CreateGame(&models.ParsedGameRequest{Normal: &req}, *systemAdmin)
 	if err == nil {
 		t.Error("Expected error when creating game with non-existent player, got nil")
 	}
@@ -506,10 +504,9 @@ func TestUpdateGame(t *testing.T) {
 	initialReq := models.CreateGameRequest{
 		Name:        "Original Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(10),
-		Expansions:  models.Ptr(models.Expansions{"base": true}),
-		CreatedBy:   systemAdmin.ID,
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"Base Game": true},
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20, Cities: 5, Greeneries: 8, Cards: 15, TurmoilPoints: 0},
 			{Name: "Bob", Corporation: "Helion", TerraformingRating: 18, Cities: 4, Greeneries: 6, Cards: 12, TurmoilPoints: 3},
@@ -527,7 +524,7 @@ func TestUpdateGame(t *testing.T) {
 		},
 	}
 	
-	createdGame, err := repo.CreateGame(initialReq, *systemAdmin)
+	createdGame, err := repo.CreateGame(&models.ParsedGameRequest{Normal: &initialReq}, *systemAdmin)
 	if err != nil {
 		t.Fatalf("Failed to create initial game: %v", err)
 	}
@@ -536,10 +533,9 @@ func TestUpdateGame(t *testing.T) {
 	updateReq := models.CreateGameRequest{
 		Name:        "Original Game (Corrected)",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(11), // Changed
-		Expansions:  models.Ptr(models.Expansions{"base": true, "prelude": true}), // Added prelude
-		CreatedBy:   systemAdmin.ID,
+		Map:         "Tharsis",
+		Generations: 11, // Changed
+		Expansions:  models.Expansions{"Base Game": true, "Prelude": true}, // Added prelude
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 22, Cities: 6, Greeneries: 9, Cards: 16, TurmoilPoints: 2}, // Updated scores
 			{Name: "Bob", Corporation: "Helion", TerraformingRating: 20, Cities: 5, Greeneries: 7, Cards: 14, TurmoilPoints: 5}, // Updated scores
@@ -565,7 +561,7 @@ func TestUpdateGame(t *testing.T) {
 		},
 	}
 	
-	updatedGame, err := repo.UpdateGame(createdGame.Game.ID, updateReq, *systemAdmin)
+	updatedGame, err := repo.UpdateGame(createdGame.Game.ID, &models.ParsedGameRequest{Normal: &updateReq}, *systemAdmin)
 	if err != nil {
 		t.Fatalf("Failed to update game: %v", err)
 	}
@@ -594,7 +590,7 @@ func TestUpdateGame(t *testing.T) {
 		t.Errorf("Expected 11 generations, got %v", updatedGame.Game.Generations)
 	}
 
-	if updatedGame.Game.Expansions == nil || !(*updatedGame.Game.Expansions)["prelude"] {
+	if updatedGame.Game.Expansions == nil || !(*updatedGame.Game.Expansions)["Prelude"] {
 		t.Error("Expected prelude expansion to be true")
 	}
 	
@@ -606,7 +602,9 @@ func TestUpdateGame(t *testing.T) {
 	// Create a map for easier player lookup
 	playerMap := make(map[string]models.GamePlayer)
 	for _, gp := range updatedGame.GamePlayers {
-		playerMap[gp.Corporation] = gp
+		if gp.Corporation != nil {
+			playerMap[*gp.Corporation] = gp
+		}
 	}
 	
 	// Check Alice's updated scores
@@ -882,16 +880,15 @@ func TestGameModificationPermissions(t *testing.T) {
 	req := models.CreateGameRequest{
 		Name:        "Test Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(10),
-		Expansions:  models.Ptr(models.Expansions{"base": true}),
-		CreatedBy:   user.ID, // This will be overridden by the actor
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"Base Game": true},
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20, Cities: 5, Greeneries: 8, Cards: 15, TurmoilPoints: 0},
 		},
 	}
 	
-	createdGame, err := repo.CreateGame(req, *user)
+	createdGame, err := repo.CreateGame(&models.ParsedGameRequest{Normal: &req}, *user)
 	if err != nil {
 		t.Fatalf("Failed to create game: %v", err)
 	}
@@ -905,27 +902,27 @@ func TestGameModificationPermissions(t *testing.T) {
 	updateReq := models.CreateGameRequest{
 		Name:        "Updated Game",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(11),
-		Expansions:  models.Ptr(models.Expansions{"base": true}),
+		Map:         "Tharsis",
+		Generations: 11,
+		Expansions:  models.Expansions{"Base Game": true, "Prelude": true},
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 22, Cities: 6, Greeneries: 9, Cards: 16, TurmoilPoints: 2},
 		},
 	}
 	
-	_, err = repo.UpdateGame(createdGame.Game.ID, updateReq, *user)
+	_, err = repo.UpdateGame(createdGame.Game.ID, &models.ParsedGameRequest{Normal: &updateReq}, *user)
 	if err != nil {
 		t.Errorf("User should be able to update their own game, got error: %v", err)
 	}
 	
 	// Test 2: Other user should NOT be able to modify the game
-	_, err = repo.UpdateGame(createdGame.Game.ID, updateReq, *otherUser)
+	_, err = repo.UpdateGame(createdGame.Game.ID, &models.ParsedGameRequest{Normal: &updateReq}, *otherUser)
 	if err == nil {
 		t.Error("Other user should NOT be able to update someone else's game")
 	}
 	
 	// Test 3: Admin should be able to modify any game
-	_, err = repo.UpdateGame(createdGame.Game.ID, updateReq, *systemAdmin)
+	_, err = repo.UpdateGame(createdGame.Game.ID, &models.ParsedGameRequest{Normal: &updateReq}, *systemAdmin)
 	if err != nil {
 		t.Errorf("Admin should be able to update any game, got error: %v", err)
 	}
@@ -949,9 +946,9 @@ func TestGameImages(t *testing.T) {
 	req := models.CreateGameRequest{
 		Name:        "Game with Images",
 		Date:        "2024-01-15",
-		Map:         models.Ptr("Tharsis"),
-		Generations: models.Ptr(10),
-		Expansions:  models.Ptr(models.Expansions{"base": true}),
+		Map:         "Tharsis",
+		Generations: 10,
+		Expansions:  models.Expansions{"Base Game": true},
 		Players: []models.PlayerRequest{
 			{Name: "Alice", Corporation: "Ecoline", TerraformingRating: 20},
 		},
@@ -962,7 +959,7 @@ func TestGameImages(t *testing.T) {
 	}
 	
 	// Create game
-	game, err := repo.CreateGame(req, *systemAdmin)
+	game, err := repo.CreateGame(&models.ParsedGameRequest{Normal: &req}, *systemAdmin)
 	if err != nil {
 		t.Fatalf("Failed to create game: %v", err)
 	}
@@ -1003,130 +1000,36 @@ func TestLegacyModeValidation(t *testing.T) {
 	alice, _ := repo.CreatePlayer("Alice", nil, models.RolePlayer, *systemAdmin)
 	bob, _ := repo.CreatePlayer("Bob", nil, models.RolePlayer, *systemAdmin)
 
-	// Test 1: Non-legacy game requires map, generations, expansions
-	t.Run("NonLegacyRequiresAllFields", func(t *testing.T) {
-		// Missing map
-		req := models.CreateGameRequest{
-			Name:        "Test Game",
-			Date:        "2024-01-15",
-			Map:         nil, // Missing
-			Generations: models.Ptr(10),
-			Expansions:  models.Ptr(models.Expansions{"Base Game": true}),
-			LegacyMode:  false,
-			Players: []models.PlayerRequest{
-				{
-					Name:               "Alice",
-					Corporation:        "Ecoline",
-					TerraformingRating: 20,
-					Cities:             2,
-					Greeneries:         3,
-					Cards:              10,
-					TurmoilPoints:      5,
-				},
-			},
-		}
-		_, err := repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for missing map in non-legacy game")
-		}
-
-		// Missing generations
-		req.Map = models.Ptr("Tharsis")
-		req.Generations = nil
-		_, err = repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for missing generations in non-legacy game")
-		}
-
-		// Missing expansions
-		req.Generations = models.Ptr(10)
-		req.Expansions = nil
-		_, err = repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for missing expansions in non-legacy game")
-		}
-	})
-
-	// Test 2: Non-legacy game requires corporations and forbids manual points
-	t.Run("NonLegacyRequiresCorporations", func(t *testing.T) {
-		// Missing corporation
-		req := models.CreateGameRequest{
-			Name:        "Test Game",
-			Date:        "2024-01-15",
-			Map:         models.Ptr("Tharsis"),
-			Generations: models.Ptr(10),
-			Expansions:  models.Ptr(models.Expansions{"Base Game": true}),
-			LegacyMode:  false,
-			Players: []models.PlayerRequest{
-				{
-					Name:               "Alice",
-					Corporation:        "", // Missing corporation
-					TerraformingRating: 20,
-					Cities:             2,
-					Greeneries:         3,
-					Cards:              10,
-					TurmoilPoints:      5,
-				},
-			},
-		}
-		_, err := repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for missing corporation in non-legacy game")
-		}
-
-		// Manual points provided (should be forbidden)
-		req.Players[0].Corporation = "Ecoline" // Fix corporation
-		req.Players[0].MilestonePoints = models.Ptr(10) // Should not be allowed
-		_, err = repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for providing manual milestone points in non-legacy game")
-		}
-
-		req.Players[0].MilestonePoints = nil // Fix milestone points
-		req.Players[0].AwardPoints = models.Ptr(5) // Should not be allowed
-		_, err = repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for providing manual award points in non-legacy game")
-		}
-	})
 
 	// Test 3: Legacy game allows missing optional fields
 	t.Run("LegacyAllowsOptionalFields", func(t *testing.T) {
-		req := models.CreateGameRequest{
+		req := models.CreateLegacyGameRequest{
 			Name:        "Legacy Game",
 			Date:        "2024-01-15",
-			Map:         nil, // Optional for legacy
-			Generations: nil, // Optional for legacy
-			Expansions:  nil, // Optional for legacy
-			LegacyMode:  true,
-			Players: []models.PlayerRequest{
+			Players: []models.LegacyPlayerRequest{
 				{
 					Name:               "Alice",
-					Corporation:        "", // Corporation optional in legacy mode
 					TerraformingRating: 20,
 					Cities:             2,
 					Greeneries:         3,
 					Cards:              10,
 					TurmoilPoints:      5,
-					MilestonePoints:    models.Ptr(10), // Manual points required in legacy mode
-					AwardPoints:        models.Ptr(7),
+					MilestonePoints:    10, // Manual points required in legacy mode
+					AwardPoints:        7,
 				},
 				{
 					Name:               "Bob",
-					Corporation:        "",
 					TerraformingRating: 18,
 					Cities:             1,
 					Greeneries:         4,
 					Cards:              8,
 					TurmoilPoints:      3,
-					MilestonePoints:    models.Ptr(5),
-					AwardPoints:        models.Ptr(2),
+					MilestonePoints:    5,
+					AwardPoints:        2,
 				},
 			},
-			Milestones: []models.MilestoneRequest{}, // Empty for legacy games
-			Awards:     []models.AwardRequest{},     // Empty for legacy games
 		}
-		game, err := repo.CreateGame(req, *systemAdmin)
+		game, err := repo.CreateGame(&models.ParsedGameRequest{Legacy: &req}, *systemAdmin)
 		if err != nil {
 			t.Fatalf("Failed to create legacy game: %v", err)
 		}
@@ -1145,10 +1048,10 @@ func TestLegacyModeValidation(t *testing.T) {
 			t.Error("Expected legacy_mode to be true")
 		}
 
-		// Verify players have empty corporations
+		// Verify players have empty corporations (NULL for legacy games)
 		for _, gamePlayer := range game.GamePlayers {
-			if gamePlayer.Corporation != "" {
-				t.Errorf("Expected empty corporation for legacy game player, got: %s", gamePlayer.Corporation)
+			if gamePlayer.Corporation != nil {
+				t.Errorf("Expected nil corporation for legacy game player, got: %s", *gamePlayer.Corporation)
 			}
 		}
 
@@ -1187,159 +1090,92 @@ func TestLegacyModeValidation(t *testing.T) {
 
 	// Test 4: Legacy game with partial data still works
 	t.Run("LegacyWithPartialData", func(t *testing.T) {
-		req := models.CreateGameRequest{
+		req := models.CreateLegacyGameRequest{
 			Name:        "Partial Legacy Game",
 			Date:        "2024-01-16",
-			Map:         models.Ptr("Tharsis"), // Can still provide map
-			Generations: nil,                    // But generations can be missing
-			Expansions:  nil,                    // And expansions can be missing
-			LegacyMode:  true,
-			Players: []models.PlayerRequest{
+			Players: []models.LegacyPlayerRequest{
 				{
 					Name:               "Alice",
-					Corporation:        "Ecoline", // Can have corporation in legacy mode
 					TerraformingRating: 25,
 					Cities:             3,
 					Greeneries:         2,
 					Cards:              12,
 					TurmoilPoints:      6,
-					MilestonePoints:    models.Ptr(15), // Manual points required
-					AwardPoints:        models.Ptr(5),
+					MilestonePoints:    15, // Manual points required
+					AwardPoints:        5,
 				},
 				{
 					Name:               "Bob",
-					Corporation:        "", // Or not
 					TerraformingRating: 22,
 					Cities:             2,
 					Greeneries:         5,
 					Cards:              9,
 					TurmoilPoints:      4,
-					MilestonePoints:    models.Ptr(0), // Can be 0
-					AwardPoints:        models.Ptr(7),
+					MilestonePoints:    0, // Can be 0
+					AwardPoints:        7,
 				},
 			},
-			Milestones: []models.MilestoneRequest{}, // Empty for legacy games
-			Awards:     []models.AwardRequest{},     // Empty for legacy games
 		}
-		game, err := repo.CreateGame(req, *systemAdmin)
+		game, err := repo.CreateGame(&models.ParsedGameRequest{Legacy: &req}, *systemAdmin)
 		if err != nil {
 			t.Fatalf("Failed to create legacy game with partial data: %v", err)
 		}
 
-		// Verify map was saved
-		if game.Game.Map == nil || *game.Game.Map != "Tharsis" {
-			t.Errorf("Expected map to be 'Tharsis', got: %v", game.Game.Map)
+		// Legacy games have no map, generations, or expansions (all NULL)
+		if game.Game.Map != nil {
+			t.Errorf("Expected map to be nil for legacy game, got: %v", *game.Game.Map)
 		}
-		// But generations and expansions should still be nil
 		if game.Game.Generations != nil {
-			t.Errorf("Expected generations to be nil, got: %v", *game.Game.Generations)
+			t.Errorf("Expected generations to be nil for legacy game, got: %v", *game.Game.Generations)
 		}
 		if game.Game.Expansions != nil {
-			t.Errorf("Expected expansions to be nil, got: %v", game.Game.Expansions)
+			t.Errorf("Expected expansions to be nil for legacy game, got: %v", game.Game.Expansions)
 		}
 	})
 
-	// Test 5: Legacy games cannot have milestones/awards data
-	t.Run("LegacyCannotHaveMilestonesAwards", func(t *testing.T) {
-		// Try with milestones
-		req := models.CreateGameRequest{
-			Name:        "Legacy with Milestones",
-			Date:        "2024-01-17",
-			LegacyMode:  true,
-			Players: []models.PlayerRequest{
-				{
-					Name:            "Alice",
-					Corporation:     "",
-					MilestonePoints: models.Ptr(10),
-					AwardPoints:     models.Ptr(5),
-				},
-			},
-			Milestones: []models.MilestoneRequest{
-				{Name: "Terraformer", WinnerGamePlayerIndex: models.Ptr(0)},
-			},
-		}
-		_, err := repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for providing milestones in legacy game")
-		}
-
-		// Try with awards
-		req.Milestones = []models.MilestoneRequest{}
-		req.Awards = []models.AwardRequest{
-			{Name: "Landlord", Placements: []models.PlacementRequest{}},
-		}
-		_, err = repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for providing awards in legacy game")
-		}
-
-		// Try missing milestone points
-		req.Awards = []models.AwardRequest{}
-		req.Players[0].MilestonePoints = nil
-		_, err = repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for missing milestone points in legacy game")
-		}
-
-		// Try missing award points
-		req.Players[0].MilestonePoints = models.Ptr(10)
-		req.Players[0].AwardPoints = nil
-		_, err = repo.CreateGame(req, *systemAdmin)
-		if err == nil {
-			t.Error("Expected error for missing award points in legacy game")
-		}
-	})
 
 	// Test 6: Update legacy game works
 	t.Run("UpdateLegacyGame", func(t *testing.T) {
 		// First create a legacy game
-		createReq := models.CreateGameRequest{
+		createReq := models.CreateLegacyGameRequest{
 			Name:        "Update Test Legacy",
 			Date:        "2024-01-17",
-			LegacyMode:  true,
-			Players: []models.PlayerRequest{
+			Players: []models.LegacyPlayerRequest{
 				{
 					Name:               "Alice",
-					Corporation:        "",
 					TerraformingRating: 15,
 					Cities:             1,
 					Greeneries:         1,
 					Cards:              5,
 					TurmoilPoints:      2,
-					MilestonePoints:    models.Ptr(5),
-					AwardPoints:        models.Ptr(2),
+					MilestonePoints:    5,
+					AwardPoints:        2,
 				},
 			},
-			Milestones: []models.MilestoneRequest{}, // Empty for legacy games
-			Awards:     []models.AwardRequest{},     // Empty for legacy games
 		}
-		createdGame, err := repo.CreateGame(createReq, *systemAdmin)
+		createdGame, err := repo.CreateGame(&models.ParsedGameRequest{Legacy: &createReq}, *systemAdmin)
 		if err != nil {
 			t.Fatalf("Failed to create legacy game: %v", err)
 		}
 
 		// Update it
-		updateReq := models.CreateGameRequest{
+		updateReq := models.CreateLegacyGameRequest{
 			Name:        "Updated Legacy",
 			Date:        "2024-01-18",
-			LegacyMode:  true,
-			Players: []models.PlayerRequest{
+			Players: []models.LegacyPlayerRequest{
 				{
 					Name:               "Alice",
-					Corporation:        "",
 					TerraformingRating: 20,
 					Cities:             2,
 					Greeneries:         3,
 					Cards:              8,
 					TurmoilPoints:      4,
-					MilestonePoints:    models.Ptr(10), // Updated points
-					AwardPoints:        models.Ptr(5),
+					MilestonePoints:    10, // Updated points
+					AwardPoints:        5,
 				},
 			},
-			Milestones: []models.MilestoneRequest{}, // Empty for legacy games
-			Awards:     []models.AwardRequest{},     // Empty for legacy games
 		}
-		updatedGame, err := repo.UpdateGame(createdGame.Game.GameID, updateReq, *systemAdmin)
+		updatedGame, err := repo.UpdateGame(createdGame.Game.GameID, &models.ParsedGameRequest{Legacy: &updateReq}, *systemAdmin)
 		if err != nil {
 			t.Fatalf("Failed to update legacy game: %v", err)
 		}
