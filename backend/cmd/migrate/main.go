@@ -387,6 +387,17 @@ func normalizeCorporationName(name string) string {
 	return name
 }
 
+var milestoneNameMap = map[string]string{
+	"Planer": "Planner",
+}
+
+func normalizeMilestoneName(name string) string {
+	if mapped, ok := milestoneNameMap[name]; ok {
+		return mapped
+	}
+	return name
+}
+
 func modeToExpansions(mode []string) map[string]bool {
 	expansions := make(map[string]bool)
 	expansionMap := map[string]string{
@@ -441,6 +452,32 @@ func convertModernGame(game *ModernGame, actorName, actorPassword string, gameIn
 		allMilestones = append(allMilestones, "Hoverlord")
 	}
 
+	defaultMilestoneSet := make(map[string]bool)
+	for _, m := range allMilestones {
+		defaultMilestoneSet[m] = true
+	}
+
+	customMilestones := make([]string, 0)
+	for milestoneName := range game.Milestones {
+		if !defaultMilestoneSet[milestoneName] {
+			customMilestones = append(customMilestones, milestoneName)
+			expansions["Milestones & Awards"] = true
+		}
+	}
+
+	milestoneIdx := 0
+	customIdx := 0
+	for i := 0; i < len(allMilestones); i++ {
+		milestoneName := allMilestones[milestoneIdx]
+		milestoneIdx++
+
+		if _, claimed := game.Milestones[milestoneName]; !claimed && customIdx < len(customMilestones) {
+			milestoneName = customMilestones[customIdx]
+			customIdx++
+		}
+		allMilestones[i] = milestoneName
+	}
+
 	milestones := make([]APIMilestoneRequest, len(allMilestones))
 	for i, name := range allMilestones {
 		var winnerIndex *int
@@ -459,6 +496,32 @@ func convertModernGame(game *ModernGame, actorName, actorPassword string, gameIn
 	copy(allAwards, mapData.Awards)
 	if hasVenus {
 		allAwards = append(allAwards, "Venuphile")
+	}
+
+	defaultAwardSet := make(map[string]bool)
+	for _, a := range allAwards {
+		defaultAwardSet[a] = true
+	}
+
+	customAwards := make([]string, 0)
+	for awardName := range game.Awards.Winners {
+		if !defaultAwardSet[awardName] {
+			customAwards = append(customAwards, awardName)
+			expansions["Milestones & Awards"] = true
+		}
+	}
+
+	awardIdx := 0
+	customAwardIdx := 0
+	for i := 0; i < len(allAwards); i++ {
+		awardName := allAwards[awardIdx]
+		awardIdx++
+
+		if _, hasWinners := game.Awards.Winners[awardName]; !hasWinners && customAwardIdx < len(customAwards) {
+			awardName = customAwards[customAwardIdx]
+			customAwardIdx++
+		}
+		allAwards[i] = awardName
 	}
 
 	awards := make([]APIAwardRequest, len(allAwards))
@@ -561,6 +624,11 @@ func loadGames(filepath string) ([]GameEntry, error) {
 			for j := range modern.Scores {
 				modern.Scores[j].Player = resolvePlayerName(modern.Scores[j].Player)
 			}
+			normalizedMilestones := make(map[string]string)
+			for name, winner := range modern.Milestones {
+				normalizedMilestones[normalizeMilestoneName(name)] = winner
+			}
+			modern.Milestones = normalizedMilestones
 			entry.Modern = &modern
 		}
 		games = append(games, entry)
