@@ -1,3 +1,5 @@
-- Migrate data from mega json to database.
-
-- Add rename option
+- Player page
+ - Played games
+ - Top score
+ - Games won
+ - Games played

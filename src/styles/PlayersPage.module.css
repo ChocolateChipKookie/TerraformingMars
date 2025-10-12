@@ -1,0 +1,54 @@
+/* PlayersPage Component Styles - Following GamesPage design patterns */
+
+.playersList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: rgb(240, 240, 240);
+  border: 3px solid black;
+  border-radius: 15px;
+}
+
+.playerCard {
+  display: block;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(145deg, #e6e6e6, #ffffff, #d4d4d4, #f5f5f5);
+  border: 2px solid #aaa;
+  border-radius: 10px;
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.playerCard:hover {
+  background: linear-gradient(145deg, #787776, #f5f5f5, #aaaaaa, #ebebeb, #f5f5f5);
+  transform: translateX(10px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.playerName {
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+
+.playerInfo {
+  display: flex;
+  gap: 2rem;
+  font-size: 1.3rem;
+  color: #555;
+}
+
+.loading,
+.error,
+.noPlayers {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.8rem;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}

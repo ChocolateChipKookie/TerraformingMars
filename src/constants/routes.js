@@ -2,9 +2,8 @@ export const ROUTES = {
   HOME: '/',
   ADD_GAME: '/add-game',
   ADD_PLAYER: '/add-player',
-  PLAYER_STATS: '/player-stats',
+  PLAYERS: '/players',
   PLAYED_GAMES: '/played-games',
-  GAME_TIMER: '/game-timer',
   GAME_DETAILS: '/games/:gameId',
   gameDetails: (id) => `/games/${id}`,
 };

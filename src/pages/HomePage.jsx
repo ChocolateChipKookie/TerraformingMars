@@ -22,11 +22,11 @@ const NAVIGATION_BUTTONS = [
     description: 'Add a new player to the system',
   },
   {
-    id: 'player-stats',
-    label: 'Player stats',
-    route: ROUTES.PLAYER_STATS,
-    enabled: false,
-    description: 'View player statistics and performance',
+    id: 'players',
+    label: 'Players',
+    route: ROUTES.PLAYERS,
+    enabled: true,
+    description: 'View and manage players',
   },
   {
     id: 'played-games',
@@ -34,13 +34,6 @@ const NAVIGATION_BUTTONS = [
     route: ROUTES.PLAYED_GAMES,
     enabled: true,
     description: 'Browse game history and results',
-  },
-  {
-    id: 'game-timer',
-    label: 'Game timer',
-    route: ROUTES.GAME_TIMER,
-    enabled: false,
-    description: 'Time your game sessions',
   },
 ];
 
