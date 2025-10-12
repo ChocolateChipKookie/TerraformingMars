@@ -15,6 +15,13 @@ const NAVIGATION_BUTTONS = [
     description: 'Track a new Terraforming Mars game',
   },
   {
+    id: 'played-games',
+    label: 'Played games',
+    route: ROUTES.PLAYED_GAMES,
+    enabled: true,
+    description: 'Browse game history and results',
+  },
+  {
     id: 'add-player',
     label: 'Add player',
     route: ROUTES.ADD_PLAYER,
@@ -27,13 +34,6 @@ const NAVIGATION_BUTTONS = [
     route: ROUTES.PLAYERS,
     enabled: true,
     description: 'View and manage players',
-  },
-  {
-    id: 'played-games',
-    label: 'Played games',
-    route: ROUTES.PLAYED_GAMES,
-    enabled: true,
-    description: 'Browse game history and results',
   },
 ];
 

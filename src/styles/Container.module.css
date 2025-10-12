@@ -45,6 +45,10 @@
   text-align: left;
 }
 
+.subContainerElement label {
+  font-size: 2rem;
+}
+
 .layout {
   background-color: #021631;
   background: url(/resources/mars.png) bottom no-repeat, linear-gradient(#010b19, #010b19, #03214a, #85c7f1);

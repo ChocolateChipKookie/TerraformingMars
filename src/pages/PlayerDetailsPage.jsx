@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Container from '../components/Container';
-import { SubContainer, SubContainerElement } from '../components/Container';
+import { SubContainerElement } from '../components/Container';
 import LinkButton from '../components/LinkButton';
+import { InputField } from '../components/GameContainers/FormFields';
 import { ROUTES } from '../constants/routes';
-import styles from '../styles/PlayerDetailsPage.module.css';
+import styles from '../styles/GamePage.module.css';
 
 function PlayerDetailsPage() {
   const { playerId } = useParams();
@@ -65,33 +66,53 @@ function PlayerDetailsPage() {
 
   return (
     <Layout>
-      <Container title={playerInfo.player.name}>
-        <SubContainer title="Player Information">
-          <SubContainerElement>
-            <div className={styles.infoGrid}>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Name:</span>
-                <span className={styles.infoValue}>{playerInfo.player.name}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Role:</span>
-                <span className={styles.infoValue}>{playerInfo.player.role}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Created At:</span>
-                <span className={styles.infoValue}>{formatDate(playerInfo.player.created_at)}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Total Games Played:</span>
-                <span className={styles.infoValue}>{playerInfo.total_games_played}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Total Games Won:</span>
-                <span className={styles.infoValue}>{playerInfo.total_games_won}</span>
-              </div>
-            </div>
-          </SubContainerElement>
-        </SubContainer>
+      <Container title="Player Information">
+        <SubContainerElement>
+          <label>Name:</label>
+          <InputField
+            className={styles.optionInput}
+            value={playerInfo.player.name}
+            readOnly={true}
+          />
+        </SubContainerElement>
+
+        <SubContainerElement>
+          <label>Role:</label>
+          <InputField
+            className={styles.optionInput}
+            value={playerInfo.player.role}
+            readOnly={true}
+          />
+        </SubContainerElement>
+
+        <SubContainerElement>
+          <label>Created At:</label>
+          <InputField
+            className={styles.optionInput}
+            value={formatDate(playerInfo.player.created_at)}
+            readOnly={true}
+          />
+        </SubContainerElement>
+      </Container>
+
+      <Container title="Statistics">
+        <SubContainerElement>
+          <label>Total Games Played:</label>
+          <InputField
+            className={styles.optionInput}
+            value={playerInfo.total_games_played}
+            readOnly={true}
+          />
+        </SubContainerElement>
+
+        <SubContainerElement>
+          <label>Total Games Won:</label>
+          <InputField
+            className={styles.optionInput}
+            value={playerInfo.total_games_won}
+            readOnly={true}
+          />
+        </SubContainerElement>
       </Container>
 
       <div style={{
