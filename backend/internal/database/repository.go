@@ -834,11 +834,11 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 
 	// Get game players and their associated player info (preserve original order)
 	rows, err := r.db.Query(`
-		SELECT 
+		SELECT
 			gp.id, gp.game_id, gp.player_id, gp.corporation,
 			gp.terraforming_rating, gp.cities, gp.greeneries, gp.cards,
 			gp.turmoil_points, gp.milestone_points, gp.award_points, gp.total_points,
-			p.id, p.name
+			p.id, p.name, p.password_hash, p.role, p.created_by, p.created_at, p.updated_at
 		FROM game_player gp
 		JOIN player p ON gp.player_id = p.id
 		WHERE gp.game_id = ?
@@ -861,7 +861,7 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 			&gp.ID, &gp.GameID, &gp.PlayerID, &corporationDB,
 			&gp.TerraformingRating, &gp.Cities, &gp.Greeneries, &gp.Cards,
 			&gp.TurmoilPoints, &gp.MilestonePoints, &gp.AwardPoints, &gp.TotalPoints,
-			&p.ID, &p.Name,
+			&p.ID, &p.Name, &p.PasswordHash, &p.Role, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err

@@ -440,13 +440,41 @@ func TestGetGameByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to retrieve game: %v", err)
 	}
-	
+
 	if retrievedGame.Game.ID != createdGame.Game.ID {
 		t.Errorf("Expected game ID %d, got %d", createdGame.Game.ID, retrievedGame.Game.ID)
 	}
-	
+
 	if retrievedGame.Game.Name != createdGame.Game.Name {
 		t.Errorf("Expected game name '%s', got '%s'", createdGame.Game.Name, retrievedGame.Game.Name)
+	}
+
+	// Verify player data is fully populated
+	if len(retrievedGame.Players) != 1 {
+		t.Fatalf("Expected 1 player, got %d", len(retrievedGame.Players))
+	}
+
+	player := retrievedGame.Players[0]
+	if player.Name != "Alice" {
+		t.Errorf("Expected player name 'Alice', got '%s'", player.Name)
+	}
+
+	if player.Role != models.RolePlayer {
+		t.Errorf("Expected player role '%s', got '%s'", models.RolePlayer, player.Role)
+	}
+
+	if player.CreatedBy == nil {
+		t.Error("Expected player.CreatedBy to be non-nil")
+	} else if *player.CreatedBy != systemAdmin.ID {
+		t.Errorf("Expected player.CreatedBy %d, got %d", systemAdmin.ID, *player.CreatedBy)
+	}
+
+	if player.CreatedAt == "" {
+		t.Error("Expected player.CreatedAt to be non-empty")
+	}
+
+	if player.UpdatedAt == "" {
+		t.Error("Expected player.UpdatedAt to be non-empty")
 	}
 }
 
