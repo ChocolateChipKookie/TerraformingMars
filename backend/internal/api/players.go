@@ -62,6 +62,24 @@ func (h *Handler) getPlayer(w http.ResponseWriter, r *http.Request) {
 	h.sendJSON(w, http.StatusOK, player)
 }
 
+// GET /players/{id}/extended - Get player with extended info
+func (h *Handler) getPlayerExtendedInfo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		h.sendError(w, http.StatusBadRequest, "Invalid player ID")
+		return
+	}
+
+	extendedInfo, err := h.repo.GetPlayerExtendedInfo(id)
+	if err != nil {
+		h.sendError(w, http.StatusNotFound, "Player not found")
+		return
+	}
+
+	h.sendJSON(w, http.StatusOK, extendedInfo)
+}
+
 // POST /players - Create a new player
 func (h *Handler) createPlayer(w http.ResponseWriter, r *http.Request) {
 	var req CreatePlayerRequest

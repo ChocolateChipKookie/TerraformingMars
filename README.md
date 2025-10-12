@@ -1,5 +1,5 @@
 - Player page
- - Played games
  - Top score
- - Games won
  - Games played
+
+- Delete game

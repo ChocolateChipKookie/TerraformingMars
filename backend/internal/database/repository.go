@@ -82,6 +82,62 @@ func (r *Repository) GetPlayerByID(id int) (*models.Player, error) {
 	return &player, nil
 }
 
+// GetPlayerExtendedInfo retrieves player with additional statistics
+func (r *Repository) GetPlayerExtendedInfo(playerID int) (*models.PlayerExtendedInfo, error) {
+	// First get the player info
+	player, err := r.GetPlayerByID(playerID)
+	if err != nil {
+		return nil, err
+	}
+
+	info := &models.PlayerExtendedInfo{
+		Player:           *player,
+		TotalGamesPlayed: 0,
+		TotalGamesWon:    0,
+	}
+
+	// Count total games played (using latest revision of each game)
+	err = r.db.QueryRow(`
+		SELECT COUNT(DISTINCT gp.game_id)
+		FROM game_player gp
+		JOIN game g ON gp.game_id = g.id
+		WHERE gp.player_id = ?
+		AND g.id IN (
+			SELECT id FROM game g2
+			WHERE g2.game_id = g.game_id
+			ORDER BY g2.revision DESC
+			LIMIT 1
+		)
+	`, playerID).Scan(&info.TotalGamesPlayed)
+	if err != nil {
+		return nil, err
+	}
+
+	// Count total games won (where player has highest total_points in latest revision)
+	err = r.db.QueryRow(`
+		SELECT COUNT(DISTINCT gp.game_id)
+		FROM game_player gp
+		JOIN game g ON gp.game_id = g.id
+		WHERE gp.player_id = ?
+		AND g.id IN (
+			SELECT id FROM game g2
+			WHERE g2.game_id = g.game_id
+			ORDER BY g2.revision DESC
+			LIMIT 1
+		)
+		AND gp.total_points = (
+			SELECT MAX(gp2.total_points)
+			FROM game_player gp2
+			WHERE gp2.game_id = gp.game_id
+		)
+	`, playerID).Scan(&info.TotalGamesWon)
+	if err != nil {
+		return nil, err
+	}
+
+	return info, nil
+}
+
 // GetPlayerByName retrieves a player by name
 func (r *Repository) GetPlayerByName(name string) (*models.Player, error) {
 	var player models.Player

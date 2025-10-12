@@ -22,10 +22,11 @@ func NewHandler(db *sql.DB) *Handler {
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	// Player routes - following REST conventions
-	router.HandleFunc("/players", h.getPlayers).Methods("GET")        // List all players
-	router.HandleFunc("/players", h.createPlayer).Methods("POST")     // Create new player
-	router.HandleFunc("/players/{id}", h.getPlayer).Methods("GET")    // Get specific player
-	router.HandleFunc("/players/{id}", h.updatePlayer).Methods("PUT") // Update existing player
+	router.HandleFunc("/players", h.getPlayers).Methods("GET")                    // List all players
+	router.HandleFunc("/players", h.createPlayer).Methods("POST")                 // Create new player
+	router.HandleFunc("/players/{id}/extended", h.getPlayerExtendedInfo).Methods("GET") // Get player with extended info
+	router.HandleFunc("/players/{id}", h.getPlayer).Methods("GET")                // Get specific player
+	router.HandleFunc("/players/{id}", h.updatePlayer).Methods("PUT")             // Update existing player
 
 	// Game routes - following REST conventions
 	router.HandleFunc("/games", h.getGames).Methods("GET")        // List all games

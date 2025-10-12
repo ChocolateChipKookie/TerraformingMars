@@ -53,6 +53,12 @@ type Player struct {
 	UpdatedAt    string     `json:"updated_at" db:"updated_at"` // ISO datetime string
 }
 
+type PlayerExtendedInfo struct {
+	Player           Player `json:"player"`
+	TotalGamesPlayed int    `json:"total_games_played"`
+	TotalGamesWon    int    `json:"total_games_won"`
+}
+
 type GamePlayer struct {
 	ID                 int    `json:"id" db:"id"`
 	GameID             int    `json:"game_id" db:"game_id"`

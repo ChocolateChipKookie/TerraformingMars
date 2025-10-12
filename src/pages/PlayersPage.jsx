@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import Container from '../components/Container';
 import { SubContainer, SubContainerElement } from '../components/Container';
 import LinkButton from '../components/LinkButton';
+import { ROUTES } from '../constants/routes';
 import styles from '../styles/PlayersPage.module.css';
 
 function PlayersPage() {
@@ -69,12 +70,20 @@ function PlayersPage() {
             <div className={styles.playersList}>
               {players.length > 0 ? (
                 players.map(player => (
-                  <div key={player.id} className={styles.playerCard}>
+                  <a
+                    key={player.id}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(ROUTES.playerDetails(player.id));
+                    }}
+                    className={styles.playerCard}
+                  >
                     <div className={styles.playerName}>{player.name}</div>
                     <div className={styles.playerInfo}>
                       <span>Created: {formatDate(player.created_at)}</span>
                     </div>
-                  </div>
+                  </a>
                 ))
               ) : (
                 <div className={styles.noPlayers}>No players found</div>
