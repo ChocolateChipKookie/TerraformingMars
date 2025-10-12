@@ -16,31 +16,35 @@ export function SelectField({
   if (readOnly) {
     // Format the display value
     let displayValue = value;
+    const isNotAchieved = value === "" || value == null || value === -1;
+
     if (displayFormatter) {
       displayValue = displayFormatter(value, options);
-    } else if (value === "" || value == null || value === -1) {
+    } else if (isNotAchieved) {
       displayValue = placeholder;
     } else if (children) {
       // If using children for options, just display the value
       displayValue = value;
     } else {
       // Find the option label if options is an array of objects
-      const option = options?.find?.(opt => 
+      const option = options?.find?.(opt =>
         typeof opt === 'object' ? opt.value === value : opt === value
       );
       displayValue = option ? (typeof option === 'object' ? option.label : option) : value;
     }
-    
+
     return (
-      <div 
-        className={className} 
-        style={{ 
-          cursor: 'default', 
+      <div
+        className={className}
+        style={{
+          cursor: 'default',
           userSelect: 'none',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          textAlign: 'center'
+          textAlign: 'center',
+          opacity: isNotAchieved ? 0.5 : 1,
+          color: isNotAchieved ? '#888' : 'inherit'
         }}
       >
         {displayValue}
