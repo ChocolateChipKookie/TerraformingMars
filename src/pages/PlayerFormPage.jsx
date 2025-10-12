@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Container from '../components/Container';
 import { SubContainer, SubContainerElement } from '../components/Container';
@@ -9,8 +9,10 @@ import { formStyles } from '../styles/formStyles';
 import styles from '../styles/GamePage.module.css';
 import { playerApi } from '../services/api';
 
-const AddPlayerPage = () => {
+const PlayerFormPage = () => {
   const navigate = useNavigate();
+  const { playerId } = useParams();
+  const isEditMode = Boolean(playerId);
   const [formData, setFormData] = useState({
     name: '',
     password: '',
@@ -26,9 +28,9 @@ const AddPlayerPage = () => {
   const [isInitialSetup, setIsInitialSetup] = useState(false);
 
   useEffect(() => {
-    // Fetch all players for the dropdown
-    const fetchPlayers = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch all players for the dropdown
         const data = await playerApi.getAll();
         setPlayers(data);
 
@@ -41,15 +43,26 @@ const AddPlayerPage = () => {
             role: 'admin'
           }));
         }
+
+        // If edit mode, fetch player data
+        if (isEditMode) {
+          const playerData = await playerApi.getById(playerId);
+          setFormData(prev => ({
+            ...prev,
+            name: playerData.name,
+            role: playerData.role
+          }));
+        }
       } catch (err) {
-        console.error('Failed to fetch players:', err);
+        console.error('Failed to fetch data:', err);
+        setError(err.message);
       } finally {
         setPlayersLoading(false);
       }
     };
 
-    fetchPlayers();
-  }, []);
+    fetchData();
+  }, [isEditMode, playerId]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -94,14 +107,23 @@ const AddPlayerPage = () => {
     }
 
     // Include password for admin and user roles (required for auth roles, not allowed for players)
+    // In edit mode, only include password if it's not empty (optional update)
     if (formData.role === 'admin' || formData.role === 'user') {
-      requestData.password = formData.password;
+      if (!isEditMode || formData.password) {
+        requestData.password = formData.password;
+      }
     }
 
     try {
-      const data = await playerApi.create(requestData);
-      alert(`Player "${formData.name}" created successfully!`);
-      navigate('/');
+      if (isEditMode) {
+        await playerApi.update(playerId, requestData);
+        alert(`Player "${formData.name}" updated successfully!`);
+        navigate(`/players/${playerId}`);
+      } else {
+        await playerApi.create(requestData);
+        alert(`Player "${formData.name}" created successfully!`);
+        navigate('/');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -129,50 +151,53 @@ const AddPlayerPage = () => {
           required={true}
         />
       )}
-      
-      <Container title={isInitialSetup ? "Admin Details" : "New Player Details"} titleStyle="banner">
+
+      <Container title={isInitialSetup ? "Admin Details" : (isEditMode ? "Edit Player" : "New Player Details")} titleStyle="banner">
         <form onSubmit={handleSubmit}>
           <SubContainer>
-                <SubContainerElement label={isInitialSetup ? "Admin Name" : "Player Name"}>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    className={styles.optionInput}
-                    autoComplete="off"
-                  />
-                </SubContainerElement>
+            <SubContainerElement label={isInitialSetup ? "Admin Name" : "Player Name"}>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                className={styles.optionInput}
+                autoComplete="off"
+              />
+            </SubContainerElement>
 
-                {!isInitialSetup && (
-                  <SubContainerElement label="Role">
-                    <select
-                      name="role"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      className={styles.optionInput}
-                      disabled={!formData.actor_name || selectedUserRole === 'user'}
-                    >
-                      <option value="player">Player</option>
-                      <option value="user">User</option>
-                    </select>
-                  </SubContainerElement>
-                )}
+            {!isInitialSetup && (
+              <SubContainerElement label="Role">
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className={styles.optionInput}
+                  disabled={!formData.actor_name || selectedUserRole === 'user'}
+                >
+                  <option value="player">Player</option>
+                  <option value="user">User</option>
+                  {selectedUserRole === 'admin' && (
+                    <option value="admin">Admin</option>
+                  )}
+                </select>
+              </SubContainerElement>
+            )}
 
-                {(formData.role === 'user' || formData.role === 'admin') && (
-                  <SubContainerElement label="Password">
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                      className={styles.optionInput}
-                      autoComplete="new-password"
-                    />
-                  </SubContainerElement>
-                )}
+            {(formData.role === 'user' || formData.role === 'admin') && (
+              <SubContainerElement label={isEditMode ? "New Password" : "Password"}>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required={!isEditMode}
+                  className={styles.optionInput}
+                  autoComplete="new-password"
+                />
+              </SubContainerElement>
+            )}
 
             {error && (
               <div style={{
@@ -191,16 +216,16 @@ const AddPlayerPage = () => {
         </form>
       </Container>
 
-      <div style={{ 
-        display: 'flex', 
+      <div style={{
+        display: 'flex',
         justifyContent: 'space-between',
-        gap: '2rem', 
+        gap: '2rem',
         margin: '1% auto',
         maxWidth: '900px',
         padding: '0'
       }}>
         <LinkButton
-          onClick={() => navigate('/')}
+          onClick={() => navigate(isEditMode ? `/players/${playerId}` : '/')}
           style={{ width: 'calc(50% - 1rem)' }}
         >
           Cancel
@@ -210,11 +235,11 @@ const AddPlayerPage = () => {
           disabled={loading}
           style={{ width: 'calc(50% - 1rem)', backgroundColor: '#4CAF50' }}
         >
-          {loading ? 'Creating...' : 'Create'}
+          {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update' : 'Create')}
         </LinkButton>
       </div>
     </Layout>
   );
 };
 
-export default AddPlayerPage;
+export default PlayerFormPage;

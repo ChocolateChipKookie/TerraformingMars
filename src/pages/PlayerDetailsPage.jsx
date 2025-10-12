@@ -66,36 +66,7 @@ function PlayerDetailsPage() {
 
   return (
     <Layout>
-      <Container title="Player Information">
-        <SubContainerElement>
-          <label>Name:</label>
-          <InputField
-            className={styles.optionInput}
-            value={playerInfo.player.name}
-            readOnly={true}
-          />
-        </SubContainerElement>
-
-        <SubContainerElement>
-          <label>Role:</label>
-          <InputField
-            className={styles.optionInput}
-            value={playerInfo.player.role}
-            readOnly={true}
-          />
-        </SubContainerElement>
-
-        <SubContainerElement>
-          <label>Created At:</label>
-          <InputField
-            className={styles.optionInput}
-            value={formatDate(playerInfo.player.created_at)}
-            readOnly={true}
-          />
-        </SubContainerElement>
-      </Container>
-
-      <Container title="Statistics">
+      <Container title={playerInfo.player.name}>
         <SubContainerElement>
           <label>Total Games Played:</label>
           <InputField
@@ -118,6 +89,7 @@ function PlayerDetailsPage() {
       <div style={{
         display: 'flex',
         justifyContent: 'center',
+        gap: '1rem',
         margin: '1% auto',
         maxWidth: '900px',
         padding: '0'
@@ -127,6 +99,12 @@ function PlayerDetailsPage() {
           style={{ width: '200px' }}
         >
           Back to Players
+        </LinkButton>
+        <LinkButton
+          onClick={() => navigate(ROUTES.editPlayer(playerId))}
+          style={{ width: '200px' }}
+        >
+          Edit
         </LinkButton>
       </div>
     </Layout>

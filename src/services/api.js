@@ -67,10 +67,28 @@ export const playerApi = {
     }
   },
 
+  // Get single player by ID
+  getById: async (playerId) => {
+    const response = await fetch(`${API_BASE_URL}/players/${playerId}`);
+    return handleResponse(response);
+  },
+
   // Create new player
   create: async (playerData) => {
     const response = await fetch(`${API_BASE_URL}/players`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(playerData),
+    });
+    return handleResponse(response);
+  },
+
+  // Update existing player
+  update: async (playerId, playerData) => {
+    const response = await fetch(`${API_BASE_URL}/players/${playerId}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
