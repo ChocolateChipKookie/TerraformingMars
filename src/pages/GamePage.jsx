@@ -141,6 +141,9 @@ function usePlayerManagement(
   const updatePlayerData = useCallback((index, field, value) => {
     setPlayers((prevPlayers) => {
       const newPlayers = [...prevPlayers];
+      if (!newPlayers[index]) {
+        newPlayers[index] = { name: '', corporation: '' };
+      }
       newPlayers[index][field] = value;
       return newPlayers;
     });
@@ -149,6 +152,18 @@ function usePlayerManagement(
   const updatePlayerScore = useCallback((playerIndex, field, value) => {
     setPlayerScores((currentScores) => {
       const newScores = [...currentScores];
+      if (!newScores[playerIndex]) {
+        newScores[playerIndex] = {
+          terraformingRating: "",
+          cities: "",
+          greeneries: "",
+          cards: "",
+          turmoilPoints: "",
+          milestonePoints: 0,
+          awardPoints: 0,
+          totalPoints: 0,
+        };
+      }
       newScores[playerIndex][field] = value;
 
       // Recalculate total for this player
