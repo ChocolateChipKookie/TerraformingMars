@@ -48,46 +48,76 @@ function GameNotesAndImagesContainer({
     dispatch({ type: 'REMOVE_IMAGE', index });
   };
 
+  const hasNote = gameConfig.note && gameConfig.note.trim().length > 0;
+  const hasImages = gameConfig.images && gameConfig.images.length > 0;
+
+  if (readOnly && !hasNote && !hasImages) {
+    return null;
+  }
+
   return (
     <Container title="Notes & Images" titleStyle="banner">
       <SubContainer>
-        <SubContainerElement>
-          <label>Game Notes:</label>
-          <textarea
-            className={styles.notesTextarea}
-            value={gameConfig.note}
-            onChange={(e) => dispatch({ type: 'SET_NOTE', value: e.target.value })}
-            placeholder="Add any notes about this game..."
-            rows={4}
-            readOnly={readOnly}
-          />
-        </SubContainerElement>
+        {(!readOnly || hasNote) && (
+          <SubContainerElement>
+            <label>Game Notes:</label>
+            <textarea
+              className={styles.notesTextarea}
+              value={gameConfig.note}
+              onChange={(e) => dispatch({ type: 'SET_NOTE', value: e.target.value })}
+              placeholder="Add any notes about this game..."
+              rows={4}
+              readOnly={readOnly}
+            />
+          </SubContainerElement>
+        )}
 
-        <SubContainerElement>
-          <label>Game Images ({gameConfig.images.length}/4):</label>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageSelect}
-            style={{ display: 'none' }}
-          />
+        {(!readOnly || hasImages) && (
+          <SubContainerElement>
+            <label>Game Images{!readOnly && ` (${gameConfig.images.length}/4)`}:</label>
 
-          <div className={styles.imageGrid}>
-            {gameConfig.images.map((image, index) => (
-                <div key={index} className={styles.imageContainer}>
-                  {readOnly ? (
-                    // In view mode - make images clickable
-                    <a
-                      href={`http://localhost:8080/api/images/${image.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.imageLink}
-                    >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageSelect}
+              style={{ display: 'none' }}
+            />
+
+            <div className={styles.imageGrid}>
+              {gameConfig.images.map((image, index) => (
+                  <div key={index} className={styles.imageContainer}>
+                    {readOnly ? (
+                      // In view mode - make images clickable
+                      <a
+                        href={`http://localhost:8080/api/images/${image.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.imageLink}
+                      >
+                        <img
+                          src={`http://localhost:8080/api/images/${image.id}`}
+                          alt={`Game image ${index + 1}`}
+                          className={styles.gameImage}
+                          onError={(e) => {
+                            // Fallback for broken image links
+                            e.target.style.backgroundColor = '#f0f0f0';
+                            e.target.style.display = 'flex';
+                            e.target.style.alignItems = 'center';
+                            e.target.style.justifyContent = 'center';
+                            e.target.innerHTML = 'Image not found';
+                          }}
+                        />
+                      </a>
+                    ) : (
+                      // In edit mode - images not clickable
                       <img
-                        src={`http://localhost:8080/api/images/${image.id}`}
+                        src={
+                          image.preview
+                            ? image.preview // For newly uploaded images (has preview)
+                            : `http://localhost:8080/api/images/${image.id}` // For existing images from backend
+                        }
                         alt={`Game image ${index + 1}`}
                         className={styles.gameImage}
                         onError={(e) => {
@@ -99,48 +129,29 @@ function GameNotesAndImagesContainer({
                           e.target.innerHTML = 'Image not found';
                         }}
                       />
-                    </a>
-                  ) : (
-                    // In edit mode - images not clickable
-                    <img
-                      src={
-                        image.preview
-                          ? image.preview // For newly uploaded images (has preview)
-                          : `http://localhost:8080/api/images/${image.id}` // For existing images from backend
-                      }
-                      alt={`Game image ${index + 1}`}
-                      className={styles.gameImage}
-                      onError={(e) => {
-                        // Fallback for broken image links
-                        e.target.style.backgroundColor = '#f0f0f0';
-                        e.target.style.display = 'flex';
-                        e.target.style.alignItems = 'center';
-                        e.target.style.justifyContent = 'center';
-                        e.target.innerHTML = 'Image not found';
-                      }}
-                    />
-                  )}
-                  {!readOnly && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className={styles.removeImageButton}
-                    >
-                      ×
-                    </button>
-                  )}
+                    )}
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className={styles.removeImageButton}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              {!readOnly && gameConfig.images.length < 4 && (
+                <div
+                  className={styles.addImageBox}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <span className={styles.addImagePlus}>+</span>
                 </div>
-              ))}
-            {!readOnly && gameConfig.images.length < 4 && (
-              <div
-                className={styles.addImageBox}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <span className={styles.addImagePlus}>+</span>
-              </div>
-            )}
-          </div>
-        </SubContainerElement>
+              )}
+            </div>
+          </SubContainerElement>
+        )}
       </SubContainer>
     </Container>
   );
