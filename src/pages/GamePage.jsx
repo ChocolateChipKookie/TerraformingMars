@@ -215,19 +215,15 @@ function useGameObjectives(type, map, expansions, playerNumber) {
   const [selected, setSelected] = useState([]);
   const [data, setData] = useState({});
   const [isInitialized, setIsInitialized] = useState(false);
-  const [prevVenusNext, setPrevVenusNext] = useState(undefined);
+
+  const prevVenusNextRef = React.useRef(expansions["Venus Next"]);
+  const prevMilestonesAwardsRef = React.useRef(expansions["Milestones & Awards"]);
 
   const isAward = type === "award";
   const dataKey = isAward ? "awards" : "milestones";
   const additionalDataKey = isAward
     ? "additionalAwards"
     : "additionalMilestones";
-  const venusSlots = isAward
-    ? GAME_CONSTANTS.VENUS_AWARD_SLOTS
-    : GAME_CONSTANTS.VENUS_MILESTONE_SLOTS;
-  const defaultSlots = isAward
-    ? GAME_CONSTANTS.DEFAULT_AWARD_SLOTS
-    : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS;
 
   // Get available objectives based on expansions
   const getAvailable = useCallback(() => {
@@ -250,46 +246,115 @@ function useGameObjectives(type, map, expansions, playerNumber) {
     [getAvailable, selected],
   );
 
-  // Initialize objectives when map or expansions change
-  useEffect(() => {
-    const currentVenusNext = expansions["Venus Next"];
-    const venusNextJustToggled = prevVenusNext !== undefined && prevVenusNext !== currentVenusNext;
+  // Initialize objectives based on current map and expansions
+  const initializeObjectives = useCallback(() => {
+    const isMilestonesAwardsEnabled = expansions["Milestones & Awards"];
+    const isVenusNextEnabled = expansions["Venus Next"];
+    const mapObjectives = gameData[dataKey][map] || [];
+    const venusObjectives = isVenusNextEnabled ? (gameData[dataKey].Venus || []) : [];
 
-    // Skip initialization if already initialized (loading existing game) AND Venus Next didn't just toggle
-    if (isInitialized && !venusNextJustToggled) return;
+    if (isMilestonesAwardsEnabled) {
+      // Custom mode - limited slots
+      const numSlots = isVenusNextEnabled ?
+        (isAward ? GAME_CONSTANTS.VENUS_AWARD_SLOTS : GAME_CONSTANTS.VENUS_MILESTONE_SLOTS) :
+        (isAward ? GAME_CONSTANTS.DEFAULT_AWARD_SLOTS : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS);
 
-    if (expansions["Milestones & Awards"]) {
-      const mapObjectives = gameData[dataKey][map] || [];
-      const numSlots = expansions["Venus Next"] ? venusSlots : defaultSlots;
-
-      const defaultObjectives = [...mapObjectives];
-      if (expansions["Venus Next"]) {
-        defaultObjectives.push(...gameData[dataKey].Venus);
-      }
-
+      const defaultObjectives = [...mapObjectives, ...venusObjectives];
       setSelected(defaultObjectives.slice(0, numSlots));
     } else {
-      // Calculate available items inline to avoid dependency issues
-      let available = [...(gameData[dataKey][map] || [])];
-      if (expansions["Venus Next"]) {
-        available = [...available, ...gameData[dataKey].Venus];
-      }
-      if (expansions["Milestones & Awards"]) {
-        available = [...available, ...gameData[additionalDataKey]];
-      }
-      available = [...new Set(available)];
+      // Fixed mode - all defaults
+      const allDefaults = [...mapObjectives, ...venusObjectives];
+      setSelected(allDefaults);
 
-      setSelected(available);
+      const newData = {};
+      allDefaults.forEach((item) => {
+        if (isAward) {
+          newData[item] = {};
+          for (let i = 0; i < playerNumber; i++) {
+            newData[item][i] = 0;
+          }
+        } else {
+          newData[item] = -1;
+        }
+      });
+      setData(newData);
+    }
 
-      // Initialize/update data structure
-      setData(prevData => {
+    prevVenusNextRef.current = isVenusNextEnabled;
+    prevMilestonesAwardsRef.current = isMilestonesAwardsEnabled;
+    setIsInitialized(true);
+  }, [map, expansions, dataKey, isAward, playerNumber]);
+
+  // Handle Venus Next toggle
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const currentVenusNext = expansions["Venus Next"];
+    if (prevVenusNextRef.current === currentVenusNext) return;
+
+    const venusObjectives = gameData[dataKey].Venus || [];
+
+    if (currentVenusNext) {
+      // Add Venus objectives at the end
+      setSelected(prev => [...prev, ...venusObjectives]);
+      setData(prev => {
+        const newData = { ...prev };
+        venusObjectives.forEach(item => {
+          if (!newData[item]) {
+            if (isAward) {
+              newData[item] = {};
+              for (let i = 0; i < playerNumber; i++) {
+                newData[item][i] = 0;
+              }
+            } else {
+              newData[item] = -1;
+            }
+          }
+        });
+        return newData;
+      });
+    } else {
+      // Remove Venus objectives
+      setSelected(prev => prev.filter(item => !venusObjectives.includes(item)));
+      setData(prev => {
+        const newData = { ...prev };
+        venusObjectives.forEach(item => delete newData[item]);
+        return newData;
+      });
+    }
+
+    prevVenusNextRef.current = currentVenusNext;
+  }, [isInitialized, expansions, dataKey, isAward, playerNumber]);
+
+  // Handle Milestones & Awards toggle
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const currentMilestonesAwards = expansions["Milestones & Awards"];
+    if (prevMilestonesAwardsRef.current === currentMilestonesAwards) return;
+
+    const isVenusNextEnabled = expansions["Venus Next"];
+    const mapObjectives = gameData[dataKey][map] || [];
+    const venusObjectives = isVenusNextEnabled ? (gameData[dataKey].Venus || []) : [];
+
+    if (currentMilestonesAwards) {
+      // Switching to custom mode - limited slots
+      const numSlots = isVenusNextEnabled ?
+        (isAward ? GAME_CONSTANTS.VENUS_AWARD_SLOTS : GAME_CONSTANTS.VENUS_MILESTONE_SLOTS) :
+        (isAward ? GAME_CONSTANTS.DEFAULT_AWARD_SLOTS : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS);
+      const defaultObjectives = [...mapObjectives, ...venusObjectives];
+      setSelected(defaultObjectives.slice(0, numSlots));
+    } else {
+      // Switching to fixed mode - all defaults
+      const allDefaults = [...mapObjectives, ...venusObjectives];
+      setSelected(allDefaults);
+
+      setData(prev => {
         const newData = {};
-        available.forEach((item) => {
-          if (venusNextJustToggled && prevData[item] !== undefined) {
-            // Preserve existing data when Venus Next toggles
-            newData[item] = prevData[item];
+        allDefaults.forEach((item) => {
+          if (prev[item] !== undefined) {
+            newData[item] = prev[item];
           } else {
-            // Initialize new items
             if (isAward) {
               newData[item] = {};
               for (let i = 0; i < playerNumber; i++) {
@@ -304,17 +369,8 @@ function useGameObjectives(type, map, expansions, playerNumber) {
       });
     }
 
-    setPrevVenusNext(currentVenusNext);
-
-  }, [
-    map,
-    expansions,
-    dataKey,
-    additionalDataKey,
-    venusSlots,
-    defaultSlots,
-    isAward,
-  ]);
+    prevMilestonesAwardsRef.current = currentMilestonesAwards;
+  }, [isInitialized, expansions, map, dataKey, isAward, playerNumber]);
 
   // Validate and reset data when player count changes
   useEffect(() => {
@@ -324,7 +380,6 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 
       Object.keys(prevData).forEach(item => {
         if (isAward) {
-          // For awards, reset placements for players that no longer exist
           newData[item] = {};
           Object.keys(prevData[item]).forEach(playerIndex => {
             const idx = parseInt(playerIndex);
@@ -335,7 +390,6 @@ function useGameObjectives(type, map, expansions, playerNumber) {
             }
           });
         } else {
-          // For milestones, reset winner if they no longer exist
           if (prevData[item] >= playerNumber) {
             newData[item] = -1;
             changed = true;
@@ -357,7 +411,6 @@ function useGameObjectives(type, map, expansions, playerNumber) {
       newSelected[index] = newValue;
       setSelected(newSelected);
 
-      // Update data structure
       const newData = { ...data };
       if (oldValue) {
         delete newData[oldValue];
@@ -377,10 +430,14 @@ function useGameObjectives(type, map, expansions, playerNumber) {
     [selected, data, playerNumber, isAward],
   );
 
-  // Function to load existing game data
-  const loadGameData = useCallback((selectedItems, itemData) => {
+  // Function to load existing game data from backend
+  const loadGameData = useCallback((selectedItems, itemData, loadedExpansions) => {
     setSelected(selectedItems);
     setData(itemData);
+
+    // Mark as initialized and set refs to the LOADED state to prevent effects from running
+    prevVenusNextRef.current = loadedExpansions["Venus Next"];
+    prevMilestonesAwardsRef.current = loadedExpansions["Milestones & Awards"];
     setIsInitialized(true);
   }, []);
 
@@ -392,6 +449,7 @@ function useGameObjectives(type, map, expansions, playerNumber) {
     getAvailable,
     getAvailableForDropdown,
     updateSelected,
+    initializeObjectives,
     loadGameData,
   };
 }
@@ -463,6 +521,14 @@ function GamePage() {
     gameConfig.expansions,
     playerManager.playerNumber
   );
+
+  // Initialize objectives when adding a new game
+  useEffect(() => {
+    if (mode === 'add') {
+      milestones.initializeObjectives();
+      awards.initializeObjectives();
+    }
+  }, []); // Only run once on mount
 
   // Fetch game data if in view/edit mode
   useEffect(() => {
@@ -541,7 +607,7 @@ function GamePage() {
             milestoneData[m.name] = winnerIndex;
             milestoneNames.push(m.name);
           });
-          milestones.loadGameData(milestoneNames, milestoneData);
+          milestones.loadGameData(milestoneNames, milestoneData, gameData.game.expansions || {});
         }
 
         // Set awards
@@ -566,7 +632,7 @@ function GamePage() {
               }
             }
           });
-          awards.loadGameData(awardNames, awardData);
+          awards.loadGameData(awardNames, awardData, gameData.game.expansions || {});
         }
 
       } catch (err) {
