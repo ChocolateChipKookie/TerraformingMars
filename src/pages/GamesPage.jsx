@@ -27,12 +27,9 @@ function GamesPage() {
       });
   }, []);
 
-  const redirectToGame = () => {
-    const game = games.find(g => g.name === searchValue);
-    if (game) {
-      navigate(ROUTES.gameDetails(game.id));
-    }
-  };
+  const filteredGames = games.filter(game =>
+    game.name.toLowerCase().includes(searchValue.toLowerCase())
+  );
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -58,23 +55,13 @@ function GamesPage() {
           <SubContainerElement>
             <div className={styles.searchContainer}>
               <label className={styles.searchLabel}>Search:</label>
-              <input 
-                type="text" 
-                placeholder="Enter game name" 
+              <input
+                type="text"
+                placeholder="Enter game name"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && redirectToGame()}
-                list="datalist-games"
                 className={styles.searchInput}
               />
-              <datalist id="datalist-games">
-                {games.map(game => (
-                  <option key={game.id} value={game.name} />
-                ))}
-              </datalist>
-              <button onClick={redirectToGame} className={styles.searchButton}>
-                GO
-              </button>
             </div>
           </SubContainerElement>
         </SubContainer>
@@ -82,10 +69,10 @@ function GamesPage() {
         <SubContainer title="All Games">
           <SubContainerElement>
             <div className={styles.gamesList}>
-              {games.length > 0 ? (
-                games.map(game => (
-                  <a 
-                    key={game.id} 
+              {filteredGames.length > 0 ? (
+                filteredGames.map(game => (
+                  <a
+                    key={game.id}
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();

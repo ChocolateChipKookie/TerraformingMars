@@ -51,6 +51,8 @@
   background-color: rgb(240, 240, 240);
   border: 3px solid black;
   border-radius: 15px;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 .gameLink {
