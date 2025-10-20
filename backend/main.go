@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -54,6 +56,9 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := flag.Int("port", 8080, "port number for the server to listen on")
+	flag.Parse()
+
 	// Initialize database with file path
 	db, err := database.Init("data/terraforming_mars.db")
 	if err != nil {
@@ -100,6 +105,7 @@ func main() {
 
 	// Start server
 	handler := c.Handler(router)
-	log.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", handler))
+	addr := fmt.Sprintf(":%d", *port)
+	log.Printf("Server starting on %s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, handler))
 }
