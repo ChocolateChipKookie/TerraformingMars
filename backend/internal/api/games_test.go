@@ -1336,3 +1336,126 @@ func TestMilestoneAndAwardCountValidation(t *testing.T) {
 		}
 	})
 }
+
+func TestDeleteGame(t *testing.T) {
+	ctx := setupGameFixture(t)
+
+	t.Run("Admin can delete their own game", func(t *testing.T) {
+		deleteReq := RequestAuthentication{
+			ActorName:     ctx.AdminName,
+			ActorPassword: ctx.AdminPassword,
+		}
+
+		body, _ := json.Marshal(deleteReq)
+		httpReq := httptest.NewRequest("DELETE", fmt.Sprintf("/games/%d", ctx.Game1.Game.GameID), bytes.NewBuffer(body))
+		httpReq.Header.Set("Content-Type", "application/json")
+		httpReq = mux.SetURLVars(httpReq, map[string]string{"id": fmt.Sprintf("%d", ctx.Game1.Game.GameID)})
+
+		rr := httptest.NewRecorder()
+		ctx.Handler.deleteGame(rr, httpReq)
+
+		if rr.Code != http.StatusNoContent {
+			t.Errorf("Expected status %d, got %d. Response body: %s", http.StatusNoContent, rr.Code, rr.Body.String())
+		}
+
+		getReq := httptest.NewRequest("GET", fmt.Sprintf("/games/%d", ctx.Game1.Game.GameID), nil)
+		getReq = mux.SetURLVars(getReq, map[string]string{"id": fmt.Sprintf("%d", ctx.Game1.Game.GameID)})
+		getRR := httptest.NewRecorder()
+		ctx.Handler.getGame(getRR, getReq)
+
+		if getRR.Code != http.StatusNotFound {
+			t.Errorf("Expected game to be deleted, but got status %d", getRR.Code)
+		}
+	})
+
+	t.Run("User cannot delete game with wrong password", func(t *testing.T) {
+		deleteReq := RequestAuthentication{
+			ActorName:     "Bob",
+			ActorPassword: "wrongpassword",
+		}
+
+		body, _ := json.Marshal(deleteReq)
+		httpReq := httptest.NewRequest("DELETE", fmt.Sprintf("/games/%d", ctx.Game2.Game.GameID), bytes.NewBuffer(body))
+		httpReq.Header.Set("Content-Type", "application/json")
+		httpReq = mux.SetURLVars(httpReq, map[string]string{"id": fmt.Sprintf("%d", ctx.Game2.Game.GameID)})
+
+		rr := httptest.NewRecorder()
+		ctx.Handler.deleteGame(rr, httpReq)
+
+		if rr.Code != http.StatusUnauthorized {
+			t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, rr.Code)
+		}
+
+		var response map[string]string
+		json.NewDecoder(rr.Body).Decode(&response)
+		if response["error"] == "" {
+			t.Error("Expected error message in response")
+		}
+	})
+
+	t.Run("User cannot delete another user's game", func(t *testing.T) {
+		deleteReq := RequestAuthentication{
+			ActorName:     "Bob",
+			ActorPassword: ctx.UserPass,
+		}
+
+		body, _ := json.Marshal(deleteReq)
+		httpReq := httptest.NewRequest("DELETE", fmt.Sprintf("/games/%d", ctx.Game1.Game.GameID), bytes.NewBuffer(body))
+		httpReq.Header.Set("Content-Type", "application/json")
+		httpReq = mux.SetURLVars(httpReq, map[string]string{"id": fmt.Sprintf("%d", ctx.Game1.Game.GameID)})
+
+		rr := httptest.NewRecorder()
+		ctx.Handler.deleteGame(rr, httpReq)
+
+		if rr.Code != http.StatusInternalServerError {
+			t.Errorf("Expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+		}
+	})
+
+	t.Run("Admin can delete any game", func(t *testing.T) {
+		deleteReq := RequestAuthentication{
+			ActorName:     ctx.AdminName,
+			ActorPassword: ctx.AdminPassword,
+		}
+
+		body, _ := json.Marshal(deleteReq)
+		httpReq := httptest.NewRequest("DELETE", fmt.Sprintf("/games/%d", ctx.Game2.Game.GameID), bytes.NewBuffer(body))
+		httpReq.Header.Set("Content-Type", "application/json")
+		httpReq = mux.SetURLVars(httpReq, map[string]string{"id": fmt.Sprintf("%d", ctx.Game2.Game.GameID)})
+
+		rr := httptest.NewRecorder()
+		ctx.Handler.deleteGame(rr, httpReq)
+
+		if rr.Code != http.StatusNoContent {
+			t.Errorf("Expected status %d, got %d. Response body: %s", http.StatusNoContent, rr.Code, rr.Body.String())
+		}
+
+		getReq := httptest.NewRequest("GET", fmt.Sprintf("/games/%d", ctx.Game2.Game.GameID), nil)
+		getReq = mux.SetURLVars(getReq, map[string]string{"id": fmt.Sprintf("%d", ctx.Game2.Game.GameID)})
+		getRR := httptest.NewRecorder()
+		ctx.Handler.getGame(getRR, getReq)
+
+		if getRR.Code != http.StatusNotFound {
+			t.Errorf("Expected game to be deleted, but got status %d", getRR.Code)
+		}
+	})
+
+	t.Run("Delete non-existent game returns 404", func(t *testing.T) {
+		deleteReq := RequestAuthentication{
+			ActorName:     ctx.AdminName,
+			ActorPassword: ctx.AdminPassword,
+		}
+
+		body, _ := json.Marshal(deleteReq)
+		httpReq := httptest.NewRequest("DELETE", "/games/99999", bytes.NewBuffer(body))
+		httpReq.Header.Set("Content-Type", "application/json")
+		httpReq = mux.SetURLVars(httpReq, map[string]string{"id": "99999"})
+
+		rr := httptest.NewRecorder()
+		ctx.Handler.deleteGame(rr, httpReq)
+
+		if rr.Code != http.StatusInternalServerError {
+			t.Errorf("Expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+		}
+	})
+}

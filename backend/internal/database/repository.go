@@ -1071,3 +1071,26 @@ func (r *Repository) GetImageGameID(imageID int) (int, error) {
 	}
 	return userFacingGameID, nil
 }
+
+// DeleteGame deletes all revisions of a game (for API use with permission checking)
+func (r *Repository) DeleteGame(gameID int, actor models.Player) error {
+	var createdBy int
+	err := r.db.QueryRow("SELECT created_by FROM game WHERE game_id = ? LIMIT 1", gameID).Scan(&createdBy)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("game with ID %d not found", gameID)
+		}
+		return err
+	}
+
+	if err := auth.CanModifyGame(actor, createdBy); err != nil {
+		return err
+	}
+
+	_, err = r.db.Exec("DELETE FROM game WHERE game_id = ?", gameID)
+	if err != nil {
+		return fmt.Errorf("failed to delete game: %v", err)
+	}
+
+	return nil
+}

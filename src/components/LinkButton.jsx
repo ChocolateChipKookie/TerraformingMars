@@ -8,7 +8,7 @@ function LinkButton({ onClick, children, disabled = false }) {
     height: isHovered && !disabled ? '98%' : '100%',
     background: disabled
       ? 'linear-gradient(145deg, #999, #bbb, #999, #bbb, #999)'
-      : isHovered 
+      : isHovered
         ? 'linear-gradient(145deg, #565656, #d5d5d5, #8a8a8a, #cbcbcb, #d5d5d5)'
         : 'linear-gradient(145deg, #787776, #f5f5f5, #aaaaaa, #ebebeb, #f5f5f5)',
     borderStyle: 'solid',
@@ -37,7 +37,7 @@ function LinkButton({ onClick, children, disabled = false }) {
 
   return (
     <div style={wrapperStyle}>
-      <button 
+      <button
         style={buttonStyle}
         onMouseEnter={() => !disabled && setIsHovered(true)}
         onMouseLeave={() => !disabled && setIsHovered(false)}

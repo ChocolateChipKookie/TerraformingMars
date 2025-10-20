@@ -49,6 +49,24 @@ export const gameApi = {
     });
     return handleResponse(response);
   },
+
+  // Delete game
+  delete: async (gameId, actorName, actorPassword) => {
+    const response = await fetch(`${API_BASE_URL}/games/${gameId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        actor_name: actorName,
+        actor_password: actorPassword,
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.error || `HTTP error! status: ${response.status}`);
+    }
+  },
 };
 
 // Player API calls

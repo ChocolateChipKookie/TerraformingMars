@@ -29,10 +29,11 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/players/{id}", h.updatePlayer).Methods("PUT")                   // Update existing player
 
 	// Game routes - following REST conventions
-	router.HandleFunc("/games", h.getGames).Methods("GET")        // List all games
-	router.HandleFunc("/games", h.createGame).Methods("POST")     // Create new game
-	router.HandleFunc("/games/{id}", h.getGame).Methods("GET")    // Get specific game
-	router.HandleFunc("/games/{id}", h.updateGame).Methods("PUT") // Update existing game (new revision)
+	router.HandleFunc("/games", h.getGames).Methods("GET")           // List all games
+	router.HandleFunc("/games", h.createGame).Methods("POST")        // Create new game
+	router.HandleFunc("/games/{id}", h.getGame).Methods("GET")       // Get specific game
+	router.HandleFunc("/games/{id}", h.updateGame).Methods("PUT")    // Update existing game (new revision)
+	router.HandleFunc("/games/{id}", h.deleteGame).Methods("DELETE") // Delete game
 
 	// Image routes
 	router.HandleFunc("/images/{id}", h.getImage).Methods("GET") // Get image data by image ID

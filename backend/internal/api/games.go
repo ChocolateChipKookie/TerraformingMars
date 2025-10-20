@@ -165,6 +165,41 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 	h.sendJSON(w, http.StatusOK, game)
 }
 
+// DELETE /games/{id} - Delete a game
+func (h *Handler) deleteGame(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		h.sendError(w, http.StatusBadRequest, "Invalid game ID")
+		return
+	}
+
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.sendError(w, http.StatusBadRequest, "Failed to read request body")
+		return
+	}
+
+	var auth RequestAuthentication
+	if err := json.Unmarshal(bodyBytes, &auth); err != nil {
+		h.sendError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	actor, err := h.repo.AuthenticatePlayer(auth.ActorName, auth.ActorPassword)
+	if err != nil {
+		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
+		return
+	}
+
+	if err := h.repo.DeleteGame(id, *actor); err != nil {
+		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to delete game: %v", err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // GET /images/{id} - Get image data by image ID
 func (h *Handler) getImage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

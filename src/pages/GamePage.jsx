@@ -962,6 +962,29 @@ function GamePage() {
     }
   };
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleDeleteGame = async () => {
+    if (!actorName || !actorPassword) {
+      alert('Please enter your username and password to delete the game.');
+      return;
+    }
+
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteGame = async () => {
+    setShowDeleteDialog(false);
+
+    try {
+      await gameApi.delete(gameId, actorName, actorPassword);
+      alert('Game deleted successfully!');
+      navigate(ROUTES.PLAYED_GAMES);
+    } catch (error) {
+      alert(`Failed to delete game: ${error.message}`);
+    }
+  };
+
   // Handle cancel edit - reload original data
   const handleCancelEdit = () => {
     setMode('view');
@@ -1070,6 +1093,63 @@ function GamePage() {
         />
       )}
 
+      {/* Delete confirmation dialog */}
+      {showDeleteDialog && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#f5f5f5',
+            padding: '3rem',
+            borderRadius: '15px',
+            border: '5px solid #d32f2f',
+            maxWidth: '600px',
+            textAlign: 'center'
+          }}>
+            <h2 style={{
+              fontFamily: 'tm-default',
+              fontSize: '3rem',
+              color: '#d32f2f',
+              marginBottom: '2rem',
+              textTransform: 'uppercase'
+            }}>
+              Delete Game?
+            </h2>
+            <p style={{
+              fontFamily: 'tm-default',
+              fontSize: '2rem',
+              marginBottom: '3rem',
+              color: '#333'
+            }}>
+              Are you sure you want to delete this game?
+              <br />
+              This action cannot be undone!
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '2rem',
+              justifyContent: 'center'
+            }}>
+              <LinkButton onClick={() => setShowDeleteDialog(false)}>
+                Cancel
+              </LinkButton>
+              <LinkButton onClick={confirmDeleteGame}>
+                Delete
+              </LinkButton>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dynamic buttons based on mode */}
       <div style={{
         display: 'flex',
@@ -1098,15 +1178,18 @@ function GamePage() {
           <>
             <LinkButton
               onClick={handleCancelEdit}
-              style={{ width: 'calc(50% - 1rem)' }}
             >
               Cancel
             </LinkButton>
             <LinkButton
-              onClick={handleSubmitGame}
-              style={{ backgroundColor: '#4CAF50', width: 'calc(50% - 1rem)' }}
+              onClick={handleDeleteGame}
             >
-              Save Changes
+              Delete Game
+            </LinkButton>
+            <LinkButton
+              onClick={handleSubmitGame}
+            >
+              Save
             </LinkButton>
           </>
         ) : (
