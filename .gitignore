@@ -1,2 +1,5 @@
 backend/data/
+backend/terraforming-mars-server
 node_modules/
+dist/
+build/

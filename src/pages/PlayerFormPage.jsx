@@ -72,8 +72,12 @@ const PlayerFormPage = () => {
       const selectedPlayer = players.find(p => p.name === value);
       setSelectedUserRole(selectedPlayer ? selectedPlayer.role : null);
 
+      // In edit mode, don't change role if editing the authenticated user
+      const isEditingSelf = isEditMode && formData.name === value;
+
       // If the selected user is not an admin and current role is 'user', switch to 'player'
-      if (selectedPlayer && selectedPlayer.role !== 'admin' && formData.role === 'user') {
+      // Exception: don't change role when editing your own player
+      if (selectedPlayer && selectedPlayer.role !== 'admin' && formData.role === 'user' && !isEditingSelf) {
         setFormData(prev => ({
           ...prev,
           actor_name: value,
@@ -143,8 +147,11 @@ const PlayerFormPage = () => {
           playersLoading={playersLoading}
           onUserSelect={(user) => {
             setSelectedUserRole(user ? user.role : null);
+            // In edit mode, don't change role if editing the authenticated user
+            const isEditingSelf = isEditMode && formData.name === user?.name;
             // If the selected user is not an admin and current role is 'user', switch to 'player'
-            if (user && user.role !== 'admin' && formData.role === 'user') {
+            // Exception: don't change role when editing your own player
+            if (user && user.role !== 'admin' && formData.role === 'user' && !isEditingSelf) {
               setFormData(prev => ({ ...prev, role: 'player' }));
             }
           }}
@@ -178,7 +185,7 @@ const PlayerFormPage = () => {
                 >
                   <option value="player">Player</option>
                   <option value="user">User</option>
-                  {selectedUserRole === 'admin' && (
+                  {(selectedUserRole === 'admin' || formData.role === 'admin') && (
                     <option value="admin">Admin</option>
                   )}
                 </select>
