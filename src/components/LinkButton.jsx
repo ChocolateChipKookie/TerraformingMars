@@ -29,6 +29,7 @@ function LinkButton({ onClick, children, disabled = false }) {
     height: '75px',
     width: '100%',
     maxWidth: '500px',
+    minWidth: '400px',
     display: 'block',
     marginLeft: 'auto',
     marginRight: 'auto',
