@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import styles from './LinkButton.module.css';
 
-function LinkButton({ onClick, children, disabled = false }) {
+function LinkButton({ onClick, children, disabled = false, style = {} }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const buttonStyle = {
@@ -25,21 +26,8 @@ function LinkButton({ onClick, children, disabled = false }) {
     opacity: disabled ? 0.6 : 1
   };
 
-  const wrapperStyle = {
-    height: '75px',
-    width: '100%',
-    maxWidth: '500px',
-    minWidth: '400px',
-    display: 'block',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    marginBottom: '30px',
-    textAlign: 'center',
-    padding: '0 10px'
-  };
-
   return (
-    <div style={wrapperStyle}>
+    <div className={styles.wrapper} style={{ width: style.width }}>
       <button
         style={buttonStyle}
         onMouseEnter={() => !disabled && setIsHovered(true)}
