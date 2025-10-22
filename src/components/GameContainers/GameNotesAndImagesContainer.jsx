@@ -91,13 +91,13 @@ function GameNotesAndImagesContainer({
                     {readOnly ? (
                       // In view mode - make images clickable
                       <a
-                        href={`http://localhost:8080/api/images/${image.id}`}
+                        href={`/api/images/${image.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.imageLink}
                       >
                         <img
-                          src={`http://localhost:8080/api/images/${image.id}`}
+                          src={`/api/images/${image.id}`}
                           alt={`Game image ${index + 1}`}
                           className={styles.gameImage}
                           onError={(e) => {
@@ -116,7 +116,7 @@ function GameNotesAndImagesContainer({
                         src={
                           image.preview
                             ? image.preview // For newly uploaded images (has preview)
-                            : `http://localhost:8080/api/images/${image.id}` // For existing images from backend
+                            : `/api/images/${image.id}` // For existing images from backend
                         }
                         alt={`Game image ${index + 1}`}
                         className={styles.gameImage}

@@ -62,3 +62,42 @@
   position: relative;
   overflow-y: auto;
 }
+
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    border-width: 3px;
+    border-radius: 15px;
+  }
+
+  .pageTitle {
+    font-size: 2.5rem;
+    padding: 0.5rem;
+  }
+
+  .bannerTitle {
+    font-size: 2rem;
+    padding: 0.5rem;
+  }
+
+  .subContainer {
+    font-size: 1.8rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .subContainerElement {
+    max-width: 100%;
+    margin: 0.5rem 0.5rem;
+  }
+
+  .subContainerElement label {
+    font-size: 1.2rem;
+  }
+
+  .layout {
+    padding-left: 2%;
+    padding-right: 2%;
+  }
+}

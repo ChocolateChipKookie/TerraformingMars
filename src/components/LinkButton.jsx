@@ -16,7 +16,7 @@ function LinkButton({ onClick, children, disabled = false }) {
     borderColor: disabled ? '#999' : '#cccccc',
     borderRadius: '25px',
     fontFamily: 'tm-default',
-    fontSize: '40px',
+    fontSize: 'clamp(24px, 5vw, 40px)',
     color: disabled ? '#666' : (isHovered ? '#eee' : 'black'),
     textTransform: 'uppercase',
     textAlign: 'center',
@@ -27,12 +27,14 @@ function LinkButton({ onClick, children, disabled = false }) {
 
   const wrapperStyle = {
     height: '75px',
-    width: '500px',
+    width: '100%',
+    maxWidth: '500px',
     display: 'block',
     marginLeft: 'auto',
     marginRight: 'auto',
     marginBottom: '30px',
-    textAlign: 'center'
+    textAlign: 'center',
+    padding: '0 10px'
   };
 
   return (

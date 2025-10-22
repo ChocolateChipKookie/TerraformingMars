@@ -22,7 +22,7 @@ function PlayerDetailsPage() {
   const fetchPlayerInfo = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/players/${playerId}/extended`);
+      const response = await fetch(`/api/players/${playerId}/extended`);
       if (!response.ok) {
         throw new Error('Failed to fetch player information');
       }
@@ -68,7 +68,7 @@ function PlayerDetailsPage() {
     <Layout>
       <Container title={playerInfo.player.name}>
         <SubContainerElement>
-          <label>Total Games Played:</label>
+          <label>Games Played:</label>
           <InputField
             className={styles.optionInput}
             value={playerInfo.total_games_played}
@@ -77,7 +77,7 @@ function PlayerDetailsPage() {
         </SubContainerElement>
 
         <SubContainerElement>
-          <label>Total Games Won:</label>
+          <label>Games Won:</label>
           <InputField
             className={styles.optionInput}
             value={playerInfo.total_games_won}
@@ -92,17 +92,17 @@ function PlayerDetailsPage() {
         gap: '1rem',
         margin: '1% auto',
         maxWidth: '900px',
-        padding: '0'
+        padding: '0 10px'
       }}>
         <LinkButton
           onClick={() => navigate(ROUTES.PLAYERS)}
-          style={{ width: '200px' }}
+          style={{ width: 'calc(50% - 0.5rem)' }}
         >
           Back to Players
         </LinkButton>
         <LinkButton
           onClick={() => navigate(ROUTES.editPlayer(playerId))}
-          style={{ width: '200px' }}
+          style={{ width: 'calc(50% - 0.5rem)' }}
         >
           Edit
         </LinkButton>

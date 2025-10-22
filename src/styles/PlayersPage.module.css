@@ -54,3 +54,32 @@
 .error {
   color: #d32f2f;
 }
+
+@media (max-width: 768px) {
+  .playerCard {
+    padding: 0.8rem 1rem;
+    font-size: 1.3rem;
+  }
+
+  .playerName {
+    margin-bottom: 0.5rem;
+  }
+
+  .playerInfo {
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 1.1rem;
+  }
+
+  .playersList {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .loading,
+  .error,
+  .noPlayers {
+    font-size: 1.4rem;
+    padding: 1.5rem;
+  }
+}

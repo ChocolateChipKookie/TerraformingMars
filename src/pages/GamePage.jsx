@@ -1184,7 +1184,7 @@ function GamePage() {
             <LinkButton
               onClick={handleDeleteGame}
             >
-              Delete Game
+              Delete
             </LinkButton>
             <LinkButton
               onClick={handleSubmitGame}

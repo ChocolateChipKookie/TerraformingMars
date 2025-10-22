@@ -20,7 +20,7 @@ function PlayersPage() {
   const fetchPlayers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/players');
+      const response = await fetch('/api/players');
       if (!response.ok) {
         throw new Error('Failed to fetch players');
       }
@@ -98,7 +98,7 @@ function PlayersPage() {
         justifyContent: 'center',
         margin: '1% auto',
         maxWidth: '900px',
-        padding: '0'
+        padding: '0 10px'
       }}>
         <LinkButton
           onClick={() => navigate('/')}

@@ -247,6 +247,7 @@
   font-size: 1.2rem;
   font-weight: bold;
   flex: 1;
+  overflow: hidden;
 }
 
 /* Expansion Base Styles - Consolidated */
@@ -456,4 +457,91 @@
 
 .addImageBox:hover .addImagePlus {
   color: #4CAF50;
+}
+
+@media (max-width: 768px) {
+  .commonInput {
+    font-size: 1.4rem;
+  }
+
+  .optionInput {
+    font-size: 1.4rem;
+    width: 60%;
+  }
+
+  .numericInputContainer {
+    width: 60%;
+  }
+
+  .numericInput {
+    font-size: 1.4rem;
+  }
+
+  .numericInputButton {
+    width: 2.5rem;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    font-size: 2rem;
+  }
+
+  .containerInput {
+    font-size: 1.3rem;
+  }
+
+  .milestoneLabel,
+  .milestoneDropdown,
+  .objectiveDropdown,
+  .pointInputLabel {
+    font-size: 1.3rem;
+  }
+
+  .scoreInput,
+  .scoreCell,
+  .scoreCellTotal {
+    font-size: 1.2rem;
+    height: 2.5rem;
+    line-height: 2.5rem;
+  }
+
+  .awardButton,
+  .awardButtonDisabled,
+  .awardButtonGold,
+  .awardButtonSilver,
+  .awardButtonNone {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .playerNameCell {
+    font-size: 1rem;
+    overflow: hidden;
+  }
+
+  .standardText,
+  .baseLabel {
+    font-size: 1.4rem;
+    height: 2.5rem;
+  }
+
+  .expansionLabelExpanded {
+    font-size: 1.3rem;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    width: 100%;
+  }
+
+  .expansionCircle {
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
+
+  .expansionIconSvg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .notesTextarea {
+    font-size: 1.3rem;
+  }
 }

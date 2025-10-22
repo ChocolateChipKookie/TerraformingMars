@@ -99,12 +99,12 @@ function GamesPage() {
         </SubContainer>
       </Container>
 
-      <div style={{ 
-        display: 'flex', 
+      <div style={{
+        display: 'flex',
         justifyContent: 'center',
         margin: '1% auto',
         maxWidth: '900px',
-        padding: '0'
+        padding: '0 10px'
       }}>
         <LinkButton 
           onClick={() => navigate('/')}

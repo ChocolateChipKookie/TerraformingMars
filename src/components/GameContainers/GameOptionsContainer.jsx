@@ -172,6 +172,9 @@ function GameOptionsContainer({
     return Object.entries(gameConfig.expansions);
   }, [gameConfig.expansions]);
 
+  // Hard-coded breakpoint: force expanded view on screens <= 768px
+  const forceExpanded = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   return (
     <Container title="Options" titleStyle="banner">
       <SubContainer>
@@ -280,7 +283,7 @@ function GameOptionsContainer({
               <div className={styles.expansionsContainer}>
               {/* Content container - shared by both bar and list */}
               <div className={styles.expansionsContent}>
-                {!gameConfig.expandedExpansions && (
+                {!gameConfig.expandedExpansions && !forceExpanded && (
                   <div className={styles.expansionsCompactView}>
                     {expansionEntries.map(([key, value]) => (
                       <ExpansionIcon
@@ -302,7 +305,7 @@ function GameOptionsContainer({
                   </div>
                 )}
 
-                {gameConfig.expandedExpansions && (
+                {(gameConfig.expandedExpansions || forceExpanded) && (
                   <div className={styles.expansionsExpandedView}>
                     {expansionEntries.map(([key, value]) => (
                       <ExpansionIcon
@@ -325,18 +328,20 @@ function GameOptionsContainer({
                 )}
               </div>
 
-              {/* Expand/Collapse button container */}
-              <div className={styles.expansionsToggleContainer}>
-                <div
-                  className={styles.expansionsToggleButton}
-                  onClick={() => dispatch({ type: "TOGGLE_EXPANDED_VIEW" })}
-                  title={
-                    gameConfig.expandedExpansions ? "Collapse" : "Expand"
-                  }
-                >
-                  ☰
+              {/* Expand/Collapse button container - hidden if forced expanded */}
+              {!forceExpanded && (
+                <div className={styles.expansionsToggleContainer}>
+                  <div
+                    className={styles.expansionsToggleButton}
+                    onClick={() => dispatch({ type: "TOGGLE_EXPANDED_VIEW" })}
+                    title={
+                      gameConfig.expandedExpansions ? "Collapse" : "Expand"
+                    }
+                  >
+                    ☰
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           </SubContainerElement>

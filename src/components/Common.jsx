@@ -54,7 +54,15 @@ export const PlayerNamesHeader = React.memo(({ players }) => {
       <div className={styles.playerFieldsContainer}>
         {players.map((player, playerIndex) => (
           <div key={playerIndex} className={styles.playerNameCell}>
-            {player.name || `P${playerIndex + 1}`}
+            <span style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+              display: 'block'
+            }}>
+              {player.name || `P${playerIndex + 1}`}
+            </span>
           </div>
         ))}
       </div>

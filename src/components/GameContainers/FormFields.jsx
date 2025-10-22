@@ -44,10 +44,18 @@ export function SelectField({
           justifyContent: 'center',
           textAlign: 'center',
           opacity: isNotAchieved ? 0.5 : 1,
-          color: isNotAchieved ? '#888' : 'inherit'
+          color: isNotAchieved ? '#888' : 'inherit',
+          overflow: 'hidden'
         }}
       >
-        {displayValue}
+        <span style={{
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '100%'
+        }}>
+          {displayValue}
+        </span>
       </div>
     );
   }
@@ -89,19 +97,27 @@ export function InputField({
 }) {
   if (readOnly) {
     return (
-      <div 
-        className={className} 
-        style={{ 
-          cursor: 'default', 
+      <div
+        className={className}
+        style={{
+          cursor: 'default',
           userSelect: 'none',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
+          overflow: 'hidden',
           ...style
         }}
       >
-        {value || placeholder}
+        <span style={{
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '100%'
+        }}>
+          {value || placeholder}
+        </span>
       </div>
     );
   }
