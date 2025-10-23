@@ -2,11 +2,13 @@
 set -e
 
 echo "Building frontend"
+cd frontend
 npm run build
+cd ..
 
 echo "Building backend"
 cd backend
-go build -o terraforming-mars-server
+go build -o tm-server
 cd ..
 
 echo "Preparing build directory"
@@ -18,8 +20,8 @@ fi
 mkdir -p build
 
 echo "Copying artifacts to build directory"
-cp -r dist build/
-cp backend/terraforming-mars-server build/
+cp -r frontend/dist build/
+cp backend/tm-server build/
 mkdir build/data
 
 echo ""
