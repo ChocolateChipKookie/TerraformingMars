@@ -1,4 +1,4 @@
-import sharedGameData from '../../backend/shared/game-data.json';
+import sharedGameData from '../../../backend/shared/game-data.json';
 
 // Game rule constants - all from shared JSON
 export const GAME_CONSTANTS = {

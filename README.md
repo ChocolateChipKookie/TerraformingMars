@@ -91,3 +91,15 @@ npm run build
 - [ ] **Player Ratings Page**
   - Calculate all player ratings every time the page is opened (prevents issues with deleting/updating games)
   - Add caching mechanism for performance optimization
+
+
+# DOCKER
+
+```
+
+
+
+
+```
+
+
