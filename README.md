@@ -36,7 +36,9 @@ Claude also had fingers in the backend, but I had some idea of what I wanted to 
 
 2. Install frontend dependencies:
    ```bash
+   cd frontend
    npm install
+   cd ..
    ```
 
 3. Install backend dependencies:
@@ -50,6 +52,7 @@ Claude also had fingers in the backend, but I had some idea of what I wanted to 
 
 **Frontend (Development)**:
 ```bash
+cd frontend
 npm run dev
 ```
 
@@ -57,11 +60,6 @@ npm run dev
 ```bash
 cd backend
 go run main.go
-```
-
-**Build for Production**:
-```bash
-npm run build
 ```
 
 ## Contributing
@@ -89,26 +87,57 @@ npm run build
 
 ## TODO
 
-### High Priority
-
-- [ ] Make it production ready
-  - Go backend should serve the webpage
 - [ ] Add migration framework for database schema changes
-
-### Features
-
 - [ ] **Player Ratings Page**
   - Calculate all player ratings every time the page is opened (prevents issues with deleting/updating games)
   - Add caching mechanism for performance optimization
 
+## Docker
 
-# DOCKER
+### Running with Docker
 
+The application can be run as a Docker container that includes both the frontend and backend services in a single container.
+
+#### Quick Start
+
+1. Use the provided script to build and run the container:
+   ```bash
+   ./run-docker.sh [port]
+   ```
+
+   Examples:
+   ```bash
+   ./run-docker.sh        # Runs on default port 8080
+   ./run-docker.sh 3000   # Runs on port 3000
+   ```
+
+   This script will:
+   - Build the Docker image
+   - Stop any existing container with the same name
+   - Create a data directory (if it doesn't exist)
+   - Start the container with appropriate settings
+
+2. Access the application at `http://localhost:[port]` (default: `http://localhost:8080`)
+
+#### Manual Docker Commands
+
+Build the image:
+```bash
+docker build -t terraforming-mars:latest .
 ```
 
-
-
-
+Run the container:
+```bash
+docker run -d \
+  --name tm-server \
+  --restart unless-stopped \
+  -p 8080:8080 \
+  -v ./data:/data \
+  terraforming-mars:latest
 ```
 
+#### Docker Configuration
 
+- **Port**: The application runs on port 8080 inside the container
+- **Data Persistence**: Game data is persisted in the `./data` directory mounted as a volume
+- **Resource Limits**: By default limited to 256MB of memory
