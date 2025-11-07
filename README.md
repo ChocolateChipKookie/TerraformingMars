@@ -1,7 +1,16 @@
-
 # Terraforming Mars Tracker
 
 A web application for tracking Terraforming Mars game statistics.
+
+
+## Backstory
+
+It is a complete rewrite of the prvious terraform mars tracking website which had no backend, but stored the data in github directly. This version of the website actually has a backend, but has the same style as the previous iteration.
+
+The previous version broke at some point when Github made some changes how API keys work, and I never had the actual will to fix it. It was very buggy, and required too much work for me to actually get it working correctly. But some time this year we filled up the small notebook we used for tracking games, so the time has come to resurrect the project (also I had a little helper on my side that made rewriting the front-end a bit less painful (it's not the peak of engineering, actually it is quite the slop, but it's working)).
+
+The front-end of the website is the full domain of Claude, I am not really sure why some things work there, but it works and gets the job done.
+Claude also had fingers in the backend, but I had some idea of what I wanted to do so it is in a much cleaner state (there are still some issues that happened, but I would guess much less then in the front-end).
 
 ## Tech Stack
 
