@@ -11,13 +11,13 @@ import (
 	gamedata "terraforming-mars-backend/shared"
 )
 
-// ParsedGameRequest contains either a normal or legacy game request
+// Parse don't validate (see logic in in parse function)
 type ParsedGameRequest struct {
 	Normal *CreateGameRequest
 	Legacy *CreateLegacyGameRequest
 }
 
-// GetImages returns the images from either the normal or legacy request
+// Utility for fetching images from the contained request
 func (r *ParsedGameRequest) GetImages() []ImageRequest {
 	if r.Normal != nil {
 		return r.Normal.Images
@@ -28,8 +28,7 @@ func (r *ParsedGameRequest) GetImages() []ImageRequest {
 	return nil
 }
 
-// CreateGameRequest represents a normal (non-legacy) game creation request
-// All fields are required for normal games
+// Normal request and its children
 type CreateGameRequest struct {
 	Name        string             `json:"name"`
 	Date        string             `json:"date"`
@@ -43,16 +42,6 @@ type CreateGameRequest struct {
 	Images      []ImageRequest     `json:"images"`
 }
 
-// CreateLegacyGameRequest represents a legacy game creation request
-type CreateLegacyGameRequest struct {
-	Name    string                `json:"name"`
-	Date    string                `json:"date"`
-	Note    *string               `json:"note,omitempty"`
-	Players []LegacyPlayerRequest `json:"players"`
-	Images  []ImageRequest        `json:"images"`
-}
-
-// PlayerRequest represents a player in a normal game
 type PlayerRequest struct {
 	Name               string `json:"name"`
 	Corporation        string `json:"corporation"`
@@ -63,7 +52,30 @@ type PlayerRequest struct {
 	TurmoilPoints      int    `json:"turmoil_points"`
 }
 
-// LegacyPlayerRequest represents a player in a legacy game
+type MilestoneRequest struct {
+	Name                  string `json:"name"`
+	WinnerGamePlayerIndex *int   `json:"winner_game_player_index"`
+}
+
+type AwardRequest struct {
+	Name       string             `json:"name"`
+	Placements []PlacementRequest `json:"placements"`
+}
+
+type PlacementRequest struct {
+	PlayerIndex int       `json:"player_index"`
+	Placement   Placement `json:"placement"`
+}
+
+// Legacy request and its children
+type CreateLegacyGameRequest struct {
+	Name    string                `json:"name"`
+	Date    string                `json:"date"`
+	Note    *string               `json:"note,omitempty"`
+	Players []LegacyPlayerRequest `json:"players"`
+	Images  []ImageRequest        `json:"images"`
+}
+
 type LegacyPlayerRequest struct {
 	Name               string `json:"name"`
 	TerraformingRating int    `json:"terraforming_rating"`
@@ -75,27 +87,9 @@ type LegacyPlayerRequest struct {
 	AwardPoints        int    `json:"award_points"`
 }
 
-// MilestoneRequest represents a milestone in the create game request
-type MilestoneRequest struct {
-	Name                  string `json:"name"`
-	WinnerGamePlayerIndex *int   `json:"winner_game_player_index"`
-}
-
-// AwardRequest represents an award in the create game request
-type AwardRequest struct {
-	Name       string             `json:"name"`
-	Placements []PlacementRequest `json:"placements"`
-}
-
-// PlacementRequest represents an award placement
-type PlacementRequest struct {
-	PlayerIndex int       `json:"player_index"`
-	Placement   Placement `json:"placement"`
-}
-
-// ImageRequest represents an image in the create game request
+// Common
 type ImageRequest struct {
-	// For new images
+	// For new images (empty if existing image)
 	ImageData []byte `json:"image_data,omitempty"`
 	MimeType  string `json:"mime_type,omitempty"`
 
@@ -103,44 +97,30 @@ type ImageRequest struct {
 	ID *int `json:"id,omitempty"`
 }
 
-// ParseCreateGameRequest parses and validates a normal game creation request
 func ParseCreateGameRequest(r io.Reader, isUpdate bool) (*CreateGameRequest, error) {
 	var req CreateGameRequest
 
-	// Decode JSON
 	if err := json.NewDecoder(r).Decode(&req); err != nil {
 		return nil, fmt.Errorf("failed to decode JSON: %w", err)
 	}
 
-	// Validate required fields
+	// Validate common data
 	if req.Name == "" {
 		return nil, errors.New("game name is required")
-	}
-
-	if req.Date == "" {
-		return nil, errors.New("game date is required")
 	}
 	if _, err := time.Parse("2006-01-02", req.Date); err != nil {
 		return nil, fmt.Errorf("invalid date format (expected YYYY-MM-DD): %w", err)
 	}
-
-	// Validate map exists in game data
 	mapData, err := gamedata.ValidateMap(req.Map)
 	if err != nil {
 		return nil, err
 	}
-
-	// Validate generations
 	if err := gamedata.ValidateGenerations(req.Generations); err != nil {
 		return nil, err
 	}
-
-	// Validate all expansion names
 	if err := gamedata.ValidateExpansions(req.Expansions); err != nil {
 		return nil, err
 	}
-
-	// Validate players count against map limit
 	if err := gamedata.ValidatePlayerCount(len(req.Players), mapData); err != nil {
 		return nil, err
 	}
@@ -183,7 +163,7 @@ func ParseCreateGameRequest(r io.Reader, isUpdate bool) (*CreateGameRequest, err
 		}
 	}
 
-	// Validate milestone count and Venus Next rules first
+	// Validate milestone and award counts
 	milestoneNamesForCount := make([]string, len(req.Milestones))
 	for i, milestone := range req.Milestones {
 		milestoneNamesForCount[i] = milestone.Name
@@ -192,7 +172,6 @@ func ParseCreateGameRequest(r io.Reader, isUpdate bool) (*CreateGameRequest, err
 		return nil, err
 	}
 
-	// Validate award count and Venus Next rules first
 	awardNamesForCount := make([]string, len(req.Awards))
 	for i, award := range req.Awards {
 		awardNamesForCount[i] = award.Name
@@ -268,49 +247,6 @@ func ParseCreateGameRequest(r io.Reader, isUpdate bool) (*CreateGameRequest, err
 	return &req, nil
 }
 
-// validateImages validates image data for both normal and legacy games
-func validateImages(images []ImageRequest, isUpdate bool) error {
-	for i, img := range images {
-		hasNewImage := len(img.ImageData) > 0 || img.MimeType != ""
-		hasExistingRef := img.ID != nil
-
-		if hasNewImage && hasExistingRef {
-			return fmt.Errorf("image %d: cannot specify both new image data and existing image ID", i+1)
-		}
-
-		// For new games, only new images are allowed
-		// For updates, either new images or references to existing images are allowed
-		if !isUpdate && hasExistingRef {
-			return fmt.Errorf("image %d: cannot reference existing images when creating a new game", i+1)
-		}
-
-		if !hasNewImage && !hasExistingRef {
-			return fmt.Errorf("image %d: must specify either new image data or existing image ID", i+1)
-		}
-
-		if hasNewImage {
-			if len(img.ImageData) == 0 {
-				return fmt.Errorf("image %d: image data is required for new images", i+1)
-			}
-			if img.MimeType == "" {
-				return fmt.Errorf("image %d: mime type is required for new images", i+1)
-			}
-
-			validMimeTypes := map[string]bool{
-				"image/jpeg": true,
-				"image/png":  true,
-				"image/webp": true,
-				"image/gif":  true,
-			}
-			if !validMimeTypes[img.MimeType] {
-				return fmt.Errorf("image %d: invalid mime type %s (supported: jpeg, png, webp, gif)", i+1, img.MimeType)
-			}
-		}
-	}
-	return nil
-}
-
-// ParseCreateLegacyGameRequest parses and validates a legacy game creation request
 func ParseCreateLegacyGameRequest(r io.Reader, isUpdate bool) (*CreateLegacyGameRequest, error) {
 	var req CreateLegacyGameRequest
 
@@ -323,19 +259,17 @@ func ParseCreateLegacyGameRequest(r io.Reader, isUpdate bool) (*CreateLegacyGame
 	if req.Name == "" {
 		return nil, errors.New("game name is required")
 	}
-
 	if _, err := time.Parse("2006-01-02", req.Date); err != nil {
 		return nil, fmt.Errorf("invalid date format (expected YYYY-MM-DD): %w", err)
 	}
 
-	// Validate players
-	if len(req.Players) < gamedata.Data.Constants.MinPlayers {
-		return nil, fmt.Errorf("game must have at least %d player(s), got %d",
-			gamedata.Data.Constants.MinPlayers, len(req.Players))
+	// Assume that all legacy games were played on the Tharsis map
+	mapData, err := gamedata.ValidateMap("Tharsis")
+	if err != nil {
+		return nil, err
 	}
-	if len(req.Players) > gamedata.Data.Constants.DefaultMaxPlayers {
-		return nil, fmt.Errorf("legacy games support maximum %d players, got %d",
-			gamedata.Data.Constants.DefaultMaxPlayers, len(req.Players))
+	if err := gamedata.ValidatePlayerCount(len(req.Players), mapData); err != nil {
+		return nil, err
 	}
 
 	// Check for duplicate player names and validate each player
@@ -383,9 +317,50 @@ func ParseCreateLegacyGameRequest(r io.Reader, isUpdate bool) (*CreateLegacyGame
 	return &req, nil
 }
 
-// ParseGameRequest parses and validates a game creation request
-// Returns either a normal or legacy game request based on legacy_mode field
-// isUpdate should be true if this is for updating an existing game
+func validateImages(images []ImageRequest, isUpdate bool) error {
+	for i, img := range images {
+		hasNewImage := len(img.ImageData) > 0 || img.MimeType != ""
+		hasExistingRef := img.ID != nil
+
+		if !isUpdate && hasExistingRef {
+			return fmt.Errorf("image %d: cannot reference existing images when creating a new game", i+1)
+		}
+		if hasNewImage && hasExistingRef {
+			return fmt.Errorf("image %d: cannot specify both new image data and existing image ID", i+1)
+		}
+		if !hasNewImage && !hasExistingRef {
+			return fmt.Errorf("image %d: must specify either new image data or existing image ID", i+1)
+		}
+
+		if hasNewImage {
+			if len(img.ImageData) == 0 {
+				return fmt.Errorf("image %d: image data is required for new images", i+1)
+			}
+			if img.MimeType == "" {
+				return fmt.Errorf("image %d: mime type is required for new images", i+1)
+			}
+
+			validMimeTypes := map[string]bool{
+				"image/jpeg": true,
+				"image/png":  true,
+				"image/webp": true,
+				"image/gif":  true,
+			}
+			if !validMimeTypes[img.MimeType] {
+				return fmt.Errorf("image %d: invalid mime type %s (supported: jpeg, png, webp, gif)", i+1, img.MimeType)
+			}
+		}
+	}
+	return nil
+}
+
+// We have 2 possible requests coming in, legacy and normal requests
+// This function parses the incoming request, discerns if it is legacy/normal, and parses it as such
+// While parsing it also validates all the static data (eg. constrained values like enums/map names)
+// As a result we have an union type that is either an legacy or normal request (or parse error)
+// And the caller can be sure that the returned value is semantically correct, making later processing steps easier because we only have to validate at this one point
+// Also we have the type of the request ingrained in the actual type
+// Another validation step has to be done for the non-static data (eg. for reference to some IDs in the database)
 func ParseGameRequest(r io.Reader, isUpdate bool) (*ParsedGameRequest, error) {
 	// Read all bytes first so we can peek at legacy_mode
 	data, err := io.ReadAll(r)

@@ -40,7 +40,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 // Helper function to send JSON responses
-func (h *Handler) sendJSON(w http.ResponseWriter, status int, data interface{}) {
+func (h *Handler) sendJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)

@@ -5,30 +5,29 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"terraforming-mars-backend/internal/models"
+
+	"github.com/gorilla/mux"
 )
 
-// Request structure for creating a player
 type CreatePlayerRequest struct {
 	// Player details
 	Name     string  `json:"name"`
 	Password *string `json:"password,omitempty"`
 	Role     string  `json:"role"`
 
-	// Actor authentication (who is creating this player)
+	// Actor authentication
 	ActorName     string `json:"actor_name"`
 	ActorPassword string `json:"actor_password"`
 }
 
-// Request structure for updating a player
 type UpdatePlayerRequest struct {
 	// Player details (all optional for partial updates)
 	Name     *string `json:"name,omitempty"`
 	Password *string `json:"password,omitempty"`
 	Role     *string `json:"role,omitempty"`
 
-	// Actor authentication (who is updating this player)
+	// Actor authentication
 	ActorName     string `json:"actor_name"`
 	ActorPassword string `json:"actor_password"`
 }
@@ -97,7 +96,6 @@ func (h *Handler) createPlayer(w http.ResponseWriter, r *http.Request) {
 
 	// If no players exist, create the first one as admin without authentication
 	if len(players) == 0 {
-		// Force the role to admin for the first player
 		player, err := h.repo.CreateSystemAdmin(req.Name, req.Password)
 		if err != nil {
 			h.sendError(w, http.StatusBadRequest, err.Error())
@@ -107,7 +105,6 @@ func (h *Handler) createPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Authenticate the actor
 	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
 	if err != nil {
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
@@ -139,34 +136,28 @@ func (h *Handler) updatePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Authenticate the actor
 	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
 	if err != nil {
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
 
-	// Get current player to preserve unchanged fields
 	currentPlayer, err := h.repo.GetPlayerByID(id)
 	if err != nil {
 		h.sendError(w, http.StatusNotFound, "Player not found")
 		return
 	}
 
-	// Use provided name or keep existing
 	name := currentPlayer.Name
 	if req.Name != nil {
 		name = *req.Name
 	}
 
-	// Convert role string to PlayerRole if provided
-	var role *models.PlayerRole
+	role := currentPlayer.Role
 	if req.Role != nil {
-		r := models.PlayerRole(*req.Role)
-		role = &r
+		role = models.PlayerRole(*req.Role)
 	}
 
-	// Update the player
 	player, err := h.repo.UpdatePlayer(id, name, req.Password, role, *actor)
 	if err != nil {
 		h.sendError(w, http.StatusBadRequest, err.Error())
@@ -175,4 +166,3 @@ func (h *Handler) updatePlayer(w http.ResponseWriter, r *http.Request) {
 
 	h.sendJSON(w, http.StatusOK, player)
 }
-

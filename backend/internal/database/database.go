@@ -15,7 +15,7 @@ func Init(connectionString string) (*sql.DB, error) {
 		dir := filepath.Dir(connectionString)
 		fileInfo, err := os.Stat(dir)
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("database directory does not exist: %s\nPlease create the directory first with: mkdir -p %s", dir, dir)
+			return nil, fmt.Errorf("database directory does not exist: %s\nPlease create the directory first", dir)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("error accessing database directory %s: %v", dir, err)
@@ -37,12 +37,10 @@ func Init(connectionString string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	// Enable foreign keys
 	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		return nil, err
 	}
 
-	// Set WAL mode (except for in-memory databases)
 	if connectionString != ":memory:" {
 		if _, err := db.Exec("PRAGMA journal_mode = WAL"); err != nil {
 			return nil, err
@@ -125,7 +123,6 @@ func migrate(db *sql.DB) error {
 			FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE
 		) STRICT`,
 
-		// Award placement table (linked to specific game revision)
 		// Note: placement values 1=gold, 2=silver are defined in game-data.json
 		`CREATE TABLE IF NOT EXISTS award_placement (
 			id INTEGER PRIMARY KEY,
@@ -136,7 +133,6 @@ func migrate(db *sql.DB) error {
 			FOREIGN KEY (game_player_id) REFERENCES game_player(id) ON DELETE CASCADE
 		) STRICT`,
 
-		// Game image table (stored as base64)
 		`CREATE TABLE IF NOT EXISTS game_image (
 			id INTEGER PRIMARY KEY,
 			game_id INTEGER NOT NULL,
@@ -147,7 +143,6 @@ func migrate(db *sql.DB) error {
 			FOREIGN KEY (game_id) REFERENCES game(id) ON DELETE CASCADE
 		) STRICT`,
 
-		// Create indexes for better performance
 		`CREATE INDEX IF NOT EXISTS idx_game_game_id_revision ON game(game_id, revision)`,
 		`CREATE INDEX IF NOT EXISTS idx_game_player_game_id ON game_player(game_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_game_player_player_id ON game_player(player_id)`,

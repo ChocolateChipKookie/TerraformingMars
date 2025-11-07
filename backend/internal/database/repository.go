@@ -20,7 +20,6 @@ func NewRepository(db *sql.DB) *Repository {
 
 // CreatePlayer creates a new player with role-based validation
 func (r *Repository) CreatePlayer(name string, password *string, role models.PlayerRole, actor models.Player) (*models.Player, error) {
-	// Check if the actor can create players
 	if err := auth.CanCreatePlayers(actor, role); err != nil {
 		return nil, err
 	}
@@ -33,10 +32,9 @@ func (r *Repository) CreateSystemAdmin(name string, password *string) (*models.P
 	return r.createPlayer(name, password, models.RoleAdmin, nil)
 }
 
-// createPlayer is the internal implementation shared by CreatePlayer and CreateSystemAdmin
 func (r *Repository) createPlayer(name string, password *string, role models.PlayerRole, createdBy *int) (*models.Player, error) {
-	if err := auth.IsValidRole(role); err != nil {
-		return nil, err
+	if !role.IsValid() {
+		return nil, fmt.Errorf("Invalid role '%s'", role)
 	}
 
 	if auth.RequiresPassword(role) {
@@ -176,17 +174,14 @@ func (r *Repository) AuthenticatePlayer(name string, password string) (*models.P
 		return nil, err
 	}
 
-	// Check if player has no password set
 	if player.PasswordHash == nil {
 		return nil, fmt.Errorf("player '%s' has no password set", name)
 	}
 
-	// Players cannot be authenticated, they should not have any password anyways
 	if player.Role == models.RolePlayer {
 		return nil, fmt.Errorf("players should not have a password set, but cannot be authenticated anyways, player: %s", name)
 	}
 
-	// Check password
 	if !auth.CheckPassword(password, *player.PasswordHash) {
 		return nil, fmt.Errorf("invalid password for player '%s'", name)
 	}
@@ -195,40 +190,21 @@ func (r *Repository) AuthenticatePlayer(name string, password string) (*models.P
 }
 
 // UpdatePlayer updates a player's information with role validation
-func (r *Repository) UpdatePlayer(playerID int, name string, password *string, role *models.PlayerRole, actor models.Player) (*models.Player, error) {
-	// Get current player info
+func (r *Repository) UpdatePlayer(playerID int, name string, password *string, role models.PlayerRole, actor models.Player) (*models.Player, error) {
 	currentPlayer, err := r.GetPlayerByID(playerID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if the actor can update this player
 	if err := auth.CanUpdatePlayer(actor, *currentPlayer); err != nil {
 		return nil, err
 	}
 
-	// Check if name is being changed and if actor can update names
-	if name != currentPlayer.Name {
-		if err := auth.CanUpdatePlayerName(actor, *currentPlayer); err != nil {
-			return nil, err
-		}
+	if err := auth.ValidateRoleTransition(actor, currentPlayer.Role, role); err != nil {
+		return nil, err
 	}
 
-	// Determine final role
-	finalRole := currentPlayer.Role
-	if role != nil {
-		// Validate new role
-		if err := auth.IsValidRole(*role); err != nil {
-			return nil, err
-		}
-		finalRole = *role
-		// Validate role transition
-		if err := auth.ValidateRoleTransition(actor, currentPlayer.Role, finalRole); err != nil {
-			return nil, err
-		}
-	}
-
-	if auth.RequiresPassword(finalRole) {
+	if auth.RequiresPassword(role) {
 		passwordHash := currentPlayer.PasswordHash
 		if password != nil {
 			hash, err := auth.HashPassword(*password)
@@ -238,13 +214,12 @@ func (r *Repository) UpdatePlayer(playerID int, name string, password *string, r
 			passwordHash = &hash
 		}
 
-		// Password does not already exist nor was it supplied
 		if passwordHash == nil {
-			return nil, fmt.Errorf("role '%s' requires a password", finalRole)
+			return nil, fmt.Errorf("role '%s' requires a password", role)
 		}
 
 		_, err = r.db.Exec("UPDATE player SET name = ?, password_hash = ?, role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-			name, passwordHash, finalRole, playerID)
+			name, passwordHash, role, playerID)
 		if err != nil {
 			return nil, err
 		}
@@ -252,30 +227,23 @@ func (r *Repository) UpdatePlayer(playerID int, name string, password *string, r
 		if password != nil {
 			return nil, fmt.Errorf("role 'player' cannot have a password")
 		}
-		// If changing to role that does not need password, clear existing password
+
 		_, err := r.db.Exec("UPDATE player SET name = ?, password_hash = NULL, role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-			name, finalRole, playerID)
+			name, role, playerID)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// Return the new player in any case
+	// Return the updated player in any case
 	return r.GetPlayerByID(playerID)
 }
 
 // createNormalGameData creates all game-related data (players, milestones, awards) for a normal game revision
-// This is used by both CreateGame and UpdateGame for normal games
 func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.CreateGameRequest) error {
-	// Validate that we have at least one player
-	if len(req.Players) == 0 {
-		return fmt.Errorf("validation error: at least one player is required to create a game")
-	}
-
-	// Create game_players entries
 	var gamePlayers []models.GamePlayer
 	for _, playerReq := range req.Players {
-		// Get player by name (must exist)
+		// Get player by name
 		var playerID int
 		err := tx.QueryRow("SELECT id FROM player WHERE name = ?", playerReq.Name).Scan(&playerID)
 		if err != nil {
@@ -286,7 +254,7 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 		}
 
 		// Create game_player entry with scores from the player request
-		// Milestone and award points will be calculated later for normal games
+		// Milestone, award, and total points will be calculated later
 		gamePlayerResult, err := tx.Exec(`
 			INSERT INTO game_player (
 				game_id, player_id, corporation,
@@ -297,6 +265,7 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 		`, gameID, playerID, playerReq.Corporation,
 			playerReq.TerraformingRating, playerReq.Cities, playerReq.Greeneries,
 			playerReq.Cards, playerReq.TurmoilPoints)
+
 		if err != nil {
 			return err
 		}
@@ -316,9 +285,9 @@ func (r *Repository) createNormalGameData(tx *sql.Tx, gameID int64, req *models.
 			Greeneries:         playerReq.Greeneries,
 			Cards:              playerReq.Cards,
 			TurmoilPoints:      playerReq.TurmoilPoints,
-			MilestonePoints:    0, // Will be calculated later
-			AwardPoints:        0, // Will be calculated later
-			TotalPoints:        0, // Will be calculated later
+			MilestonePoints:    0,
+			AwardPoints:        0,
+			TotalPoints:        0,
 		})
 	}
 
@@ -510,18 +479,15 @@ func (r *Repository) createNormalGame(req *models.CreateGameRequest, actor model
 		return nil, err
 	}
 
-	// Get the auto-increment primary key for foreign key references
 	internalID, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
 
-	// Create all game-related data
 	if err := r.createNormalGameData(tx, internalID, req); err != nil {
 		return nil, err
 	}
 
-	// Create game images (images should already be processed by API layer)
 	for i, imageReq := range req.Images {
 		_, err = tx.Exec(`
 			INSERT INTO game_image (game_id, image_data, mime_type, display_order)
@@ -536,7 +502,6 @@ func (r *Repository) createNormalGame(req *models.CreateGameRequest, actor model
 		return nil, err
 	}
 
-	// Return the created game with all its details
 	return r.GetGameByID(gameID)
 }
 
@@ -564,13 +529,12 @@ func (r *Repository) createLegacyGame(req *models.CreateLegacyGameRequest, actor
 		return nil, err
 	}
 
-	// Get the auto-increment primary key for foreign key references
 	internalID, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
 
-	// Create game players for legacy game
+	// Create game players
 	for _, player := range req.Players {
 		// Get player ID
 		var playerID int
@@ -579,11 +543,9 @@ func (r *Repository) createLegacyGame(req *models.CreateLegacyGameRequest, actor
 			return nil, fmt.Errorf("player %s not found: %v", player.Name, err)
 		}
 
-		// Calculate total points
 		totalPoints := player.TerraformingRating + player.Cities + player.Greeneries +
 			player.Cards + player.TurmoilPoints + player.MilestonePoints + player.AwardPoints
 
-		// Insert game_player record with legacy points
 		_, err = tx.Exec(`
 			INSERT INTO game_player (
 				game_id, player_id, corporation,
@@ -599,7 +561,7 @@ func (r *Repository) createLegacyGame(req *models.CreateLegacyGameRequest, actor
 		}
 	}
 
-	// Create game images for legacy game
+	// Create game images
 	for i, imageReq := range req.Images {
 		_, err = tx.Exec(`
 			INSERT INTO game_image (game_id, image_data, mime_type, display_order)
@@ -614,17 +576,15 @@ func (r *Repository) createLegacyGame(req *models.CreateLegacyGameRequest, actor
 		return nil, err
 	}
 
-	// Return the created game with all its details
 	return r.GetGameByID(gameID)
 }
 
-// UpdateGame creates a new revision of an existing game (for API use with permission checking)
+// UpdateGame creates a new revision of an existing game
 func (r *Repository) UpdateGame(gameID int, req *models.ParsedGameRequest, actor models.Player) (*models.GameWithDetails, error) {
 	if req == nil {
 		return nil, fmt.Errorf("request cannot be nil")
 	}
 
-	// First, get the created_by of the game we're updating (from any revision)
 	var createdBy int
 	err := r.db.QueryRow("SELECT created_by FROM game WHERE game_id = ? LIMIT 1", gameID).Scan(&createdBy)
 	if err != nil {
@@ -634,12 +594,10 @@ func (r *Repository) UpdateGame(gameID int, req *models.ParsedGameRequest, actor
 		return nil, err
 	}
 
-	// Check if the actor can modify this game
 	if err := auth.CanModifyGame(actor, createdBy); err != nil {
 		return nil, err
 	}
 
-	// Determine which type of game update to perform
 	if req.Normal != nil {
 		return r.updateNormalGame(gameID, req.Normal, createdBy)
 	}
@@ -671,7 +629,7 @@ func (r *Repository) updateNormalGame(gameID int, req *models.CreateGameRequest,
 		return nil, err
 	}
 
-	// Create new revision (keep the original creator)
+	// Create new revision
 	result, err := tx.Exec(`
 		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, legacy_mode, created_by)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE, ?)
@@ -680,22 +638,20 @@ func (r *Repository) updateNormalGame(gameID int, req *models.CreateGameRequest,
 		return nil, err
 	}
 
-	// Get the auto-increment primary key for foreign key references
 	internalID, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
 
-	// Create all game-related data using the shared helper
 	if err := r.createNormalGameData(tx, internalID, req); err != nil {
 		return nil, err
 	}
 
-	// Create game images (images should already be processed by API layer)
+	// Create game images
 	images := req.Images
 	for i, imageReq := range images {
 		if imageReq.ID != nil {
-			// For existing images, just create a reference (copy the image to new revision)
+			// For "references" just copy the image, it is easier to handle, and we will never actually have too many images
 			_, err = tx.Exec(`
 				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
 				SELECT ?, image_data, mime_type, ?
@@ -706,7 +662,6 @@ func (r *Repository) updateNormalGame(gameID int, req *models.CreateGameRequest,
 				return nil, fmt.Errorf("error copying existing image %d: %v", *imageReq.ID, err)
 			}
 		} else {
-			// For new images, insert the processed data
 			_, err = tx.Exec(`
 				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
 				VALUES (?, ?, ?, ?)
@@ -739,7 +694,7 @@ func (r *Repository) updateLegacyGame(gameID int, req *models.CreateLegacyGameRe
 		return nil, err
 	}
 
-	// Create new revision (keep the original creator)
+	// Create new revision
 	result, err := tx.Exec(`
 		INSERT INTO game (game_id, revision, name, date, map, generations, expansions, note, legacy_mode, created_by)
 		VALUES (?, ?, ?, ?, NULL, NULL, NULL, ?, TRUE, ?)
@@ -748,7 +703,6 @@ func (r *Repository) updateLegacyGame(gameID int, req *models.CreateLegacyGameRe
 		return nil, err
 	}
 
-	// Get the auto-increment primary key for foreign key references
 	internalID, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
@@ -756,18 +710,15 @@ func (r *Repository) updateLegacyGame(gameID int, req *models.CreateLegacyGameRe
 
 	// Create game players for legacy game
 	for _, player := range req.Players {
-		// Get player ID
 		var playerID int
 		err = tx.QueryRow("SELECT id FROM player WHERE name = ?", player.Name).Scan(&playerID)
 		if err != nil {
 			return nil, fmt.Errorf("player %s not found: %v", player.Name, err)
 		}
 
-		// Calculate total points
 		totalPoints := player.TerraformingRating + player.Cities + player.Greeneries +
 			player.Cards + player.TurmoilPoints + player.MilestonePoints + player.AwardPoints
 
-		// Insert game_player record with legacy points
 		_, err = tx.Exec(`
 			INSERT INTO game_player (
 				game_id, player_id, corporation,
@@ -783,10 +734,9 @@ func (r *Repository) updateLegacyGame(gameID int, req *models.CreateLegacyGameRe
 		}
 	}
 
-	// Create game images for legacy game
 	for i, imageReq := range req.Images {
 		if imageReq.ID != nil {
-			// For existing images, copy to new revision
+			// For "references" just copy the image, it is easier to handle, and we will never actually have too many images
 			_, err = tx.Exec(`
 				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
 				SELECT ?, image_data, mime_type, ?
@@ -797,7 +747,6 @@ func (r *Repository) updateLegacyGame(gameID int, req *models.CreateLegacyGameRe
 				return nil, fmt.Errorf("error copying existing image %d: %v", *imageReq.ID, err)
 			}
 		} else {
-			// For new images, insert the processed data
 			_, err = tx.Exec(`
 				INSERT INTO game_image (game_id, image_data, mime_type, display_order)
 				VALUES (?, ?, ?, ?)
@@ -841,13 +790,12 @@ func (r *Repository) GetAllGames() ([]models.Game, error) {
 			return nil, err
 		}
 
-		// Parse expansions JSON (handle NULL for legacy games)
 		if expansionsJSON.Valid {
 			if err := json.Unmarshal([]byte(expansionsJSON.String), &g.Expansions); err != nil {
 				return nil, fmt.Errorf("error parsing expansions JSON: %v", err)
 			}
 		} else {
-			// For legacy games, expansions is NULL
+			// For legacy games, expansions is nil
 			g.Expansions = nil
 		}
 
@@ -878,13 +826,12 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 		return nil, err
 	}
 
-	// Parse expansions JSON (handle NULL for legacy games)
 	if expansionsJSON.Valid {
 		if err := json.Unmarshal([]byte(expansionsJSON.String), &game.Expansions); err != nil {
 			return nil, fmt.Errorf("error parsing expansions JSON: %v", err)
 		}
 	} else {
-		// For legacy games, expansions is NULL
+		// For legacy games, expansions is nil
 		game.Expansions = nil
 	}
 
@@ -923,7 +870,6 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 			return nil, err
 		}
 
-		// Handle NULL corporation for legacy games
 		if corporationDB.Valid {
 			gp.Corporation = &corporationDB.String
 		} else {
@@ -932,14 +878,12 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 
 		gamePlayers = append(gamePlayers, gp)
 
-		// Add player to list if not already added
 		if !playersSeen[p.ID] {
 			players = append(players, p)
 			playersSeen[p.ID] = true
 		}
 	}
 
-	// Get milestones
 	milestoneRows, err := r.db.Query(`
 		SELECT id, game_id, name, winner_game_player_id
 		FROM milestone 
@@ -960,7 +904,6 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 		milestones = append(milestones, m)
 	}
 
-	// Get awards
 	awardRows, err := r.db.Query(`
 		SELECT id, game_id, name
 		FROM award 
@@ -981,7 +924,6 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 		awards = append(awards, a)
 	}
 
-	// Get award placements
 	placementRows, err := r.db.Query(`
 		SELECT ap.id, ap.award_id, ap.game_player_id, ap.placement
 		FROM award_placement ap
@@ -1003,7 +945,7 @@ func (r *Repository) GetGameByID(gameID int) (*models.GameWithDetails, error) {
 		placements = append(placements, p)
 	}
 
-	// Get image metadata (without actual image data)
+	// Get image metadata
 	imageRows, err := r.db.Query(`
 		SELECT id, display_order, mime_type, uploaded_at
 		FROM game_image
@@ -1054,7 +996,7 @@ func (r *Repository) GetGameImageData(imageID int) ([]byte, string, error) {
 	return imageData, mimeType, nil
 }
 
-// GetImageGameID retrieves the user-facing game_id for a specific image (for ownership validation)
+// GetImageGameID retrieves the user-facing game_id for a specific image
 func (r *Repository) GetImageGameID(imageID int) (int, error) {
 	var userFacingGameID int
 	err := r.db.QueryRow(`
@@ -1072,7 +1014,7 @@ func (r *Repository) GetImageGameID(imageID int) (int, error) {
 	return userFacingGameID, nil
 }
 
-// DeleteGame deletes all revisions of a game (for API use with permission checking)
+// DeleteGame deletes all revisions of a game
 func (r *Repository) DeleteGame(gameID int, actor models.Player) error {
 	var createdBy int
 	err := r.db.QueryRow("SELECT created_by FROM game WHERE game_id = ? LIMIT 1", gameID).Scan(&createdBy)

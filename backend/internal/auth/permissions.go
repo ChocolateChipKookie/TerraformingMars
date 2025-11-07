@@ -5,7 +5,6 @@ import (
 	"terraforming-mars-backend/internal/models"
 )
 
-// CanCreateGames checks if a player can create games
 func CanCreateGames(player models.Player) error {
 	if player.Role == models.RoleAdmin || player.Role == models.RoleUser {
 		return nil
@@ -13,11 +12,9 @@ func CanCreateGames(player models.Player) error {
 	return fmt.Errorf("only admins and users can create games")
 }
 
-// CanCreatePlayers checks if a player can create other players
 func CanCreatePlayers(player models.Player, targetRole models.PlayerRole) error {
-	// Validate target role
-	if err := IsValidRole(targetRole); err != nil {
-		return err
+	if !targetRole.IsValid() {
+		return fmt.Errorf("Invalid role '%s'", targetRole)
 	}
 
 	switch player.Role {
@@ -38,7 +35,6 @@ func CanCreatePlayers(player models.Player, targetRole models.PlayerRole) error 
 	}
 }
 
-// CanUpdatePlayer checks if a player can update another player
 func CanUpdatePlayer(actor models.Player, target models.Player) error {
 	switch actor.Role {
 	case models.RoleAdmin:
@@ -47,10 +43,10 @@ func CanUpdatePlayer(actor models.Player, target models.Player) error {
 	case models.RoleUser:
 		// User can update themselves or players they created
 		if actor.ID == target.ID {
-			return nil // Can update self
+			return nil
 		}
 		if target.CreatedBy != nil && *target.CreatedBy == actor.ID && target.Role == models.RolePlayer {
-			return nil // Can update players they created
+			return nil
 		}
 		return fmt.Errorf("users can only update themselves or players they created")
 	case models.RolePlayer:
@@ -60,30 +56,11 @@ func CanUpdatePlayer(actor models.Player, target models.Player) error {
 	}
 }
 
-// CanUpdatePlayerName checks if a player can update another player's name
-func CanUpdatePlayerName(actor models.Player, target models.Player) error {
-	switch actor.Role {
-	case models.RoleAdmin:
-		// Admin can update anyone's name
-		return nil
-	case models.RoleUser:
-		// Users cannot update any names (to prevent name history issues)
-		return fmt.Errorf("users cannot update player names")
-	case models.RolePlayer:
-		return fmt.Errorf("players cannot update anything")
-	default:
-		return fmt.Errorf("unknown role: %s", actor.Role)
-	}
-}
-
-// ValidateRoleTransition checks if a role change is allowed
 func ValidateRoleTransition(actor models.Player, currentRole models.PlayerRole, newRole models.PlayerRole) error {
-	// Validate new role
-	if err := IsValidRole(newRole); err != nil {
-		return err
+	if !newRole.IsValid() {
+		return fmt.Errorf("Invalid role '%s'", newRole)
 	}
 
-	// Only admins can change roles
 	if actor.Role != models.RoleAdmin {
 		if currentRole != newRole {
 			return fmt.Errorf("only admins can change player roles")
@@ -95,20 +72,6 @@ func ValidateRoleTransition(actor models.Player, currentRole models.PlayerRole, 
 	return nil
 }
 
-// RequiresPassword checks if a role requires a password
-func RequiresPassword(role models.PlayerRole) bool {
-	return role == models.RoleAdmin || role == models.RoleUser
-}
-
-// IsValidRole checks if a role is valid
-func IsValidRole(role models.PlayerRole) error {
-	if role == models.RoleAdmin || role == models.RoleUser || role == models.RolePlayer {
-		return nil
-	}
-	return fmt.Errorf("invalid role '%s': must be 'admin', 'user', or 'player'", role)
-}
-
-// CanModifyGame checks if a player can modify a game
 func CanModifyGame(actor models.Player, gameCreatedBy int) error {
 	switch actor.Role {
 	case models.RoleAdmin:
@@ -125,4 +88,8 @@ func CanModifyGame(actor models.Player, gameCreatedBy int) error {
 	default:
 		return fmt.Errorf("unknown role: %s", actor.Role)
 	}
+}
+
+func RequiresPassword(role models.PlayerRole) bool {
+	return role == models.RoleAdmin || role == models.RoleUser
 }

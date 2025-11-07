@@ -1,12 +1,16 @@
 package api
 
 import (
+	"bytes"
+	"image"
+	"image/color"
+	"image/jpeg"
+	"image/png"
 	"testing"
 
 	"terraforming-mars-backend/internal/database"
 	"terraforming-mars-backend/internal/models"
 )
-
 
 // TestContext holds common test data
 type TestContext struct {
@@ -27,11 +31,11 @@ func setupTestAPI(t *testing.T) *TestContext {
 	t.Cleanup(func() {
 		db.Close()
 	})
-	
+
 	// Create repository and handler
 	repo := database.NewRepository(db)
 	handler := NewHandler(db)
-	
+
 	// Create a system admin for testing
 	adminName := "admin"
 	adminPassword := "adminpass123"
@@ -39,7 +43,7 @@ func setupTestAPI(t *testing.T) *TestContext {
 	if err != nil {
 		t.Fatalf("Failed to create system admin: %v", err)
 	}
-	
+
 	return &TestContext{
 		Handler:       handler,
 		Repo:          repo,
@@ -61,23 +65,21 @@ type TestFixture struct {
 // TestGameFixture holds context, players, and test games
 type TestGameFixture struct {
 	*TestFixture
-	Dave      *models.Player
-	Eve       *models.Player
-	DavePass  string
-	EvePass   string
-	Game1     *models.GameWithDetails
-	Game2     *models.GameWithDetails
+	Dave  *models.Player
+	Eve   *models.Player
+	Game1 *models.GameWithDetails
+	Game2 *models.GameWithDetails
 }
 
 // setupTestFixture creates a fresh test database, context, and standard test players
 func setupTestFixture(t *testing.T) *TestFixture {
 	ctx := setupTestAPI(t)
 	userPass := "userpass123"
-	
+
 	alice, _ := ctx.Repo.CreatePlayer("Alice", nil, models.RolePlayer, *ctx.Admin)
 	bob, _ := ctx.Repo.CreatePlayer("Bob", &userPass, models.RoleUser, *ctx.Admin)
 	charlie, _ := ctx.Repo.CreatePlayer("Charlie", nil, models.RolePlayer, *bob)
-	
+
 	return &TestFixture{
 		TestContext: ctx,
 		Alice:       alice,
@@ -90,13 +92,11 @@ func setupTestFixture(t *testing.T) *TestFixture {
 // setupGameFixture creates a fresh test database, context, players, and standard test games
 func setupGameFixture(t *testing.T) *TestGameFixture {
 	fixture := setupTestFixture(t)
-	
+
 	// Create additional users for testing game permissions
-	user2Pass := "user2pass123"
-	user3Pass := "user3pass123"
-	dave, _ := fixture.Repo.CreatePlayer("Dave", &user2Pass, models.RoleUser, *fixture.Admin)
-	eve, _ := fixture.Repo.CreatePlayer("Eve", &user3Pass, models.RoleUser, *fixture.Admin)
-	
+	dave, _ := fixture.Repo.CreatePlayer("Dave", &fixture.UserPass, models.RoleUser, *fixture.Admin)
+	eve, _ := fixture.Repo.CreatePlayer("Eve", &fixture.UserPass, models.RoleUser, *fixture.Admin)
+
 	// Create test game 1 - created by admin with multiple players
 	gameReq1 := models.CreateGameRequest{
 		Name:        "Admin Game",
@@ -116,7 +116,7 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 			},
 			{
 				Name:               "Bob",
-				Corporation:        "Saturn Systems", 
+				Corporation:        "Saturn Systems",
 				TerraformingRating: 25,
 				Cities:             1,
 				Greeneries:         4,
@@ -151,14 +151,14 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 			{
 				Name: "Landlord",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 2, Placement: models.PlacementFirst}, // Charlie - 1st place
+					{PlayerIndex: 2, Placement: models.PlacementFirst},  // Charlie - 1st place
 					{PlayerIndex: 0, Placement: models.PlacementSecond}, // Alice - 2nd place
 				},
 			},
 			{
-				Name: "Scientist", 
+				Name: "Scientist",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 2, Placement: models.PlacementFirst}, // Charlie - 1st place
+					{PlayerIndex: 2, Placement: models.PlacementFirst},  // Charlie - 1st place
 					{PlayerIndex: 1, Placement: models.PlacementSecond}, // Bob - 2nd place
 				},
 			},
@@ -170,7 +170,7 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 			},
 		},
 	}
-	
+
 	// Create test game 2 - created by Bob (user) with 2 other users participating
 	// This is key for testing that participants cannot modify games they didn't create
 	gameReq2 := models.CreateGameRequest{
@@ -226,14 +226,14 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 			{
 				Name: "Banker",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 1, Placement: models.PlacementFirst}, // Dave - 1st place
+					{PlayerIndex: 1, Placement: models.PlacementFirst},  // Dave - 1st place
 					{PlayerIndex: 0, Placement: models.PlacementSecond}, // Bob - 2nd place
 				},
 			},
 			{
-				Name: "Space Baron", 
+				Name: "Space Baron",
 				Placements: []models.PlacementRequest{
-					{PlayerIndex: 2, Placement: models.PlacementFirst}, // Eve - 1st place
+					{PlayerIndex: 2, Placement: models.PlacementFirst},  // Eve - 1st place
 					{PlayerIndex: 1, Placement: models.PlacementSecond}, // Dave - 2nd place
 				},
 			},
@@ -245,18 +245,36 @@ func setupGameFixture(t *testing.T) *TestGameFixture {
 			},
 		},
 	}
-	
+
 	game1, _ := fixture.Repo.CreateGame(&models.ParsedGameRequest{Normal: &gameReq1}, *fixture.Admin)
 	game2, _ := fixture.Repo.CreateGame(&models.ParsedGameRequest{Normal: &gameReq2}, *fixture.Bob)
-	
+
 	return &TestGameFixture{
 		TestFixture: fixture,
 		Dave:        dave,
 		Eve:         eve,
-		DavePass:    user2Pass,
-		EvePass:     user3Pass,
 		Game1:       game1,
 		Game2:       game2,
 	}
 }
 
+// createTestImage creates a minimal valid image for testing in the specified format
+func createTestImage(mimeType string) []byte {
+	// Create a 1x1 pixel image
+	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
+	img.Set(0, 0, color.RGBA{255, 0, 0, 255}) // Red pixel
+
+	var buf bytes.Buffer
+
+	switch mimeType {
+	case "image/jpeg":
+		jpeg.Encode(&buf, img, &jpeg.Options{Quality: 80})
+	case "image/png":
+		png.Encode(&buf, img)
+	default:
+		// Default to PNG
+		png.Encode(&buf, img)
+	}
+
+	return buf.Bytes()
+}

@@ -425,10 +425,6 @@ func TestGameImages(t *testing.T) {
 			t.Errorf("Expected Content-Type 'image/webp', got '%s'", rr.Header().Get("Content-Type"))
 		}
 
-		if rr.Header().Get("Cache-Control") != "public, max-age=3600" {
-			t.Errorf("Expected Cache-Control header")
-		}
-
 		if len(rr.Body.Bytes()) == 0 {
 			t.Error("Response body is empty")
 		}
