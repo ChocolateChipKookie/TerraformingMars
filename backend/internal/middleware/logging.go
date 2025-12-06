@@ -54,7 +54,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
 		// If the request failed (status >= 400), include the response body
 		if wrapped.statusCode >= 400 {
-			log.Printf("%d - %s %s - Duration: %v - Response: %s",
+			log.Printf("%d - %s %s (%v) - Response: %s",
 				wrapped.statusCode,
 				r.Method,
 				r.URL.Path,
@@ -62,7 +62,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 				wrapped.body.String(),
 			)
 		} else {
-			log.Printf("%d - %s %s - Duration: %v",
+			log.Printf("%d - %s %s (%v)",
 				wrapped.statusCode,
 				r.Method,
 				r.URL.Path,
