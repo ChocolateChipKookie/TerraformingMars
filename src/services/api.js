@@ -6,7 +6,12 @@ const API_BASE_URL = '/api';
 // Helper function for handling responses
 const handleResponse = async (response) => {
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await response.json().catch((parseError) => {
+      console.error(`Failed to parse error response from ${response.url}:`, parseError);
+      console.error(`Response status: ${response.status} ${response.statusText}`);
+      return { error: 'Unknown error' };
+    });
+    console.error(`API Error [${response.status}] ${response.url}:`, error.error || error);
     throw new Error(error.error || `HTTP error! status: ${response.status}`);
   }
   return response.json();
@@ -63,7 +68,12 @@ export const gameApi = {
       }),
     });
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      const error = await response.json().catch((parseError) => {
+        console.error(`Failed to parse error response from ${response.url}:`, parseError);
+        console.error(`Response status: ${response.status} ${response.statusText}`);
+        return { error: 'Unknown error' };
+      });
+      console.error(`API Error [${response.status}] ${response.url}:`, error.error || error);
       throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
   },

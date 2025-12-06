@@ -11,6 +11,7 @@ import (
 
 	"terraforming-mars-backend/internal/api"
 	"terraforming-mars-backend/internal/database"
+	"terraforming-mars-backend/internal/middleware"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -103,8 +104,8 @@ func main() {
 		AllowedHeaders: []string{"*"},
 	})
 
-	// Start server
-	handler := c.Handler(router)
+	// Start server with logging middleware
+	handler := middleware.LoggingMiddleware(c.Handler(router))
 	addr := fmt.Sprintf(":%d", *port)
 	log.Printf("Server starting on %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, handler))
