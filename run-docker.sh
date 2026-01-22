@@ -15,14 +15,13 @@ if [ ! -d ./data ];
 then
   echo "Creating data directory"
   mkdir "./data"
-  sudo chown 65534:65534 "./data"
-  sudo chmod 777 "./data"
 fi
 
 echo "Starting container on port $PORT"
 docker run -d \
   --name tm-server \
   --restart unless-stopped \
+  --user "$(id -u):$(id -g)" \
   -p 127.0.0.1:$PORT:8080 \
   -v ./data:/data \
   --read-only \
