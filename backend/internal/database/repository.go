@@ -451,6 +451,10 @@ func (r *Repository) CreateGame(req *models.ParsedGameRequest, actor models.Play
 
 // createNormalGame handles creating a non-legacy game
 func (r *Repository) createNormalGame(req *models.CreateGameRequest, actor models.Player) (*models.GameWithDetails, error) {
+	if len(req.Players) == 0 {
+		return nil, fmt.Errorf("game must have at least one player")
+	}
+
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
@@ -507,6 +511,10 @@ func (r *Repository) createNormalGame(req *models.CreateGameRequest, actor model
 
 // createLegacyGame handles creating a legacy game
 func (r *Repository) createLegacyGame(req *models.CreateLegacyGameRequest, actor models.Player) (*models.GameWithDetails, error) {
+	if len(req.Players) == 0 {
+		return nil, fmt.Errorf("game must have at least one player")
+	}
+
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
