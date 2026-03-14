@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -65,9 +66,12 @@ func (h *Handler) createGame(w http.ResponseWriter, r *http.Request) {
 
 	actor, err := h.repo.AuthenticatePlayer(auth.ActorName, auth.ActorPassword)
 	if err != nil {
+		log.Printf("Auth failure for actor %q: %v", auth.ActorName, err)
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
+
+	log.Printf("User %q: creating game", actor.Name)
 
 	parsedReq, err := models.ParseGameRequest(bytes.NewReader(bodyBytes), false)
 	if err != nil {
@@ -82,6 +86,7 @@ func (h *Handler) createGame(w http.ResponseWriter, r *http.Request) {
 
 	images := parsedReq.GetImages()
 	if len(images) > 0 {
+		log.Printf("Processing %d image(s) for new game by %q", len(images), actor.Name)
 		if err := h.processImages(images, nil); err != nil {
 			h.sendError(w, http.StatusBadRequest, err.Error())
 			return
@@ -90,10 +95,12 @@ func (h *Handler) createGame(w http.ResponseWriter, r *http.Request) {
 
 	game, err := h.repo.CreateGame(parsedReq, *actor)
 	if err != nil {
+		log.Printf("Failed to create game: %v", err)
 		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to create game: %v", err))
 		return
 	}
 
+	log.Printf("Game %d created by %q", game.Game.GameID, actor.Name)
 	h.sendJSON(w, http.StatusCreated, game)
 }
 
@@ -121,9 +128,12 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 
 	actor, err := h.repo.AuthenticatePlayer(auth.ActorName, auth.ActorPassword)
 	if err != nil {
+		log.Printf("Auth failure for actor %q: %v", auth.ActorName, err)
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
+
+	log.Printf("User %q: updating game %d", actor.Name, id)
 
 	parsedReq, err := models.ParseGameRequest(bytes.NewReader(bodyBytes), true)
 	if err != nil {
@@ -138,6 +148,7 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 
 	images := parsedReq.GetImages()
 	if len(images) > 0 {
+		log.Printf("Processing %d image(s) for game %d update by %q", len(images), id, actor.Name)
 		if err := h.processImages(images, &id); err != nil {
 			h.sendError(w, http.StatusBadRequest, err.Error())
 			return
@@ -146,10 +157,12 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 
 	game, err := h.repo.UpdateGame(id, parsedReq, *actor)
 	if err != nil {
+		log.Printf("Failed to update game %d: %v", id, err)
 		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update game: %v", err))
 		return
 	}
 
+	log.Printf("Game %d updated by %q (revision %d)", game.Game.GameID, actor.Name, game.Game.Revision)
 	h.sendJSON(w, http.StatusOK, game)
 }
 
@@ -176,15 +189,20 @@ func (h *Handler) deleteGame(w http.ResponseWriter, r *http.Request) {
 
 	actor, err := h.repo.AuthenticatePlayer(auth.ActorName, auth.ActorPassword)
 	if err != nil {
+		log.Printf("Auth failure for actor %q: %v", auth.ActorName, err)
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
 
+	log.Printf("User %q: deleting game %d", actor.Name, id)
+
 	if err := h.repo.DeleteGame(id, *actor); err != nil {
+		log.Printf("Failed to delete game %d: %v", id, err)
 		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to delete game: %v", err))
 		return
 	}
 
+	log.Printf("Game %d deleted by %q", id, actor.Name)
 	w.WriteHeader(http.StatusNoContent)
 }
 

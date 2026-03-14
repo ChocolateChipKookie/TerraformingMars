@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -96,20 +97,25 @@ func (h *Handler) createPlayer(w http.ResponseWriter, r *http.Request) {
 
 	// If no players exist, create the first one as admin without authentication
 	if len(players) == 0 {
+		log.Printf("Creating first system admin %q", req.Name)
 		player, err := h.repo.CreateSystemAdmin(req.Name, req.Password)
 		if err != nil {
 			h.sendError(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		log.Printf("System admin %q created (first player)", player.Name)
 		h.sendJSON(w, http.StatusCreated, player)
 		return
 	}
 
 	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
 	if err != nil {
+		log.Printf("Auth failure for actor %q: %v", req.ActorName, err)
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
+
+	log.Printf("User %q: creating player %q (%s)", actor.Name, req.Name, req.Role)
 
 	// Create the player (repository will handle role validation)
 	player, err := h.repo.CreatePlayer(req.Name, req.Password, models.PlayerRole(req.Role), *actor)
@@ -118,6 +124,7 @@ func (h *Handler) createPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("Player %q (%s) created by %q", player.Name, player.Role, actor.Name)
 	h.sendJSON(w, http.StatusCreated, player)
 }
 
@@ -138,9 +145,12 @@ func (h *Handler) updatePlayer(w http.ResponseWriter, r *http.Request) {
 
 	actor, err := h.repo.AuthenticatePlayer(req.ActorName, req.ActorPassword)
 	if err != nil {
+		log.Printf("Auth failure for actor %q: %v", req.ActorName, err)
 		h.sendError(w, http.StatusUnauthorized, "Invalid actor credentials")
 		return
 	}
+
+	log.Printf("User %q: updating player %d", actor.Name, id)
 
 	currentPlayer, err := h.repo.GetPlayerByID(id)
 	if err != nil {
@@ -164,5 +174,6 @@ func (h *Handler) updatePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("Player %q updated by %q", player.Name, actor.Name)
 	h.sendJSON(w, http.StatusOK, player)
 }

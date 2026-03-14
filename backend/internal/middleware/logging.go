@@ -46,6 +46,8 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			body:           &bytes.Buffer{},
 		}
 
+		log.Printf("--> %s %s", r.Method, r.URL.Path)
+
 		// Call the next handler
 		next.ServeHTTP(wrapped, r)
 
