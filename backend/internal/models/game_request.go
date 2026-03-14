@@ -1,7 +1,6 @@
 package models
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -361,27 +360,23 @@ func validateImages(images []ImageRequest, isUpdate bool) error {
 // And the caller can be sure that the returned value is semantically correct, making later processing steps easier because we only have to validate at this one point
 // Also we have the type of the request ingrained in the actual type
 // Another validation step has to be done for the non-static data (eg. for reference to some IDs in the database)
-func ParseGameRequest(r io.Reader, isUpdate bool) (*ParsedGameRequest, error) {
-	// Read all bytes first so we can peek at legacy_mode
-	data, err := io.ReadAll(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read request body: %w", err)
-	}
-
-	// Check if it's legacy mode
+func ParseGameRequest(r io.ReadSeeker, isUpdate bool) (*ParsedGameRequest, error) {
+	// Peek at legacy_mode to determine which parser to use
 	var check struct {
 		LegacyMode bool `json:"legacy_mode"`
 	}
-	if err := json.Unmarshal(data, &check); err != nil {
+	if err := json.NewDecoder(r).Decode(&check); err != nil {
 		return nil, fmt.Errorf("failed to check legacy_mode: %w", err)
 	}
 
-	// Create a new reader from the data
-	reader := bytes.NewReader(data)
+	// Seek back to beginning for the actual parse
+	if _, err := r.Seek(0, io.SeekStart); err != nil {
+		return nil, fmt.Errorf("failed to seek reader: %w", err)
+	}
 
 	// Parse as legacy or normal based on the flag
 	if check.LegacyMode {
-		validated, err := ParseCreateLegacyGameRequest(reader, isUpdate)
+		validated, err := ParseCreateLegacyGameRequest(r, isUpdate)
 		if err != nil {
 			return nil, err
 		}
@@ -389,7 +384,7 @@ func ParseGameRequest(r io.Reader, isUpdate bool) (*ParsedGameRequest, error) {
 	}
 
 	// Parse as normal game
-	validated, err := ParseCreateGameRequest(reader, isUpdate)
+	validated, err := ParseCreateGameRequest(r, isUpdate)
 	if err != nil {
 		return nil, err
 	}

@@ -43,13 +43,13 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fi, err := os.Stat(path)
-	if os.IsNotExist(err) || fi.IsDir() {
+	if err != nil {
+		// Any stat error (not found, permission denied, etc.) → serve index.html
 		http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
 		return
 	}
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if fi.IsDir() {
+		http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
 		return
 	}
 

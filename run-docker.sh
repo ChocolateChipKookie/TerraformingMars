@@ -26,5 +26,4 @@ docker run -d \
   -v ./data:/data \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,size=64m \
-  --memory=256m \
   terraforming-mars:latest

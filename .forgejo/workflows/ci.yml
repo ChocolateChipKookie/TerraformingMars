@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: golang
+    steps:
+      - uses: ${{ secrets.ACTIONS_URL }}/checkout@main
+
+      - name: Install libwebp
+        run: apt-get update && apt-get install -y --no-install-recommends libwebp-dev
+
+      - name: Build
+        run: |
+          cd backend
+          go build ./...
+
+      - name: Test
+        run: |
+          cd backend
+          go test ./...
+
+  frontend:
+    runs-on: node-20
+    steps:
+      - uses: ${{ secrets.ACTIONS_URL }}/checkout@main
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build
+        run: |
+          cd frontend
+          npm run build
