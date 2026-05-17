@@ -9,7 +9,7 @@ import (
 	_ "image/png"
 
 	"github.com/chai2010/webp"
-	"github.com/nfnt/resize"
+	"golang.org/x/image/draw"
 )
 
 const MaxWidth = 1920
@@ -37,7 +37,9 @@ func resizeImage(img image.Image) image.Image {
 	}
 
 	newWidth, newHeight := calculateNewSize(width, height, MaxWidth, MaxHeight)
-	return resize.Resize(uint(newWidth), uint(newHeight), img, resize.Lanczos3)
+	dst := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+	draw.CatmullRom.Scale(dst, dst.Bounds(), img, bounds, draw.Over, nil)
+	return dst
 }
 
 func calculateNewSize(width, height, maxWidth, maxHeight int) (int, int) {
