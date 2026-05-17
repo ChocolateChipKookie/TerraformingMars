@@ -1,5 +1,5 @@
 # Build fronend
-FROM node:25-alpine AS frontend
+FROM node:24-alpine AS frontend
 WORKDIR /frontend
 COPY package*.json .
 COPY ./backend/shared/game-data.json /backend/shared/game-data.json
