@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import Container from '../Container';
 import { SubContainer } from '../Container';
 import styles from '../../styles/GamePage.module.css';
-import { GAME_CONSTANTS } from '../../data/gameData';
+import { gameData, GAME_CONSTANTS } from '../../data/gameData';
 import { SelectField } from './FormFields';
 
 
@@ -45,13 +45,12 @@ const MilestoneRow = React.memo(({ config, gameState, handlers, readOnly = false
 
   return (
     <div className={styles.playerInputDiv}>
-      {isCustomizable ? (
+      {isCustomizable && !readOnly ? (
         <SelectField
           value={milestone}
           onChange={(e) => handleUpdate(e.target.value)}
           options={getDropdownOptions()}
           placeholder="Select Milestone"
-          readOnly={readOnly}
           className={styles.milestoneDropdown}
         />
       ) : (
@@ -91,13 +90,16 @@ function MilestonesContainer({
   return (
     <Container title="Milestones" titleStyle="banner">
       <SubContainer>
-        {milestones.selected.map((milestone, index) => (
+        {milestones.selected.map((milestone, index) => {
+          const isVenusLocked = gameConfig.expansions["Venus Next"]
+            && (gameData.milestones.Venus || []).includes(milestone);
+          return (
           <MilestoneRow
             key={index}
             config={{
               milestone,
               index,
-              isCustomizable: gameConfig.expansions["Milestones & Awards"],
+              isCustomizable: gameConfig.expansions["Milestones & Awards"] && !isVenusLocked,
             }}
             gameState={{
               milestones,
@@ -107,7 +109,8 @@ function MilestonesContainer({
             handlers={{ updateMilestoneWinner }}
             readOnly={readOnly}
           />
-        ))}
+          );
+        })}
       </SubContainer>
     </Container>
   );

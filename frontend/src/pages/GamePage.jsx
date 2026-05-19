@@ -166,8 +166,8 @@ function usePlayerManagement(
           greeneries: "",
           cards: "",
           turmoilPoints: "",
-          milestonePoints: 0,
-          awardPoints: 0,
+          milestonePoints: isLegacyMode ? "" : 0,
+          awardPoints: isLegacyMode ? "" : 0,
           totalPoints: 0,
         };
       }
@@ -194,15 +194,13 @@ function usePlayerManagement(
 
       return newScores;
     });
-  }, []);
+  }, [isLegacyMode]);
 
+  // Min-clamps only; the max cap is enforced by UI callers (who know the current map's max)
+  // and by the post-SET_MAP effect in GamePage that re-clips if the new map is smaller.
   const setPlayerCount = useCallback((count) => {
-    const validCount = Math.max(
-      GAME_CONSTANTS.MIN_PLAYERS,
-      Math.min(count, maxPlayers),
-    );
-    setPlayerNumber(validCount);
-  }, [maxPlayers]);
+    setPlayerNumber(Math.max(GAME_CONSTANTS.MIN_PLAYERS, count));
+  }, []);
 
   return {
     playerNumber,
@@ -217,14 +215,38 @@ function usePlayerManagement(
 
 
 
+// --- useGameObjectives helpers (pure, module-level) ---
+
+function getSlotCount(isAward, expansions) {
+  const venusOn = expansions["Venus Next"];
+  if (isAward) {
+    return venusOn ? GAME_CONSTANTS.VENUS_AWARD_SLOTS : GAME_CONSTANTS.DEFAULT_AWARD_SLOTS;
+  }
+  return venusOn ? GAME_CONSTANTS.VENUS_MILESTONE_SLOTS : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS;
+}
+
+function getDefaultObjectives(dataKey, map, expansions) {
+  const mapObjectives = gameData[dataKey][map] || [];
+  const venusObjectives = expansions["Venus Next"] ? (gameData[dataKey].Venus || []) : [];
+  return [...mapObjectives, ...venusObjectives];
+}
+
+function makeEmptyEntry(isAward, playerNumber) {
+  if (!isAward) return -1;
+  const entry = {};
+  for (let i = 0; i < playerNumber; i++) entry[i] = 0;
+  return entry;
+}
+
 // Custom hook for managing game objectives (milestones/awards)
 function useGameObjectives(type, map, expansions, playerNumber) {
   const [selected, setSelected] = useState([]);
   const [data, setData] = useState({});
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  const prevVenusNextRef = React.useRef(expansions["Venus Next"]);
-  const prevMilestonesAwardsRef = React.useRef(expansions["Milestones & Awards"]);
+  // Snapshot from the last init/load/reconcile pass.
+  // `null` means the hook hasn't been initialized yet — the reconcile effect short-circuits in that state.
+  const prevExpansionsRef = useRef(null);
+  const prevMapRef = useRef(null);
 
   const isAward = type === "award";
   const dataKey = isAward ? "awards" : "milestones";
@@ -260,129 +282,79 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 
   // Initialize objectives based on current map and expansions
   const initializeObjectives = useCallback(() => {
-    const isMilestonesAwardsEnabled = expansions["Milestones & Awards"];
-    const isVenusNextEnabled = expansions["Venus Next"];
-    const mapObjectives = gameData[dataKey][map] || [];
-    const venusObjectives = isVenusNextEnabled ? (gameData[dataKey].Venus || []) : [];
+    const defaults = getDefaultObjectives(dataKey, map, expansions);
 
-    if (isMilestonesAwardsEnabled) {
-      // Custom mode - limited slots
-      const numSlots = isVenusNextEnabled ?
-        (isAward ? GAME_CONSTANTS.VENUS_AWARD_SLOTS : GAME_CONSTANTS.VENUS_MILESTONE_SLOTS) :
-        (isAward ? GAME_CONSTANTS.DEFAULT_AWARD_SLOTS : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS);
-
-      const defaultObjectives = [...mapObjectives, ...venusObjectives];
-      setSelected(defaultObjectives.slice(0, numSlots));
+    if (expansions["Milestones & Awards"]) {
+      // Custom mode — start from sliced defaults; data is filled per-selection via updateSelected.
+      setSelected(defaults.slice(0, getSlotCount(isAward, expansions)));
     } else {
-      // Fixed mode - all defaults
-      const allDefaults = [...mapObjectives, ...venusObjectives];
-      setSelected(allDefaults);
-
-      const newData = {};
-      allDefaults.forEach((item) => {
-        if (isAward) {
-          newData[item] = {};
-          for (let i = 0; i < playerNumber; i++) {
-            newData[item][i] = 0;
-          }
-        } else {
-          newData[item] = -1;
-        }
-      });
-      setData(newData);
+      // Fixed mode — all defaults plus their initial empty data.
+      setSelected(defaults);
+      const initialData = {};
+      defaults.forEach(item => { initialData[item] = makeEmptyEntry(isAward, playerNumber); });
+      setData(initialData);
     }
 
-    prevVenusNextRef.current = isVenusNextEnabled;
-    prevMilestonesAwardsRef.current = isMilestonesAwardsEnabled;
-    setIsInitialized(true);
+    prevExpansionsRef.current = expansions;
+    prevMapRef.current = map;
   }, [map, expansions, dataKey, isAward, playerNumber]);
 
-  // Handle Venus Next toggle
+  // Reconcile selected/data when expansions or map change after init.
+  // M&A toggle rebuilds the list; Venus toggle is additive/subtractive;
+  // map change rebuilds in fixed mode (defaults are map-specific) but preserves user picks in custom mode.
   useEffect(() => {
-    if (!isInitialized) return;
+    const prevExp = prevExpansionsRef.current;
+    if (prevExp === null) return;
 
-    const currentVenusNext = expansions["Venus Next"];
-    if (prevVenusNextRef.current === currentVenusNext) return;
+    const venusChanged = prevExp["Venus Next"] !== expansions["Venus Next"];
+    const maChanged = prevExp["Milestones & Awards"] !== expansions["Milestones & Awards"];
+    const mapChanged = prevMapRef.current !== map;
+    if (!venusChanged && !maChanged && !mapChanged) return;
 
-    const venusObjectives = gameData[dataKey].Venus || [];
+    const isCustomMode = expansions["Milestones & Awards"];
 
-    if (currentVenusNext) {
-      // Add Venus objectives at the end
-      setSelected(prev => [...prev, ...venusObjectives]);
-      setData(prev => {
-        const newData = { ...prev };
-        venusObjectives.forEach(item => {
-          if (!newData[item]) {
-            if (isAward) {
-              newData[item] = {};
-              for (let i = 0; i < playerNumber; i++) {
-                newData[item][i] = 0;
-              }
-            } else {
-              newData[item] = -1;
-            }
-          }
+    if (maChanged || (mapChanged && !isCustomMode)) {
+      const defaults = getDefaultObjectives(dataKey, map, expansions);
+      if (isCustomMode) {
+        // Switching to custom: slice defaults to slot count.
+        setSelected(defaults.slice(0, getSlotCount(isAward, expansions)));
+      } else {
+        // Fixed mode (either just switched, or map changed): rebuild list, preserve overlapping data.
+        setSelected(defaults);
+        setData(prevData => {
+          const next = {};
+          defaults.forEach(item => {
+            next[item] = prevData[item] !== undefined
+              ? prevData[item]
+              : makeEmptyEntry(isAward, playerNumber);
+          });
+          return next;
         });
-        return newData;
-      });
-    } else {
-      // Remove Venus objectives
-      setSelected(prev => prev.filter(item => !venusObjectives.includes(item)));
-      setData(prev => {
-        const newData = { ...prev };
-        venusObjectives.forEach(item => delete newData[item]);
-        return newData;
-      });
+      }
+    } else if (venusChanged) {
+      const venusObjectives = gameData[dataKey].Venus || [];
+      if (expansions["Venus Next"]) {
+        setSelected(prevSel => [...prevSel, ...venusObjectives]);
+        setData(prevData => {
+          const next = { ...prevData };
+          venusObjectives.forEach(item => {
+            if (!next[item]) next[item] = makeEmptyEntry(isAward, playerNumber);
+          });
+          return next;
+        });
+      } else {
+        setSelected(prevSel => prevSel.filter(item => !venusObjectives.includes(item)));
+        setData(prevData => {
+          const next = { ...prevData };
+          venusObjectives.forEach(item => delete next[item]);
+          return next;
+        });
+      }
     }
 
-    prevVenusNextRef.current = currentVenusNext;
-  }, [isInitialized, expansions, dataKey, isAward, playerNumber]);
-
-  // Handle Milestones & Awards toggle
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const currentMilestonesAwards = expansions["Milestones & Awards"];
-    if (prevMilestonesAwardsRef.current === currentMilestonesAwards) return;
-
-    const isVenusNextEnabled = expansions["Venus Next"];
-    const mapObjectives = gameData[dataKey][map] || [];
-    const venusObjectives = isVenusNextEnabled ? (gameData[dataKey].Venus || []) : [];
-
-    if (currentMilestonesAwards) {
-      // Switching to custom mode - limited slots
-      const numSlots = isVenusNextEnabled ?
-        (isAward ? GAME_CONSTANTS.VENUS_AWARD_SLOTS : GAME_CONSTANTS.VENUS_MILESTONE_SLOTS) :
-        (isAward ? GAME_CONSTANTS.DEFAULT_AWARD_SLOTS : GAME_CONSTANTS.DEFAULT_MILESTONE_SLOTS);
-      const defaultObjectives = [...mapObjectives, ...venusObjectives];
-      setSelected(defaultObjectives.slice(0, numSlots));
-    } else {
-      // Switching to fixed mode - all defaults
-      const allDefaults = [...mapObjectives, ...venusObjectives];
-      setSelected(allDefaults);
-
-      setData(prev => {
-        const newData = {};
-        allDefaults.forEach((item) => {
-          if (prev[item] !== undefined) {
-            newData[item] = prev[item];
-          } else {
-            if (isAward) {
-              newData[item] = {};
-              for (let i = 0; i < playerNumber; i++) {
-                newData[item][i] = 0;
-              }
-            } else {
-              newData[item] = -1;
-            }
-          }
-        });
-        return newData;
-      });
-    }
-
-    prevMilestonesAwardsRef.current = currentMilestonesAwards;
-  }, [isInitialized, expansions, map, dataKey, isAward, playerNumber]);
+    prevExpansionsRef.current = expansions;
+    prevMapRef.current = map;
+  }, [expansions, map, dataKey, isAward, playerNumber]);
 
   // Validate and reset data when player count changes
   useEffect(() => {
@@ -424,33 +396,19 @@ function useGameObjectives(type, map, expansions, playerNumber) {
       setSelected(newSelected);
 
       const newData = { ...data };
-      if (oldValue) {
-        delete newData[oldValue];
-      }
-      if (newValue) {
-        if (isAward) {
-          newData[newValue] = {};
-          for (let i = 0; i < playerNumber; i++) {
-            newData[newValue][i] = 0;
-          }
-        } else {
-          newData[newValue] = -1;
-        }
-      }
+      if (oldValue) delete newData[oldValue];
+      if (newValue) newData[newValue] = makeEmptyEntry(isAward, playerNumber);
       setData(newData);
     },
     [selected, data, playerNumber, isAward],
   );
 
-  // Function to load existing game data from backend
-  const loadGameData = useCallback((selectedItems, itemData, loadedExpansions) => {
+  // Load existing game data from backend
+  const loadGameData = useCallback((selectedItems, itemData, loadedExpansions, loadedMap) => {
     setSelected(selectedItems);
     setData(itemData);
-
-    // Mark as initialized and set refs to the LOADED state to prevent effects from running
-    prevVenusNextRef.current = loadedExpansions["Venus Next"];
-    prevMilestonesAwardsRef.current = loadedExpansions["Milestones & Awards"];
-    setIsInitialized(true);
+    prevExpansionsRef.current = loadedExpansions;
+    prevMapRef.current = loadedMap;
   }, []);
 
   return {
@@ -470,13 +428,30 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 function GamePage() {
   const navigate = useNavigate();
   const { gameId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Determine mode: 'view', 'edit', or 'add'
-  const [mode, setMode] = useState(() => {
-    if (!gameId) return 'add'; // No gameId means adding new game
+  // Mode is derived from URL: no gameId = add, ?edit=true = edit, otherwise view.
+  // Keeping it URL-sourced means a page refresh in edit mode stays in edit mode.
+  const mode = useMemo(() => {
+    if (!gameId) return 'add';
     return searchParams.get('edit') === 'true' ? 'edit' : 'view';
-  });
+  }, [gameId, searchParams]);
+
+  const enterEditMode = useCallback(() => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('edit', 'true');
+      return next;
+    });
+  }, [setSearchParams]);
+
+  const exitEditMode = useCallback(() => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.delete('edit');
+      return next;
+    });
+  }, [setSearchParams]);
 
   // Loading state for fetching game data
   const [isLoading, setIsLoading] = useState(false);
@@ -510,15 +485,11 @@ function GamePage() {
   const playerManager = usePlayerManagement(GAME_CONSTANTS.DEFAULT_PLAYER_COUNT, maxPlayers, isLegacyMode);
 
   // Authentication state
-  const [actorName, setActorName] = useState('');
-  const [actorPassword, setActorPassword] = useState('');
+  const [auth, setAuth] = useState({ name: '', password: '' });
 
   // Available players from backend
   const [availablePlayers, setAvailablePlayers] = useState([]);
   const [playersLoading, setPlayersLoading] = useState(true);
-
-  // Trigger for refetching data
-  const [shouldRefetch, setShouldRefetch] = useState(false);
 
   // Stack the bottom button row when the container is too narrow to fit 3 buttons side by side.
   const buttonRowRef = useRef(null);
@@ -557,9 +528,7 @@ function GamePage() {
     }
   }, []); // Only run once on mount
 
-  // Fetch game data if in view/edit mode
-  useEffect(() => {
-    const fetchGameData = async () => {
+  const fetchGame = async () => {
       if (!gameId) return;
 
       setIsLoading(true);
@@ -634,7 +603,7 @@ function GamePage() {
             milestoneData[m.name] = winnerIndex;
             milestoneNames.push(m.name);
           });
-          milestones.loadGameData(milestoneNames, milestoneData, gameData.game.expansions || {});
+          milestones.loadGameData(milestoneNames, milestoneData, gameData.game.expansions || {}, gameData.game.map);
         }
 
         // Set awards
@@ -659,7 +628,7 @@ function GamePage() {
               }
             }
           });
-          awards.loadGameData(awardNames, awardData, gameData.game.expansions || {});
+          awards.loadGameData(awardNames, awardData, gameData.game.expansions || {}, gameData.game.map);
         }
 
       } catch (err) {
@@ -667,13 +636,11 @@ function GamePage() {
       } finally {
         setIsLoading(false);
       }
-    };
+  };
 
-    if (shouldRefetch || gameId) {
-      fetchGameData();
-      setShouldRefetch(false);
-    }
-  }, [gameId, shouldRefetch]); // Fetch when gameId changes or shouldRefetch is triggered
+  useEffect(() => {
+    fetchGame();
+  }, [gameId]);
 
   // Set default date for new games and fetch players
   useEffect(() => {
@@ -900,11 +867,11 @@ function GamePage() {
     if (hasChanged) {
       playerManager.setPlayerScores(newScores);
     }
-  }, [milestones.data, awards.data, isLegacyMode, playerManager.playerScores]);
+  }, [milestones.data, awards.data, isLegacyMode, playerManager.playerScores, playerManager.setPlayerScores]);
 
   const handleSubmitGame = async () => {
     // Validate authentication
-    if (!actorName || !actorPassword) {
+    if (!auth.name || !auth.password) {
       alert('Please enter your username and password to submit the game.');
       return;
     }
@@ -967,8 +934,8 @@ function GamePage() {
       }),
 
       // Authentication from form inputs
-      actor_name: actorName,
-      actor_password: actorPassword,
+      actor_name: auth.name,
+      actor_password: auth.password,
     };
 
     try {
@@ -992,7 +959,7 @@ function GamePage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDeleteGame = async () => {
-    if (!actorName || !actorPassword) {
+    if (!auth.name || !auth.password) {
       alert('Please enter your username and password to delete the game.');
       return;
     }
@@ -1004,7 +971,7 @@ function GamePage() {
     setShowDeleteDialog(false);
 
     try {
-      await gameApi.delete(gameId, actorName, actorPassword);
+      await gameApi.delete(gameId, auth.name, auth.password);
       alert('Game deleted successfully!');
       navigate(ROUTES.PLAYED_GAMES);
     } catch (error) {
@@ -1012,11 +979,10 @@ function GamePage() {
     }
   };
 
-  // Handle cancel edit - reload original data
   const handleCancelEdit = () => {
-    setMode('view');
-    // Trigger re-fetch of game data to discard changes
-    setShouldRefetch(true);
+    exitEditMode();
+    // Re-fetch original game data to discard edits.
+    fetchGame();
   };
 
   // Get page title based on mode
@@ -1110,10 +1076,10 @@ function GamePage() {
       {/* Only show authentication in add/edit modes */}
       {(mode === 'add' || mode === 'edit') && (
         <AuthenticationContainer
-          actorName={actorName}
-          setActorName={setActorName}
-          actorPassword={actorPassword}
-          setActorPassword={setActorPassword}
+          actorName={auth.name}
+          setActorName={(name) => setAuth(prev => ({ ...prev, name }))}
+          actorPassword={auth.password}
+          setActorPassword={(password) => setAuth(prev => ({ ...prev, password }))}
           players={availablePlayers}
           playersLoading={playersLoading}
           title="Authentication"
@@ -1196,7 +1162,7 @@ function GamePage() {
               Back to Games
             </LinkButton>
             <LinkButton
-              onClick={() => setMode('edit')}
+              onClick={enterEditMode}
               style={{ backgroundColor: '#2196F3', width: 'calc(50% - 1rem)' }}
             >
               Edit Game

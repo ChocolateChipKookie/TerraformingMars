@@ -3,7 +3,7 @@ import Container from '../Container';
 import { SubContainer } from '../Container';
 import { PlayerNamesHeader } from '../Common';
 import styles from '../../styles/GamePage.module.css';
-import { GAME_CONSTANTS } from '../../data/gameData';
+import { gameData, GAME_CONSTANTS } from '../../data/gameData';
 import { SelectField } from './FormFields';
 
 // Award Button component
@@ -55,13 +55,12 @@ const AwardRow = React.memo(({ config, gameState, handlers, readOnly = false }) 
 
   return (
     <div className={styles.pointInputContainer}>
-      {isCustomizable ? (
+      {isCustomizable && !readOnly ? (
         <SelectField
           value={award}
           onChange={(e) => handleUpdate(e.target.value)}
           options={getDropdownOptions()}
           placeholder="Select Award"
-          readOnly={readOnly}
           className={styles.objectiveDropdown}
         />
       ) : (
@@ -101,13 +100,16 @@ function AwardsContainer({
       <SubContainer>
         <PlayerNamesHeader players={playerManager.players} />
 
-        {awards.selected.map((award, index) => (
+        {awards.selected.map((award, index) => {
+          const isVenusLocked = gameConfig.expansions["Venus Next"]
+            && (gameData.awards.Venus || []).includes(award);
+          return (
           <AwardRow
             key={index}
             config={{
               award,
               index,
-              isCustomizable: gameConfig.expansions["Milestones & Awards"],
+              isCustomizable: gameConfig.expansions["Milestones & Awards"] && !isVenusLocked,
             }}
             gameState={{
               awards,
@@ -116,7 +118,8 @@ function AwardsContainer({
             handlers={{ cyclePlacement, isAwardFunded, getFundedAwardsCount }}
             readOnly={readOnly}
           />
-        ))}
+          );
+        })}
       </SubContainer>
     </Container>
   );
