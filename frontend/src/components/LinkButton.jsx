@@ -27,7 +27,7 @@ function LinkButton({ onClick, children, disabled = false, style = {} }) {
   };
 
   return (
-    <div className={styles.wrapper} style={{ width: style.width }}>
+    <div className={styles.wrapper} style={{ width: style.width, minWidth: style.minWidth, marginBottom: style.marginBottom }}>
       <button
         style={buttonStyle}
         onMouseEnter={() => !disabled && setIsHovered(true)}

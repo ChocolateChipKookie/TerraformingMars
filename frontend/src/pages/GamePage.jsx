@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useMemo,
   useReducer,
+  useRef,
 } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ROUTES } from "../constants/routes";
@@ -21,6 +22,12 @@ import { NumericInputWithButtons } from "../components/Common";
 import styles from "../styles/GamePage.module.css";
 import { gameData, GAME_CONSTANTS } from "../data/gameData";
 import { gameApi, playerApi } from "../services/api";
+
+
+// Below this container width the 3 edit-mode buttons can't fit a third of the row
+// without their labels overflowing at the LinkButton clamp(24px, 5vw, 40px) font.
+// 3 buttons * ~180px min label width + 2 * 2rem gap ≈ 600px.
+const BUTTON_ROW_STACK_THRESHOLD_PX = 600;
 
 
 // Game configuration reducer
@@ -228,11 +235,16 @@ function useGameObjectives(type, map, expansions, playerNumber) {
   // Get available objectives based on expansions
   const getAvailable = useCallback(() => {
     let available = [...(gameData[dataKey][map] || [])];
+    const venusItems = gameData[dataKey].Venus || [];
     if (expansions["Venus Next"]) {
-      available = [...available, ...gameData[dataKey].Venus];
+      available = [...available, ...venusItems];
     }
     if (expansions["Milestones & Awards"]) {
-      available = [...available, ...gameData[additionalDataKey]];
+      // Venus-only items (Venuphile, Hoverlord) require Venus Next; backend rejects them otherwise.
+      const additional = expansions["Venus Next"]
+        ? gameData[additionalDataKey]
+        : gameData[additionalDataKey].filter(item => !venusItems.includes(item));
+      available = [...available, ...additional];
     }
     return [...new Set(available)];
   }, [map, expansions, dataKey, additionalDataKey]);
@@ -507,6 +519,21 @@ function GamePage() {
 
   // Trigger for refetching data
   const [shouldRefetch, setShouldRefetch] = useState(false);
+
+  // Stack the bottom button row when the container is too narrow to fit 3 buttons side by side.
+  const buttonRowRef = useRef(null);
+  const [stackButtons, setStackButtons] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < BUTTON_ROW_STACK_THRESHOLD_PX
+  );
+  useEffect(() => {
+    const el = buttonRowRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      setStackButtons(entries[0].contentRect.width < BUTTON_ROW_STACK_THRESHOLD_PX);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Use custom hooks for milestones and awards
   const milestones = useGameObjectives(
@@ -1151,10 +1178,11 @@ function GamePage() {
       )}
 
       {/* Dynamic buttons based on mode */}
-      <div style={{
+      <div ref={buttonRowRef} style={{
         display: 'flex',
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
-        gap: '2rem',
+        gap: '0 2rem',
         margin: '1% auto',
         maxWidth: '900px',
         padding: '0'
@@ -1178,16 +1206,19 @@ function GamePage() {
           <>
             <LinkButton
               onClick={handleCancelEdit}
+              style={stackButtons ? { width: '100%', minWidth: 0, marginBottom: '0.5rem' } : { width: 'calc(33.333% - 1.333rem)', minWidth: 0 }}
             >
               Cancel
             </LinkButton>
             <LinkButton
               onClick={handleDeleteGame}
+              style={stackButtons ? { width: '100%', minWidth: 0, marginBottom: '0.5rem' } : { width: 'calc(33.333% - 1.333rem)', minWidth: 0 }}
             >
               Delete
             </LinkButton>
             <LinkButton
               onClick={handleSubmitGame}
+              style={stackButtons ? { width: '100%', minWidth: 0, marginBottom: '0.5rem' } : { width: 'calc(33.333% - 1.333rem)', minWidth: 0 }}
             >
               Save
             </LinkButton>

@@ -319,7 +319,9 @@
   composes: flexRow;
   line-height: 3rem;
   height: 3rem;
-  width: 300px;
+  min-width: 300px;
+  width: max-content;
+  white-space: nowrap;
   position: relative;
   font-size: 22px;
   user-select: none;
@@ -528,6 +530,7 @@
     height: 2.5rem;
     line-height: 2.5rem;
     width: 100%;
+    min-width: 0;
   }
 
   .expansionCircle {

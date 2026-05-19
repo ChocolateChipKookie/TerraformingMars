@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import Container from '../Container';
-import { SubContainer, SubContainerElement } from '../Container';
-import { NumericInputWithButtons } from '../Common';
-import styles from '../../styles/GamePage.module.css';
-import { gameData, GAME_CONSTANTS } from '../../data/gameData';
-import { SelectField, InputField } from './FormFields';
+import React, { useMemo } from "react";
+import Container from "../Container";
+import { SubContainer, SubContainerElement } from "../Container";
+import { NumericInputWithButtons } from "../Common";
+import styles from "../../styles/GamePage.module.css";
+import { gameData, GAME_CONSTANTS } from "../../data/gameData";
+import { SelectField, InputField } from "./FormFields";
 
 // ExpansionIcon component
 function ExpansionIcon({
@@ -157,7 +157,7 @@ function GameOptionsContainer({
   playerManager,
   maxPlayers,
   readOnly = false,
-  isLegacyMode = false
+  isLegacyMode = false,
 }) {
   // Get map options memoized
   const mapOptions = useMemo(() => {
@@ -173,7 +173,8 @@ function GameOptionsContainer({
   }, [gameConfig.expansions]);
 
   // Hard-coded breakpoint: force expanded view on screens <= 768px
-  const forceExpanded = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const forceExpanded =
+    typeof window !== "undefined" && window.innerWidth <= 768;
 
   return (
     <Container title="Options" titleStyle="banner">
@@ -226,7 +227,7 @@ function GameOptionsContainer({
             </SubContainerElement>
 
             <SubContainerElement>
-              <label>Generations:</label>
+              <label>Gens:</label>
               <NumericInputWithButtons
                 value={gameConfig.generations}
                 onChange={(e) => {
@@ -281,69 +282,73 @@ function GameOptionsContainer({
           <SubContainerElement>
             <div className={styles.subcontainerBox}>
               <div className={styles.expansionsContainer}>
-              {/* Content container - shared by both bar and list */}
-              <div className={styles.expansionsContent}>
-                {!gameConfig.expandedExpansions && !forceExpanded && (
-                  <div className={styles.expansionsCompactView}>
-                    {expansionEntries.map(([key, value]) => (
-                      <ExpansionIcon
-                        key={key}
-                        expansion={key}
-                        checked={value}
-                        disabled={key === "Base Game" || readOnly}
-                        onChange={() =>
-                          readOnly ? null : dispatch({
-                            type: "TOGGLE_EXPANSION",
-                            expansion: key,
-                          })
-                        }
-                        showText={false}
-                      >
-                        {key}
-                      </ExpansionIcon>
-                    ))}
-                  </div>
-                )}
+                {/* Content container - shared by both bar and list */}
+                <div className={styles.expansionsContent}>
+                  {!gameConfig.expandedExpansions && !forceExpanded && (
+                    <div className={styles.expansionsCompactView}>
+                      {expansionEntries.map(([key, value]) => (
+                        <ExpansionIcon
+                          key={key}
+                          expansion={key}
+                          checked={value}
+                          disabled={key === "Base Game" || readOnly}
+                          onChange={() =>
+                            readOnly
+                              ? null
+                              : dispatch({
+                                  type: "TOGGLE_EXPANSION",
+                                  expansion: key,
+                                })
+                          }
+                          showText={false}
+                        >
+                          {key}
+                        </ExpansionIcon>
+                      ))}
+                    </div>
+                  )}
 
-                {(gameConfig.expandedExpansions || forceExpanded) && (
-                  <div className={styles.expansionsExpandedView}>
-                    {expansionEntries.map(([key, value]) => (
-                      <ExpansionIcon
-                        key={key + "_expanded"}
-                        expansion={key}
-                        checked={value}
-                        disabled={key === "Base Game" || readOnly}
-                        onChange={() =>
-                          readOnly ? null : dispatch({
-                            type: "TOGGLE_EXPANSION",
-                            expansion: key,
-                          })
-                        }
-                        showText={true}
-                      >
-                        {key}
-                      </ExpansionIcon>
-                    ))}
+                  {(gameConfig.expandedExpansions || forceExpanded) && (
+                    <div className={styles.expansionsExpandedView}>
+                      {expansionEntries.map(([key, value]) => (
+                        <ExpansionIcon
+                          key={key + "_expanded"}
+                          expansion={key}
+                          checked={value}
+                          disabled={key === "Base Game" || readOnly}
+                          onChange={() =>
+                            readOnly
+                              ? null
+                              : dispatch({
+                                  type: "TOGGLE_EXPANSION",
+                                  expansion: key,
+                                })
+                          }
+                          showText={true}
+                        >
+                          {key}
+                        </ExpansionIcon>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expand/Collapse button container - hidden if forced expanded */}
+                {!forceExpanded && (
+                  <div className={styles.expansionsToggleContainer}>
+                    <div
+                      className={styles.expansionsToggleButton}
+                      onClick={() => dispatch({ type: "TOGGLE_EXPANDED_VIEW" })}
+                      title={
+                        gameConfig.expandedExpansions ? "Collapse" : "Expand"
+                      }
+                    >
+                      ☰
+                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Expand/Collapse button container - hidden if forced expanded */}
-              {!forceExpanded && (
-                <div className={styles.expansionsToggleContainer}>
-                  <div
-                    className={styles.expansionsToggleButton}
-                    onClick={() => dispatch({ type: "TOGGLE_EXPANDED_VIEW" })}
-                    title={
-                      gameConfig.expandedExpansions ? "Collapse" : "Expand"
-                    }
-                  >
-                    ☰
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
           </SubContainerElement>
         )}
       </SubContainer>
@@ -352,3 +357,4 @@ function GameOptionsContainer({
 }
 
 export default GameOptionsContainer;
+
