@@ -33,7 +33,19 @@ type UpdatePlayerRequest struct {
 	ActorPassword string `json:"actor_password"`
 }
 
-// GET /players - List all players
+// playerListRating is the slimmed rating data attached to each player in the list.
+type playerListRating struct {
+	Ordinal     float64 `json:"ordinal"`
+	Established bool    `json:"established"`
+}
+
+// playerListEntry is one row of /players, with optional rating snapshot.
+type playerListEntry struct {
+	models.Player
+	Rating *playerListRating `json:"rating,omitempty"`
+}
+
+// GET /players - List all players with their latest rating (if any).
 func (h *Handler) getPlayers(w http.ResponseWriter, r *http.Request) {
 	players, err := h.repo.GetAllPlayers()
 	if err != nil {
@@ -41,7 +53,26 @@ func (h *Handler) getPlayers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.sendJSON(w, http.StatusOK, players)
+	out := make([]playerListEntry, len(players))
+	if snap, err := h.rating.Snapshot(); err == nil {
+		for i, p := range players {
+			entry := playerListEntry{Player: p}
+			if last := snap.Current(p.ID); last != nil {
+				entry.Rating = &playerListRating{
+					Ordinal:     last.Ordinal,
+					Established: last.Established,
+				}
+			}
+			out[i] = entry
+		}
+	} else {
+		log.Printf("rating snapshot unavailable for players list: %v", err)
+		for i, p := range players {
+			out[i] = playerListEntry{Player: p}
+		}
+	}
+
+	h.sendJSON(w, http.StatusOK, out)
 }
 
 // GET /players/{id} - Get a specific player

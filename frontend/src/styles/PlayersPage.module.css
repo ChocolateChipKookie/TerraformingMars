@@ -1,5 +1,25 @@
 /* PlayersPage Component Styles - Following GamesPage design patterns */
 
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.sortSelect {
+  flex: 1;
+  font-family: 'tm-default';
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  background: inherit;
+  height: 3rem;
+  padding: 0 1rem;
+  border: 3px solid black;
+  border-radius: 10px;
+  text-align: center;
+}
+
 .playersList {
   display: flex;
   flex-direction: column;

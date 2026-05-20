@@ -79,11 +79,37 @@ function PointInput({ config, gameState, options = {} }) {
   );
 }
 
+// Read-only row for OpenSkill rating snapshot per player (ordinal or delta).
+const RatingRow = React.memo(({ label, playerRatings, field }) => (
+  <div className={styles.pointInputContainer}>
+    <div className={styles.pointInputLabel}>{label}</div>
+    <div className={styles.playerFieldsContainer}>
+      {playerRatings.map((r, i) => {
+        const value = r ? r[field] : null;
+        const formatted = value == null
+          ? '—'
+          : field === 'delta_ordinal' && value > 0
+            ? `+${value.toFixed(1)}`
+            : value.toFixed(1);
+        const color = field === 'delta_ordinal' && value != null
+          ? (value > 0 ? '#2e7d32' : value < 0 ? '#c62828' : 'inherit')
+          : 'inherit';
+        return (
+          <div key={i} className={styles.scoreCell} style={{ color }}>
+            {formatted}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+));
+
 function PointsContainer({
   playerManager,
   gameConfig,
   readOnly = false,
-  isLegacyMode = false
+  isLegacyMode = false,
+  playerRatings = null,
 }) {
   const sharedGameState = {
     players: playerManager.players,
@@ -149,6 +175,13 @@ function PointsContainer({
               options={readOnlyOptions}
             />
           </div>
+
+          {playerRatings && playerRatings.length > 0 && (
+            <div className={styles.scoreSeparator}>
+              <RatingRow label="Rating" playerRatings={playerRatings} field="ordinal" />
+              <RatingRow label="Δ" playerRatings={playerRatings} field="delta_ordinal" />
+            </div>
+          )}
         </>
       </SubContainer>
     </Container>

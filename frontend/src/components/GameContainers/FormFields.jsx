@@ -116,7 +116,7 @@ export function InputField({
           textOverflow: 'ellipsis',
           maxWidth: '100%'
         }}>
-          {value || placeholder}
+          {value ?? placeholder}
         </span>
       </div>
     );

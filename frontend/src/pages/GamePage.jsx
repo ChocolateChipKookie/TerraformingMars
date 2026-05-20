@@ -6,7 +6,7 @@ import React, {
   useReducer,
   useRef,
 } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { ROUTES } from "../constants/routes";
 import Layout from "../components/Layout";
 import Container from "../components/Container";
@@ -427,8 +427,19 @@ function useGameObjectives(type, map, expansions, playerNumber) {
 
 function GamePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { gameId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Back-button target depends on where the user entered this page from.
+  // Navigations from PlayerDetailsPage pass `{ from: 'player', playerId }` via router state.
+  const backTarget = useMemo(() => {
+    const s = location.state;
+    if (s && s.from === 'player' && s.playerId != null) {
+      return { label: 'Back to Player', to: ROUTES.playerDetails(s.playerId) };
+    }
+    return { label: 'Back to Games', to: ROUTES.PLAYED_GAMES };
+  }, [location.state]);
 
   // Mode is derived from URL: no gameId = add, ?edit=true = edit, otherwise view.
   // Keeping it URL-sourced means a page refresh in edit mode stays in edit mode.
@@ -456,6 +467,10 @@ function GamePage() {
   // Loading state for fetching game data
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
+
+  // Per-player rating snapshot for this game, indexed by player slot (game_player array order).
+  // Populated from the augmented /api/games/{id} response; null when not yet loaded.
+  const [playerRatings, setPlayerRatings] = useState(null);
 
   // Legacy mode state - will be set from URL param (for add) or game data (for view/edit)
   const [isLegacyMode, setIsLegacyMode] = useState(() => {
@@ -629,6 +644,16 @@ function GamePage() {
             }
           });
           awards.loadGameData(awardNames, awardData, gameData.game.expansions || {}, gameData.game.map);
+        }
+
+        // Map rating deltas (player_id-keyed from backend) to player-slot index.
+        if (gameData.ratings && gameData.game_players) {
+          const byIndex = gameData.game_players.map(gp =>
+            gameData.ratings.find(r => r.player_id === gp.player_id) || null
+          );
+          setPlayerRatings(byIndex);
+        } else {
+          setPlayerRatings(null);
         }
 
       } catch (err) {
@@ -1007,8 +1032,8 @@ function GamePage() {
         <Container title="Error" />
         <Container>
           <p>Failed to load game: {loadError}</p>
-          <LinkButton onClick={() => navigate(ROUTES.PLAYED_GAMES)}>
-            Back to Games
+          <LinkButton onClick={() => navigate(backTarget.to)}>
+            {backTarget.label}
           </LinkButton>
         </Container>
       </Layout>
@@ -1065,6 +1090,7 @@ function GamePage() {
         gameConfig={gameConfig}
         readOnly={mode === 'view'}
         isLegacyMode={isLegacyMode}
+        playerRatings={mode === 'view' ? playerRatings : null}
       />
 
       <GameNotesAndImagesContainer
@@ -1156,10 +1182,10 @@ function GamePage() {
         {mode === 'view' ? (
           <>
             <LinkButton
-              onClick={() => navigate(ROUTES.PLAYED_GAMES)}
+              onClick={() => navigate(backTarget.to)}
               style={{ width: 'calc(50% - 1rem)' }}
             >
-              Back to Games
+              {backTarget.label}
             </LinkButton>
             <LinkButton
               onClick={enterEditMode}

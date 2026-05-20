@@ -7,6 +7,7 @@ import (
 
 	"terraforming-mars-backend/internal/auth"
 	"terraforming-mars-backend/internal/models"
+	"terraforming-mars-backend/internal/rating"
 	gamedata "terraforming-mars-backend/shared"
 )
 
@@ -1020,6 +1021,43 @@ func (r *Repository) GetImageGameID(imageID int) (int, error) {
 		return 0, err
 	}
 	return userFacingGameID, nil
+}
+
+// GetGamesForRating returns every game's participants chronologically,
+// using only the latest revision per game_id. Drives the rating snapshot.
+func (r *Repository) GetGamesForRating() ([]rating.GameForRating, error) {
+	rows, err := r.db.Query(`
+		SELECT g.game_id, g.date, gp.player_id, gp.total_points
+		FROM game g
+		JOIN game_player gp ON gp.game_id = g.id
+		WHERE (g.game_id, g.revision) IN (
+			SELECT game_id, MAX(revision) FROM game GROUP BY game_id
+		)
+		ORDER BY g.date ASC, g.game_id ASC, gp.id ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var games []rating.GameForRating
+	for rows.Next() {
+		var gameID, playerID, totalPoints int
+		var date string
+		if err := rows.Scan(&gameID, &date, &playerID, &totalPoints); err != nil {
+			return nil, err
+		}
+		// Group consecutive rows belonging to the same game (the query orders by game_id).
+		if len(games) == 0 || games[len(games)-1].GameID != gameID {
+			games = append(games, rating.GameForRating{GameID: gameID, Date: date})
+		}
+		g := &games[len(games)-1]
+		g.Participants = append(g.Participants, rating.Participant{
+			PlayerID:    playerID,
+			TotalPoints: totalPoints,
+		})
+	}
+	return games, rows.Err()
 }
 
 // DeleteGame deletes all revisions of a game

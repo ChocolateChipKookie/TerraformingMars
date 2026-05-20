@@ -34,63 +34,45 @@ func TestGetPlayers(t *testing.T) {
 		t.Errorf("Expected 4 players, got %d", len(players))
 	}
 
-	// Verify player names, roles, and created_by
+	// Verify player names and roles (created_by/updated_at are internal-only, not in JSON).
 	playersByName := make(map[string]models.Player)
 	for _, p := range players {
 		playersByName[p.Name] = p
 	}
 
-	// Check admin (created_by should be nil for system admin)
 	if admin, ok := playersByName["admin"]; !ok {
 		t.Error("Admin player not found")
-	} else {
-		if admin.Role != models.RoleAdmin {
-			t.Errorf("Admin role: expected '%s', got '%s'", models.RoleAdmin, admin.Role)
-		}
-		if admin.CreatedBy != nil {
-			t.Errorf("Admin created_by: expected nil, got %v", admin.CreatedBy)
-		}
+	} else if admin.Role != models.RoleAdmin {
+		t.Errorf("Admin role: expected '%s', got '%s'", models.RoleAdmin, admin.Role)
 	}
 
-	// Check Alice (created by admin)
 	if aliceFromAPI, ok := playersByName["Alice"]; !ok {
 		t.Error("Alice player not found")
 	} else {
 		if aliceFromAPI.Role != models.RolePlayer {
 			t.Errorf("Alice role: expected '%s', got '%s'", models.RolePlayer, aliceFromAPI.Role)
 		}
-		if aliceFromAPI.CreatedBy == nil || *aliceFromAPI.CreatedBy != ctx.Admin.ID {
-			t.Errorf("Alice created_by: expected %d, got %v", ctx.Admin.ID, aliceFromAPI.CreatedBy)
-		}
 		if aliceFromAPI.ID != ctx.Alice.ID {
 			t.Errorf("Alice ID mismatch: expected %d, got %d", ctx.Alice.ID, aliceFromAPI.ID)
 		}
 	}
 
-	// Check Bob (created by admin)
 	if bobFromAPI, ok := playersByName["Bob"]; !ok {
 		t.Error("Bob player not found")
 	} else {
 		if bobFromAPI.Role != models.RoleUser {
 			t.Errorf("Bob role: expected '%s', got '%s'", models.RoleUser, bobFromAPI.Role)
 		}
-		if bobFromAPI.CreatedBy == nil || *bobFromAPI.CreatedBy != ctx.Admin.ID {
-			t.Errorf("Bob created_by: expected %d, got %v", ctx.Admin.ID, bobFromAPI.CreatedBy)
-		}
 		if bobFromAPI.ID != ctx.Bob.ID {
 			t.Errorf("Bob ID mismatch: expected %d, got %d", ctx.Bob.ID, bobFromAPI.ID)
 		}
 	}
 
-	// Check Charlie (created by Bob)
 	if charlieFromAPI, ok := playersByName["Charlie"]; !ok {
 		t.Error("Charlie player not found")
 	} else {
 		if charlieFromAPI.Role != models.RolePlayer {
 			t.Errorf("Charlie role: expected '%s', got '%s'", models.RolePlayer, charlieFromAPI.Role)
-		}
-		if charlieFromAPI.CreatedBy == nil || *charlieFromAPI.CreatedBy != ctx.Bob.ID {
-			t.Errorf("Charlie created_by: expected %d (Bob's ID), got %v", ctx.Bob.ID, charlieFromAPI.CreatedBy)
 		}
 		if charlieFromAPI.ID != ctx.Charlie.ID {
 			t.Errorf("Charlie ID mismatch: expected %d, got %d", ctx.Charlie.ID, charlieFromAPI.ID)
@@ -131,9 +113,6 @@ func TestGetPlayer(t *testing.T) {
 		}
 		if returnedPlayer.Role != models.RolePlayer {
 			t.Errorf("Expected role '%s', got '%s'", models.RolePlayer, returnedPlayer.Role)
-		}
-		if returnedPlayer.CreatedBy == nil || *returnedPlayer.CreatedBy != ctx.Admin.ID {
-			t.Errorf("Expected created_by %d, got %v", ctx.Admin.ID, returnedPlayer.CreatedBy)
 		}
 	})
 
@@ -211,9 +190,6 @@ func TestCreatePlayer(t *testing.T) {
 		}
 		if player.Role != models.RolePlayer {
 			t.Errorf("Expected role '%s', got '%s'", models.RolePlayer, player.Role)
-		}
-		if player.CreatedBy == nil || *player.CreatedBy != ctx.Admin.ID {
-			t.Errorf("Expected created_by %d, got %v", ctx.Admin.ID, player.CreatedBy)
 		}
 	})
 

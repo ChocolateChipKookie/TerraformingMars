@@ -44,9 +44,9 @@ type Player struct {
 	Name         string     `json:"name" db:"name"`
 	PasswordHash *string    `json:"-" db:"password_hash"` // Never return in JSON
 	Role         PlayerRole `json:"role" db:"role"`
-	CreatedBy    *int       `json:"created_by" db:"created_by"` // Foreign key to player.id, nil for initial admin
+	CreatedBy    *int       `json:"-" db:"created_by"`          // internal-only
 	CreatedAt    string     `json:"created_at" db:"created_at"` // ISO datetime string
-	UpdatedAt    string     `json:"updated_at" db:"updated_at"` // ISO datetime string
+	UpdatedAt    string     `json:"-" db:"updated_at"`          // internal-only
 }
 
 type PlayerExtendedInfo struct {

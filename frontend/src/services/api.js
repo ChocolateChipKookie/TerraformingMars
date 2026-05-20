@@ -126,11 +126,11 @@ export const playerApi = {
   },
 };
 
-// Player Stats API calls
-export const playerStatsApi = {
-  // Get all player stats
-  getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/player-stats`);
+// Rating API calls (derived from full game history, computed backend-side)
+export const ratingApi = {
+  // Get one player's per-game rating timeline.
+  getHistory: async (playerId) => {
+    const response = await fetch(`${API_BASE_URL}/players/${playerId}/rating-history`);
     return handleResponse(response);
   },
 };

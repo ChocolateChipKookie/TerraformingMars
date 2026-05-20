@@ -6,27 +6,32 @@ import (
 	"net/http"
 
 	"terraforming-mars-backend/internal/database"
+	"terraforming-mars-backend/internal/rating"
 
 	"github.com/gorilla/mux"
 )
 
 type Handler struct {
-	repo *database.Repository
+	repo   *database.Repository
+	rating *rating.Service
 }
 
 func NewHandler(db *sql.DB) *Handler {
+	repo := database.NewRepository(db)
 	return &Handler{
-		repo: database.NewRepository(db),
+		repo:   repo,
+		rating: rating.NewService(repo.GetGamesForRating),
 	}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	// Player routes - following REST conventions
-	router.HandleFunc("/players", h.getPlayers).Methods("GET")                          // List all players
-	router.HandleFunc("/players", h.createPlayer).Methods("POST")                       // Create new player
-	router.HandleFunc("/players/{id}/extended", h.getPlayerExtendedInfo).Methods("GET") // Get player with extended info
-	router.HandleFunc("/players/{id}", h.getPlayer).Methods("GET")                      // Get specific player
-	router.HandleFunc("/players/{id}", h.updatePlayer).Methods("PUT")                   // Update existing player
+	router.HandleFunc("/players", h.getPlayers).Methods("GET")                                 // List all players
+	router.HandleFunc("/players", h.createPlayer).Methods("POST")                              // Create new player
+	router.HandleFunc("/players/{id}/extended", h.getPlayerExtendedInfo).Methods("GET")        // Get player with extended info
+	router.HandleFunc("/players/{id}/rating-history", h.getPlayerRatingHistory).Methods("GET") // Player's per-game rating timeline
+	router.HandleFunc("/players/{id}", h.getPlayer).Methods("GET")                             // Get specific player
+	router.HandleFunc("/players/{id}", h.updatePlayer).Methods("PUT")                          // Update existing player
 
 	// Game routes - following REST conventions
 	router.HandleFunc("/games", h.getGames).Methods("GET")           // List all games

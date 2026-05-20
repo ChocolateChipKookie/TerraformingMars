@@ -31,6 +31,20 @@ func (h *Handler) getGames(w http.ResponseWriter, r *http.Request) {
 	h.sendJSON(w, http.StatusOK, games)
 }
 
+// playerRatingDelta is the per-participant rating slice attached to a game-detail response.
+type playerRatingDelta struct {
+	PlayerID     int     `json:"player_id"`
+	Ordinal      float64 `json:"ordinal"`
+	DeltaOrdinal float64 `json:"delta_ordinal"`
+}
+
+// gameDetailResponse wraps GameWithDetails with the rating data the frontend uses
+// to render per-player delta on the game view page (no extra round-trip).
+type gameDetailResponse struct {
+	*models.GameWithDetails
+	Ratings []playerRatingDelta `json:"ratings,omitempty"`
+}
+
 // GET /games/{id} - Get a specific game with all details
 func (h *Handler) getGame(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -46,7 +60,26 @@ func (h *Handler) getGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.sendJSON(w, http.StatusOK, game)
+	resp := gameDetailResponse{GameWithDetails: game}
+
+	// Attach rating deltas if the snapshot is available; ratings are best-effort —
+	// a snapshot failure shouldn't break the game-detail load.
+	if snap, err := h.rating.Snapshot(); err == nil {
+		entries := snap.ForGame(game.Game.GameID)
+		for _, gp := range game.GamePlayers {
+			if e, ok := entries[gp.PlayerID]; ok {
+				resp.Ratings = append(resp.Ratings, playerRatingDelta{
+					PlayerID:     gp.PlayerID,
+					Ordinal:      e.Ordinal,
+					DeltaOrdinal: e.DeltaOrdinal,
+				})
+			}
+		}
+	} else {
+		log.Printf("rating snapshot unavailable for game %d: %v", id, err)
+	}
+
+	h.sendJSON(w, http.StatusOK, resp)
 }
 
 // POST /games - Create a new game
@@ -99,6 +132,7 @@ func (h *Handler) createGame(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to create game: %v", err))
 		return
 	}
+	h.rating.Invalidate()
 
 	log.Printf("Game %d created by %q", game.Game.GameID, actor.Name)
 	h.sendJSON(w, http.StatusCreated, game)
@@ -161,6 +195,7 @@ func (h *Handler) updateGame(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update game: %v", err))
 		return
 	}
+	h.rating.Invalidate()
 
 	log.Printf("Game %d updated by %q (revision %d)", game.Game.GameID, actor.Name, game.Game.Revision)
 	h.sendJSON(w, http.StatusOK, game)
@@ -201,6 +236,7 @@ func (h *Handler) deleteGame(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to delete game: %v", err))
 		return
 	}
+	h.rating.Invalidate()
 
 	log.Printf("Game %d deleted by %q", id, actor.Name)
 	w.WriteHeader(http.StatusNoContent)
